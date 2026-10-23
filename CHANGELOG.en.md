@@ -12,8 +12,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Planned
-- Universal CLI installer implementation (`npx @alexsan/agy-framework init`).
-- Global Validation & End-to-End Integration Tests (Phase 8).
+- Multi-stack global validation & End-to-End integration tests (Phase 8).
+- Final review, release v1.0.0, and MVP roadmap archiving.
+
+---
+
+## [0.6.0] - 2026-10-23
+
+### Added
+- **Phase 7 Validated — Universal CLI Installer Engine (`npx @alexsan/agy-framework init`):**
+  - **Root `package.json`:** Official distribution config for npm/npx with binary declaration (`agy-framework` and `san-framework`), test scripts `test:phase3` through `test:phase7`, zero external dependencies for maximum resilience and blazingly fast execution.
+  - **`src/cli/index.js`:** Autonomous executable CLI entry point (`chmod +x`), official ASCII banner display (`logos/LOGO_ASCII.txt`), native CLI parser (`node:util` `parseArgs`), interactive TTY wizard (`node:readline/promises`), flag handling (`--local`, `--global`, `--all`, `--skills=...`, `--dry-run`, `--force`).
+  - **`src/cli/installer.js`:** Deterministic deployment engine copying the 17 native skill modules from `src/skills/` to target `.agents/skills/` or `~/.gemini/antigravity-cli/skills/`.
+  - **Smart Merge:** Scrupulous preservation of user's customized rules (`BRAND.md`, `PRODUCT.md`, `PROJECT.md`, `API.md`) and only instantiating missing rules, master index `GEMINI.md`, and `rules.json`.
+  - **Automated Git Hygiene:** Physical removal of legacy agent residues (`CLAUDE.md`, `.cursorrules`, etc.), Git index un-tracking (`git rm --cached`), and airtight dual locking (`.gitignore` & `.git/info/exclude`).
+- **Phase 7 Automated Test Suite (`tests/phase7/test_cli.sh`):**
+  - Validation of base commands (`--help`, `--version`, `list` with all 17 modules).
+  - Validation of `--local --all` deployment with Smart Merge, legacy purge, and Git isolation.
+  - Validation of granular selection (`--skills=san_init,san_planner`).
+  - Validation of simulation mode (`--dry-run`).
 
 ---
 

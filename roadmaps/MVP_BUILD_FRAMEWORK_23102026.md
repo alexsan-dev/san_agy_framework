@@ -1,7 +1,7 @@
 # ROADMAP EXHAUSTIVE — CONSTRUCTION DU FRAMEWORK « GOOGLE ANTIGRAVITY » (`san_*`)
 
 > **Fichier :** `/roadmaps/MVP_BUILD_FRAMEWORK_23102026.md`  
-> **Statut :** EN COURS (PHASES 1, 2, 3, 4, 5 & 6 VALIDÉES — PASSAGE EN PHASE 7)  
+> **Statut :** EN COURS (PHASES 1, 2, 3, 4, 5, 6 & 7 VALIDÉES — PASSAGE EN PHASE 8)  
 > **Responsables :** `san_executer` & `san_planner`  
 > **Objectif :** Disposer d'un framework 100 % opérationnel, packagé dans `src/` et installable en une commande CLI sur n'importe quel projet client.  
 > **Convention de nommage :** `[PHASE]_[PROBLEMATIQUE]_[DATE].md` (format JJMMAAAA)
@@ -188,21 +188,24 @@
 
 ## PHASE 7 : MOTEUR D'INSTALLATION UNIVERSEL CLI (`npx @alexsan/agy-framework init`)
 
-- [ ] Configurer `package.json` à la racine pour la distribution npm/npx :
-  - [ ] Déclarer le binaire `bin: { "agy-framework": "src/cli/index.js" }`.
-  - [ ] Définir les dépendances nécessaires (commander/clack/prompts, chalk/picocolors).
-- [ ] Développer `src/cli/index.js` (Point d'entrée du CLI) :
-  - [ ] Afficher la bannière ASCII officielle issue de [`logos/LOGO_ASCII.txt`](../logos/LOGO_ASCII.txt).
-  - [ ] Proposer le menu interactif :
+- [x] Configurer `package.json` à la racine pour la distribution npm/npx :
+  - [x] Déclarer le binaire `bin: { "agy-framework": "src/cli/index.js", "san-framework": "src/cli/index.js" }`.
+  - [x] Définir les métadonnées et scripts (`test:phase3` à `test:phase7`).
+- [x] Développer `src/cli/index.js` (Point d'entrée du CLI) :
+  - [x] Afficher la bannière ASCII officielle issue de [`logos/LOGO_ASCII.txt`](../logos/LOGO_ASCII.txt).
+  - [x] Proposer le menu interactif :
     - Mode d'installation : Local (`<projet>/.agents/`) ou Global (`~/.gemini/antigravity-cli/skills/`).
     - Sélection des skills : « Tous les skills (Recommandé) » ou sélection granulaire par cases à cocher.
-  - [ ] Supporter les drapeaux CLI : `--local`, `--global`, `--all`, `--skills=init,planner,qa`.
-- [ ] Développer `src/cli/installer.js` (Moteur de déploiement) :
-  - [ ] Copie des modules choisis depuis `src/skills/` vers la cible (`.agents/skills/`).
-  - [ ] Fusion intelligente avec un `.agents/` existant (ne pas écraser les règles métier de l'utilisateur).
-  - [ ] Injection automatique de `/.agents/` dans `.gitignore` et `.git/info/exclude`.
-  - [ ] Purge des résidus d'anciens agents (`CLAUDE.md`, `.cursorrules`, etc.).
-  - [ ] Message de succès final avec guide de démarrage immédiat.
+  - [x] Supporter les drapeaux CLI : `--local`, `--global`, `--all`, `--skills=init,planner,qa`, `--dry-run`, `--force`.
+- [x] Développer `src/cli/installer.js` (Moteur de déploiement) :
+  - [x] Copie des modules choisis depuis `src/skills/` vers la cible (`.agents/skills/`).
+  - [x] Fusion intelligente avec un `.agents/` existant (ne pas écraser les règles métier de l'utilisateur).
+  - [x] Injection automatique de `/.agents/` dans `.gitignore` et `.git/info/exclude`.
+  - [x] Purge des résidus d'anciens agents (`CLAUDE.md`, `.cursorrules`, etc.).
+  - [x] Message de succès final avec guide de démarrage immédiat.
+- [x] Tests de la Phase 7 :
+  - [x] Valider l'exécution des commandes `--help`, `--version`, `list` (`tests/phase7/test_cli.sh`).
+  - [x] Valider le déploiement local avec Smart Merge, purge Git et mode granulaire (`tests/phase7/test_cli.sh`).
 
 ---
 

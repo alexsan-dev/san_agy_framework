@@ -12,8 +12,25 @@ et ce projet adhère à [Semantic Versioning](https://semver.org/lang/fr/).
 ## [Unreleased]
 
 ### Planned
-- Implémentation du CLI d'installation (`npx @alexsan/agy-framework init`).
-- Validation globale & Tests d'intégration End-to-End (Phase 8).
+- Validation globale & Tests d'intégration End-to-End multi-stacks (Phase 8).
+- Clôture et archivage de la roadmap MVP.
+
+---
+
+## [0.6.0] - 2026-10-23
+
+### Added
+- **Phase 7 Validée — Moteur d'Installation Universel CLI (`npx @alexsan/agy-framework init`) :**
+  - **`package.json` racine :** Configuration officielle pour distribution npm/npx avec déclaration des binaires `agy-framework` et `san-framework`, suite de tests `test:phase3` à `test:phase7`, zéro dépendance externe pour résilience et rapidité maximale.
+  - **`src/cli/index.js` :** Point d'entrée exécutable autonome (`chmod +x`), affichage de la bannière ASCII officielle (`logos/LOGO_ASCII.txt`), parsing CLI natif (`node:util` `parseArgs`), menu interactif TTY (`node:readline/promises`), gestion des drapeaux (`--local`, `--global`, `--all`, `--skills=...`, `--dry-run`, `--force`).
+  - **`src/cli/installer.js` :** Moteur de déploiement déterministe assurant la copie des 17 modules natifs depuis `src/skills/` vers `.agents/skills/` ou `~/.gemini/antigravity-cli/skills/`.
+  - **Smart Merge :** Préservation scrupuleuse des règles personnalisées de l'utilisateur (`BRAND.md`, `PRODUCT.md`, `PROJECT.md`, `API.md`) et instanciation uniquement des règles manquantes, de l'index maître `GEMINI.md` et de `rules.json`.
+  - **Hygiène Git Automatique :** Purge physique des anciens résidus d'agents (`CLAUDE.md`, `.cursorrules`, etc.), désindexation du cache Git (`git rm --cached`) et verrouillage hermétique (`.gitignore` et `.git/info/exclude`).
+- **Suite de Tests Automatisés Phase 7 (`tests/phase7/test_cli.sh`) :**
+  - Validation des commandes de base (`--help`, `--version`, `list` avec les 17 modules).
+  - Validation du déploiement `--local --all` avec Smart Merge, purge Git et isolation.
+  - Validation de la sélection granulaire (`--skills=san_init,san_planner`).
+  - Validation du mode simulation (`--dry-run`).
 
 ---
 

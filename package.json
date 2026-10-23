@@ -1,0 +1,40 @@
+{
+  "name": "@alexsan/agy-framework",
+  "version": "0.5.0",
+  "description": "Universal Google Antigravity Framework & Cartesian Skills Engine for Developers",
+  "type": "module",
+  "main": "src/cli/index.js",
+  "bin": {
+    "agy-framework": "./src/cli/index.js",
+    "san-framework": "./src/cli/index.js"
+  },
+  "files": [
+    "src",
+    "logos/LOGO_ASCII.txt",
+    "LICENSE",
+    "README.md"
+  ],
+  "scripts": {
+    "start": "node src/cli/index.js",
+    "test:phase3": "bash tests/phase3/test_git_ai_hygiene.sh && bash tests/phase3/test_archive_roadmap.sh",
+    "test:phase4": "bash tests/phase4/test_phase4.sh",
+    "test:phase5": "bash tests/phase5/test_phase5.sh",
+    "test:phase6": "bash tests/phase6/test_phase6.sh",
+    "test:phase7": "bash tests/phase7/test_cli.sh"
+  },
+  "keywords": [
+    "antigravity",
+    "ai",
+    "skills",
+    "framework",
+    "alexsan",
+    "llm",
+    "cartesian"
+  ],
+  "author": "Alexsan.pro",
+  "license": "MIT",
+  "repository": "https://github.com/alexsan-dev/san_agy_framework.git",
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
