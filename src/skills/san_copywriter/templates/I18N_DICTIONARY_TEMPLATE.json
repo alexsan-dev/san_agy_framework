@@ -1,0 +1,39 @@
+{
+  "common": {
+    "currency_symbol": "FCFA",
+    "currency_format": "{amount}\u00a0FCFA",
+    "whatsapp_support_cta": "Besoin d'aide ? Écrivez-nous sur WhatsApp",
+    "whatsapp_support_phone": "+242 06 123 45 67"
+  },
+  "checkout": {
+    "title": "Valider ma commande",
+    "delivery_point_label": "Point de repère pour le livreur",
+    "delivery_point_placeholder": "Ex: Marché Total, pharmacie de l'Union",
+    "phone_label": "Numéro Mobile Money pour le débit",
+    "phone_placeholder": "Ex: 06 123 45 67",
+    "submit_button": "Payer {amount}\u00a0FCFA par Mobile Money",
+    "cash_option": "Payer en espèces à la livraison"
+  },
+  "states": {
+    "empty": {
+      "cart_title": "Votre panier est vide pour l'instant",
+      "cart_description": "Parcourez les restaurants de votre quartier et régalez-vous en moins de 30 minutes.",
+      "cart_cta": "Explorer le menu du jour"
+    },
+    "loading": {
+      "payment_processing": "Communication avec votre opérateur en cours...",
+      "payment_reassurance": "Votre commande est sécurisée. Veuillez patienter quelques instants."
+    },
+    "error": {
+      "payment_failed_constat": "La transaction Mobile Money n'a pas pu aboutir.",
+      "payment_failed_reassurance": "Votre compte n'a pas été débité et votre sélection reste enregistrée.",
+      "payment_failed_action_retry": "Réessayer le paiement",
+      "payment_failed_action_cash": "Payer en espèces"
+    },
+    "offline": {
+      "banner": "Mode hors-ligne actif (réseau instable)",
+      "description": "Vos actions sont conservées et seront transmises automatiquement dès le retour du réseau.",
+      "refresh_button": "Actualiser la connexion"
+    }
+  }
+}

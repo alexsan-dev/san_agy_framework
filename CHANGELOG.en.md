@@ -13,9 +13,52 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Planned
 - Universal CLI installer implementation (`npx @alexsan/agy-framework init`).
-- Packaging Phase 4 (Transversal execution sub-skills into `src/skills/`).
 - Packaging Phase 5 (Visual design & Full-Stack core into `src/skills/`).
 - Packaging Phase 6 (Quality, DevOps, legal & growth into `src/skills/`).
+
+---
+
+## [0.3.0] - 2026-10-23
+
+### Added
+- **Phase 4 Validated — Packaging of Transversal Execution Sub-Skills into `src/skills/`:**
+  - **`src/skills/san_subagent_manager/`:**
+    - `SKILL.md`: Comprehensive operational manual for surgical subagent allocation, principle of least privilege, strict model selection (`Model: 'flash'` vs `Model: 'inherit'`), and sealed handover protocol via `send_message`.
+    - Closed prompt templates: `SUBAGENT_PROMPT_TEMPLATE.md`, `ATOMIC_CODER_PROMPT.md`, and `AUDITOR_PROMPT.md`.
+    - `scripts/validate_subagent_spec.sh`: Bash script validating compliance of the 6 mandatory prompt sections.
+    - References: `least_privilege_matrix.md`, `subagent_archetypes.md`, `prompt_engineering_standards.md`.
+  - **`src/skills/san_searcher/`:**
+    - `SKILL.md`: *Context Shielding* protocol protecting orchestrator context, strict dependency pinning via local project manifests.
+    - `scripts/detect_stack_versions.sh`: Automated version detection for Node/React/Expo, PHP/Laravel, Go, and Docker.
+    - `scripts/doc_scraper.sh`: Decontamination airlock converting fetched HTML into clean Markdown without extraneous DOM tags.
+    - `templates/RESEARCH_NOTE_TEMPLATE.md`: Canonical investigation note template for `docs/research/TECH_INVESTIGATION_*.md`.
+    - References: `official_authorities.md` and `version_matrix_guidelines.md`.
+  - **`src/skills/san_doc_keeper/`:**
+    - `SKILL.md`: SemVer 2.0.0 governance, 7 Keep a Changelog categories, and zero-token immediate hygiene Fast-Track.
+    - `scripts/changelog_helper.sh`: Deterministic automated changelog insertion under `[Unreleased]`.
+    - `scripts/archive_roadmap.sh`: Deterministic 100% completion check (`- [x]`) and archiving with SHA-256 fingerprinting.
+    - Templates: `CHANGELOG_TEMPLATE.md` and `README_TEMPLATE.md`.
+  - **`src/skills/san_copywriter/`:**
+    - `SKILL.md`: Empathetic UX voice, strict prohibition of *Lorem Ipsum*, non-breaking space currency formatting (`2 500 FCFA`), landmark-based addresses, and Mobile Money instincts.
+    - `references/local_copy_guidelines.md`: Production-ready copy library for the 5 UI states (Nominal, Empty, Skeleton, 3-part Error, Offline).
+    - `scripts/check_lorem.sh`: Recursive bash linter tracking dummy text residues (exit code 1 on detection).
+    - `scripts/validate_copy_length.mjs`: Character limit validator for app store metadata and CTAs.
+    - Templates: `I18N_DICTIONARY_TEMPLATE.json` and `UI_5_STATES_COPY_TEMPLATE.md`.
+  - **`src/skills/san_design_tokens/`:**
+    - `SKILL.md`: Design token invariance, WCAG AAA daylight accessibility (> 7:1), and 60 fps kinetic motion invariants.
+    - `scripts/build_tokens.mjs`: Standalone Markdown parser compiling tokens to CSS variables (`:root`), Tailwind (`@theme` v4 and v3 extend), and TypeScript (`tokens.ts`).
+    - `scripts/audit_magic_values.sh`: Static scanner tracking hardcoded hex colors and arbitrary pixel spacings.
+    - `templates/BRAND_TOKENS_TEMPLATE.md` and kinetic/contrast references.
+  - **`src/skills/san_exporter/`:**
+    - `SKILL.md`: Headless Playwright capture pipeline, `networkidle` + `document.fonts.ready` synchronization.
+    - Target formats: Google Play (1080x1920, 1024x500), Apple App Store (1290x2796), and Print A4 300 DPI (2480x3508).
+    - `scripts/export_png.mjs`: Headless Playwright capture engine with SHA-256 manifest logging.
+    - `scripts/svg_to_png.mjs`: Vector-to-raster compiler with mandatory alpha channel removal (eliminates Apple ITMS-90717 rejection).
+- **Phase 4 Automated Test Suite (`tests/phase4/test_phase4.sh`):**
+  - Verification of `check_lorem.sh` on dirty code (exit 1) and clean code (exit 0).
+  - Verification of `build_tokens.mjs` with full CSS and TypeScript compilation.
+  - Verification of `audit_magic_values.sh` (hardcoded magic color/value detection).
+  - Verification of `changelog_helper.sh` (proper Keep a Changelog entry insertion).
 
 ---
 

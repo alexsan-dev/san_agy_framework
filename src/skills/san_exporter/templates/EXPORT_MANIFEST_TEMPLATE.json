@@ -1,0 +1,27 @@
+{
+  "updated_at": "2026-10-23T12:00:00.000Z",
+  "engine": "san_exporter Playwright Headless / Sharp 0.33",
+  "total_assets": 2,
+  "assets": [
+    {
+      "file": "design/screenshots/home_playstore.png",
+      "source": "design/mockups/home.html",
+      "width": 1080,
+      "height": 1920,
+      "scale": 1,
+      "size_bytes": 482104,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "created_at": "2026-10-23T12:00:00.000Z"
+    },
+    {
+      "file": "design/screenshots/home_appstore.png",
+      "source": "design/mockups/home.html",
+      "width": 1290,
+      "height": 2796,
+      "scale": 1,
+      "size_bytes": 1245890,
+      "sha256": "ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb",
+      "created_at": "2026-10-23T12:00:00.000Z"
+    }
+  ]
+}

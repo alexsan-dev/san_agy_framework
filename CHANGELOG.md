@@ -13,9 +13,52 @@ et ce projet adhère à [Semantic Versioning](https://semver.org/lang/fr/).
 
 ### Planned
 - Implémentation du CLI d'installation (`npx @alexsan/agy-framework init`).
-- Packaging de la Phase 4 (Sous-skills d'exécution transversaux dans `src/skills/`).
 - Packaging de la Phase 5 (Pôle conception visuelle & Full-Stack dans `src/skills/`).
 - Packaging de la Phase 6 (Pôle qualité, DevOps, légal & croissance dans `src/skills/`).
+
+---
+
+## [0.3.0] - 2026-10-23
+
+### Added
+- **Phase 4 Validée — Packaging des Sous-Skills Transversaux d'Exécution dans `src/skills/` :**
+  - **`src/skills/san_subagent_manager/` :**
+    - `SKILL.md` : Guide opérationnel complet pour l'allocation chirurgicale de sous-agents, principe de moindre privilège, sélection `Model: 'flash'` vs `Model: 'inherit'`, et protocole de reddition hermétique par `send_message`.
+    - Templates de prompts fermés : `SUBAGENT_PROMPT_TEMPLATE.md`, `ATOMIC_CODER_PROMPT.md` et `AUDITOR_PROMPT.md`.
+    - `scripts/validate_subagent_spec.sh` : Script Bash validant la conformité des 6 sections requises dans les prompts.
+    - Références : `least_privilege_matrix.md`, `subagent_archetypes.md`, `prompt_engineering_standards.md`.
+  - **`src/skills/san_searcher/` :**
+    - `SKILL.md` : Protocole de *Context Shielding* préservant le contexte de l'orchestrateur, règle stricte de pinning des versions via manifestes locaux.
+    - `scripts/detect_stack_versions.sh` : Détection automatique des versions pour Node/React/Expo, PHP/Laravel, Go et Docker.
+    - `scripts/doc_scraper.sh` : Sas de décontamination et conversion HTML vers Markdown pur épuré des balises parasites.
+    - `templates/RESEARCH_NOTE_TEMPLATE.md` : Gabarit canonique pour `docs/research/TECH_INVESTIGATION_*.md`.
+    - Références : `official_authorities.md` et `version_matrix_guidelines.md`.
+  - **`src/skills/san_doc_keeper/` :**
+    - `SKILL.md` : Gouvernance SemVer 2.0.0, 7 catégories Keep a Changelog et Fast-Track d'hygiène immédiat sans gaspillage de tokens.
+    - `scripts/changelog_helper.sh` : Insertion automatisée déterministe d'entrées sous `[Unreleased]`.
+    - `scripts/archive_roadmap.sh` : Contrôle déterministe d'exhaustivité 100% (`- [x]`) et archivage avec empreinte SHA-256.
+    - Gabarits : `CHANGELOG_TEMPLATE.md` et `README_TEMPLATE.md`.
+  - **`src/skills/san_copywriter/` :**
+    - `SKILL.md` : Plume UX vivante, bannissement du *Lorem Ipsum*, règles de devises avec espace insécable (`2 500 FCFA`), toponymie par repères urbains sans cadastre, et réflexes Mobile Money.
+    - `references/local_copy_guidelines.md` : Répertoire d'exemples réels pour les 5 états UI (Nominal, Vide, Skeleton, Erreur en triptyque, Hors-ligne).
+    - `scripts/check_lorem.sh` : Linter bash récursif traquant impitoyablement le faux texte (exit 1 si détecté).
+    - `scripts/validate_copy_length.mjs` : Contrôle déterministe des plafonds de caractères stores et boutons.
+    - Gabarits : `I18N_DICTIONARY_TEMPLATE.json` et `UI_5_STATES_COPY_TEMPLATE.md`.
+  - **`src/skills/san_design_tokens/` :**
+    - `SKILL.md` : Invariance des tokens de marque, accessibilité WCAG AAA plein soleil (> 7:1) et signature cinétique 60 fps.
+    - `scripts/build_tokens.mjs` : Compilateur autonome Markdown vers variables CSS (`:root`), Tailwind (`@theme` v4 et config extend v3) et TypeScript (`tokens.ts`).
+    - `scripts/audit_magic_values.sh` : Scanner statique traquant les couleurs arbitraires en dur et espacements magiques.
+    - `templates/BRAND_TOKENS_TEMPLATE.md` et références cinétiques / contrastes.
+  - **`src/skills/san_exporter/` :**
+    - `SKILL.md` : Pipeline de capture déterministe headless Playwright, synchronisation `networkidle` + `document.fonts.ready` + pause stabilisatrice.
+    - Formats normés : Play Store (1080x1920, 1024x500), App Store (1290x2796), et Print A4 300 DPI (2480x3508).
+    - `scripts/export_png.mjs` : Moteur de capture Playwright avec registre d'intégrité SHA-256.
+    - `scripts/svg_to_png.mjs` : Déclinaison vectorielle sans canal alpha (élimination du rejet Apple ITMS-90717).
+- **Suite de Tests Automatisés Phase 4 (`tests/phase4/test_phase4.sh`) :**
+  - Validation de `check_lorem.sh` sur code pollué (exit 1) et code propre (exit 0).
+  - Validation de `build_tokens.mjs` avec compilation CSS et TypeScript.
+  - Validation de `audit_magic_values.sh` (détection des couleurs et styles magiques).
+  - Validation de `changelog_helper.sh` (insertion correcte sous Keep a Changelog).
 
 ---
 

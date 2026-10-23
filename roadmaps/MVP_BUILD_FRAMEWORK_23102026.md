@@ -1,7 +1,7 @@
 # ROADMAP EXHAUSTIVE — CONSTRUCTION DU FRAMEWORK « GOOGLE ANTIGRAVITY » (`san_*`)
 
 > **Fichier :** `/roadmaps/MVP_BUILD_FRAMEWORK_23102026.md`  
-> **Statut :** EN COURS (PHASES 1, 2 & 3 VALIDÉES — PASSAGE EN PHASE 4)  
+> **Statut :** EN COURS (PHASES 1, 2, 3 & 4 VALIDÉES — PASSAGE EN PHASE 5)  
 > **Responsables :** `san_executer` & `san_planner`  
 > **Objectif :** Disposer d'un framework 100 % opérationnel, packagé dans `src/` et installable en une commande CLI sur n'importe quel projet client.  
 > **Convention de nommage :** `[PHASE]_[PROBLEMATIQUE]_[DATE].md` (format JJMMAAAA)
@@ -90,30 +90,30 @@
 
 > Note : Chez le client, Antigravity découvre tous les modules dans `skills/`. Les sous-skills sont donc packagés comme des modules natifs dans `src/skills/`.
 
-- [ ] Implémenter le skill exécutable `src/skills/san_subagent_manager/` :
-  - [ ] `SKILL.md` (règles de calibrage, sélection `flash` vs `inherit`, least-privilege).
-  - [ ] `templates/SUBAGENT_PROMPT_TEMPLATE.md` (structure de prompt fermé anti-hallucination).
-- [ ] Implémenter le skill exécutable `src/skills/san_searcher/` :
-  - [ ] `SKILL.md` (directives de scraping, pinning des versions via `package.json`/`composer.json`).
-  - [ ] `scripts/doc_scraper.sh` (extraction ciblée des documentations officielles).
-  - [ ] `templates/RESEARCH_NOTE_TEMPLATE.md` (fiche de synthèse canonique `docs/research/*.md`).
-- [ ] Implémenter le skill exécutable `src/skills/san_doc_keeper/` :
-  - [ ] `SKILL.md` (protocole SemVer, mise à jour de `README.md` et `.agents/rules/`).
-  - [ ] `scripts/changelog_helper.sh` (script d'insertion automatique d'entrées de changelog).
-- [ ] Implémenter le skill exécutable `src/skills/san_copywriter/` :
-  - [ ] `SKILL.md` (règles de voix UX, formatage devises FCFA/XAF/USD, repères urbains).
-  - [ ] `references/local_copy_guidelines.md` (exemples réels d'états vides, bannières d'erreur en 3 volets).
-  - [ ] `scripts/check_lorem.sh` (linter bash traquant le faux texte dans le code).
-- [ ] Implémenter le skill exécutable `src/skills/san_design_tokens/` :
-  - [ ] `SKILL.md` (règles d'invariance des tokens, conversion classes Tailwind / CSS Variables).
-  - [ ] `scripts/build_tokens.mjs` (compilateur de tokens `BRAND.md` vers TS/Tailwind/CSS).
-  - [ ] `scripts/audit_magic_values.sh` (scanner de valeurs magiques et couleurs arbitraires).
-- [ ] Implémenter le skill exécutable `src/skills/san_exporter/` :
-  - [ ] `SKILL.md` (directives de capture déterministe avec attente `document.fonts.ready`).
-  - [ ] `scripts/export_png.mjs` (script Playwright multi-résolutions pour captures d'écran stores et affiches).
-- [ ] Tests de la Phase 4 :
-  - [ ] Valider l'exécution de `check_lorem.sh` sur un fichier contenant du faux texte.
-  - [ ] Valider la compilation d'un fichier de tokens avec `build_tokens.mjs`.
+- [x] Implémenter le skill exécutable `src/skills/san_subagent_manager/` :
+  - [x] `SKILL.md` (règles de calibrage, sélection `flash` vs `inherit`, least-privilege).
+  - [x] `templates/SUBAGENT_PROMPT_TEMPLATE.md` (structure de prompt fermé anti-hallucination).
+- [x] Implémenter le skill exécutable `src/skills/san_searcher/` :
+  - [x] `SKILL.md` (directives de scraping, pinning des versions via `package.json`/`composer.json`).
+  - [x] `scripts/doc_scraper.sh` (extraction ciblée des documentations officielles).
+  - [x] `templates/RESEARCH_NOTE_TEMPLATE.md` (fiche de synthèse canonique `docs/research/*.md`).
+- [x] Implémenter le skill exécutable `src/skills/san_doc_keeper/` :
+  - [x] `SKILL.md` (protocole SemVer, mise à jour de `README.md` et `.agents/rules/`).
+  - [x] `scripts/changelog_helper.sh` (script d'insertion automatique d'entrées de changelog).
+- [x] Implémenter le skill exécutable `src/skills/san_copywriter/` :
+  - [x] `SKILL.md` (règles de voix UX, formatage devises FCFA/XAF/USD, repères urbains).
+  - [x] `references/local_copy_guidelines.md` (exemples réels d'états vides, bannières d'erreur en 3 volets).
+  - [x] `scripts/check_lorem.sh` (linter bash traquant le faux texte dans le code).
+- [x] Implémenter le skill exécutable `src/skills/san_design_tokens/` :
+  - [x] `SKILL.md` (règles d'invariance des tokens, conversion classes Tailwind / CSS Variables).
+  - [x] `scripts/build_tokens.mjs` (compilateur de tokens `BRAND.md` vers TS/Tailwind/CSS).
+  - [x] `scripts/audit_magic_values.sh` (scanner de valeurs magiques et couleurs arbitraires).
+- [x] Implémenter le skill exécutable `src/skills/san_exporter/` :
+  - [x] `SKILL.md` (directives de capture déterministe avec attente `document.fonts.ready`).
+  - [x] `scripts/export_png.mjs` (script Playwright multi-résolutions pour captures d'écran stores et affiches).
+- [x] Tests de la Phase 4 :
+  - [x] Valider l'exécution de `check_lorem.sh` sur un fichier contenant du faux texte (`tests/phase4/test_phase4.sh`).
+  - [x] Valider la compilation d'un fichier de tokens avec `build_tokens.mjs` (`tests/phase4/test_phase4.sh`).
 
 ---
 
