@@ -2,18 +2,6 @@
   <img src="logos/san_framework_logo.svg" alt="SAN.AGY Framework Logo" width="560"/>
 </p>
 
-```text
-      /\
-     /  \       ____    _    _   _     _    ______   __
-    / /\ \     / ___|  / \  | \ | |   / \  / ___\ \ / /
-   / /  \ \    \___ \ / _ \ |  \| |  / _ \| |  _ \ V / 
-  | | () | |    ___) / ___ \| |\  | / ___ \ |_| | | |  
-   \ \  / /    |____/_/   \_\_| \_|/_/   \_\____| |_|  
-    \ \/ /     ----------------------------------------
-     \  /       CARTESIAN ORCHESTRATION · ALEXSAN.PRO
-      \/
-```
-
 # FRAMEWORK « GOOGLE ANTIGRAVITY » (`san_*`) — INDEX MAÎTRE D'ARCHITECTURE
 
 > **Langue :** Français | [English version](README.en.md)  
