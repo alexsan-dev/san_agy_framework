@@ -54,13 +54,25 @@ Le dossier d'orchestration `.agents/` à la racine de chaque projet est **strict
 
 ## 3. CARTOGRAPHIE DES DOSSIERS
 
-Le dépôt `san_agy_framework` structure la suite complète selon la séparation stricte entre les rôles maîtres et l'outillage transversal :
+Le dépôt `san_agy_framework` structure la suite complète selon la séparation stricte entre les rôles maîtres, l'outillage transversal, la gouvernance de notre dépôt et les modules distribuables :
 
 ```txt
 san_agy_framework/
 ├── README.md                           # Index maître d'architecture et gouvernance (ce fichier)
+├── CHANGELOG.md                        # Journal des versions du framework (Keep a Changelog)
+├── .gitignore                          # Isolation locale et hygiène Git
 │
-├── skills/                             # RÔLES PRINCIPAUX & ENTRY POINTS (Invoqués par le développeur)
+├── logos/                              # Identité visuelle officielle de la bibliothèque
+│   ├── LOGO.md                         # Charte graphique et règles d'utilisation
+│   ├── san_framework_logo.svg          # Logo officiel (Symbole + Typographie)
+│   ├── san_framework_icon.svg          # Icône / Favicon vectorielle
+│   └── san_framework_dark.svg          # Variante optimisée pour fonds sombres
+│
+├── roadmaps/                           # Pilotage et ordonnancement interne du framework
+│   ├── MVP_BUILD_FRAMEWORK_23102026.md # Roadmap active de développement
+│   └── archives/                       # Roadmaps validées à 100% et archivées
+│
+├── skills/                             # SPÉCIFICATIONS DES RÔLES PRINCIPAUX (Cahier des charges)
 │   ├── san_init.md                     # Onboarding, isolation Git, GEMINI.md et contextes
 │   ├── san_brainstorming.md            # Cadrage amont, triage multicritères et maturation d'idées
 │   ├── san_planner.md                  # Planification de projet, ordonnancement et roadmaps
@@ -73,13 +85,19 @@ san_agy_framework/
 │   ├── san_store_legal_expert.md       # Conformité stores Play/App Store, anti-rejet, légal
 │   └── san_growth_expert.md            # SEO local, ASO stores, tracking analytics unifié
 │
-└── sub-skills/                         # OUTILLAGE TRANSVERSAL & ARTISANS D'EXÉCUTION
-    ├── san_subagent_manager.md         # Usine de conception, calibrage et supervision des sous-agents
-    ├── san_searcher.md                 # Documentaliste de précision, veille technique et scraping ciblé
-    ├── san_copywriter.md               # Plume UX, micro-copies empathiques, localisation et zéro Lorem Ipsum
-    ├── san_design_tokens.md            # Gardien de BRAND.md, tokens statiques et signature cinétique
-    ├── san_exporter.md                 # Capture headless Playwright, exports stores et SVG vers PNG
-    └── san_doc_keeper.md               # Gardien de CHANGELOG.md, README.md, archivage et fast-track
+├── sub-skills/                         # SPÉCIFICATIONS DES SOUS-SKILLS TRANSVERSAUX
+│   ├── san_subagent_manager.md         # Usine de conception, calibrage et supervision des sous-agents
+│   ├── san_searcher.md                 # Documentaliste de précision, veille technique et scraping ciblé
+│   ├── san_copywriter.md               # Plume UX, micro-copies empathiques, localisation et zéro Lorem Ipsum
+│   ├── san_design_tokens.md            # Gardien de BRAND.md, tokens statiques et signature cinétique
+│   ├── san_exporter.md                 # Capture headless Playwright, exports stores et SVG vers PNG
+│   └── san_doc_keeper.md               # Gardien de CHANGELOG.md, README.md, archivage et fast-track
+│
+└── src/                                # PACKAGES EXÉCUTABLES DISTRIBUÉS SUR LA MACHINE DU CLIENT
+    ├── README.md                       # Définition du périmètre distribuable client
+    ├── cli/                            # Script d'installation universel (CLI npx init)
+    ├── skills/                         # Vrais dossiers de skills exécutables (SKILL.md, scripts, templates)
+    └── sub-skills/                     # Vrais dossiers de sous-skills exécutables
 ```
 
 ---
