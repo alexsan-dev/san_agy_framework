@@ -1,10 +1,27 @@
+<p align="center">
+  <img src="logos/san_framework_logo.svg" alt="SAN.AGY Framework Logo" width="560"/>
+</p>
+
+```text
+      /\
+     /  \       ____    _    _   _     _    ______   __
+    / /\ \     / ___|  / \  | \ | |   / \  / ___\ \ / /
+   / /  \ \    \___ \ / _ \ |  \| |  / _ \| |  _ \ V / 
+  | | () | |    ___) / ___ \| |\  | / ___ \ |_| | | |  
+   \ \  / /    |____/_/   \_\_| \_|/_/   \_\____| |_|  
+    \ \/ /     ----------------------------------------
+     \  /       CARTESIAN ORCHESTRATION · ALEXSAN.PRO
+      \/
+```
+
 # FRAMEWORK « GOOGLE ANTIGRAVITY » (`san_*`) — INDEX MAÎTRE D'ARCHITECTURE
 
 > **Langue :** Français | [English version](README.en.md)  
 > **Manifeste :** Système d'orchestration agentique et suite de compétences d'ingénierie logicielle pour Google Antigravity CLI (AGY).  
 > **Auteur :** Alexsan.pro  
 > **Cible :** Tout projet Full-Stack Web, Mobile ou API (React, Next.js, Expo, React Native, Laravel, AdonisJS, Node.js).  
-> **Statut :** Architecture Modulaire Cartésienne — Spécification v2.0.
+> **Statut :** Architecture Modulaire Cartésienne — Spécification v2.0.  
+> **Licence :** [MIT License](LICENSE)
 
 ---
 
@@ -216,3 +233,10 @@ L'exécution instancie la structure locale complète :
 5. [x] **`san_brainstorming`** : Spécifié et rédigé (triage d'idées multicritères et maturation amont).
 6. [x] **Développement des 6 `/sub-skills/`** : Entièrement spécifiés et rédigés avec leurs outillages et scripts.
 7. [ ] **Package de déploiement universel** : Script CLI d'installation automatisée (`npx @alexsan/agy-framework init`).
+
+---
+
+## 9. LICENCE
+
+Ce projet est sous licence MIT — voir le fichier [`LICENSE`](LICENSE) pour plus de détails.  
+Copyright (c) 2026 Alexsan.pro. Tous droits réservés.

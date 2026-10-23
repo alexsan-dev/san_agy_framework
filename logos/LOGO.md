@@ -31,6 +31,7 @@ Le logo de **`san_agy_framework`** repose sur 3 piliers symboliques :
 ```txt
 logos/
 ├── LOGO.md                             # Charte et règles d'utilisation (ce document)
+├── LOGO_ASCII.txt                      # Bannière ASCII Art pour terminal et CLI installer
 ├── san_framework_logo.svg              # Logo officiel complet (Symbole + Typographie)
 ├── san_framework_icon.svg              # Icône carrée / Favicon / Avatar de profil (Symbole seul)
 └── san_framework_dark.svg              # Variante optimisée pour fonds sombres et terminaux
@@ -38,7 +39,25 @@ logos/
 
 ---
 
-## 4. RÈGLES D'UTILISATION & INTERDITS
+## 4. BANNIÈRE ASCII ART OFFICIELLE (CLI & TERMINAL)
+
+Cette bannière ASCII est affichée au lancement des commandes CLI d'installation (`npx @alexsan/agy-framework init` en mode normal ou `--global`) :
+
+```text
+      /\
+     /  \       ____    _    _   _     _    ______   __
+    / /\ \     / ___|  / \  | \ | |   / \  / ___\ \ / /
+   / /  \ \    \___ \ / _ \ |  \| |  / _ \| |  _ \ V / 
+  | | () | |    ___) / ___ \| |\  | / ___ \ |_| | | |  
+   \ \  / /    |____/_/   \_\_| \_|/_/   \_\____| |_|  
+    \ \/ /     ----------------------------------------
+     \  /       CARTESIAN ORCHESTRATION · ALEXSAN.PRO
+      \/
+```
+
+---
+
+## 5. RÈGLES D'UTILISATION & INTERDITS
 
 - **OBLIGATOIRE :** Conserver un espace de dégagement équivalent à la hauteur du prisme central autour du logo.
 - **INTERDIT :** Déformer les proportions ou incliner les facettes vectorielles.

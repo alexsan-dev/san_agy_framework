@@ -1,10 +1,27 @@
+<p align="center">
+  <img src="logos/san_framework_logo.svg" alt="SAN.AGY Framework Logo" width="560"/>
+</p>
+
+```text
+      /\
+     /  \       ____    _    _   _     _    ______   __
+    / /\ \     / ___|  / \  | \ | |   / \  / ___\ \ / /
+   / /  \ \    \___ \ / _ \ |  \| |  / _ \| |  _ \ V / 
+  | | () | |    ___) / ___ \| |\  | / ___ \ |_| | | |  
+   \ \  / /    |____/_/   \_\_| \_|/_/   \_\____| |_|  
+    \ \/ /     ----------------------------------------
+     \  /       CARTESIAN ORCHESTRATION · ALEXSAN.PRO
+      \/
+```
+
 # "GOOGLE ANTIGRAVITY" FRAMEWORK (`san_*`) — MASTER ARCHITECTURE INDEX
 
 > **Language:** [Version française](README.md)  
 > **Manifesto:** Agentic orchestration system and software engineering skill suite for Google Antigravity CLI (AGY).  
 > **Author:** Alexsan.pro  
 > **Target:** Any Full-Stack Web, Mobile, or API codebase (React, Next.js, Expo, React Native, Laravel, AdonisJS, Node.js).  
-> **Status:** Cartesian Modular Architecture — Specification v2.0.
+> **Status:** Cartesian Modular Architecture — Specification v2.0.  
+> **License:** [MIT License](LICENSE)
 
 ---
 
@@ -219,3 +236,10 @@ The installer instantiates the client-side structure:
 6. [x] **All 6 Sub-Skills**: Fully specified and documented with tools and scripts.
 7. [ ] **Executable Packaging in `src/`**: Build the executable skill folders with real scripts and templates.
 8. [ ] **Universal Installer CLI**: Package the Node.js CLI script (`npx @alexsan/agy-framework init`).
+
+---
+
+## 9. LICENSE
+
+This project is licensed under the MIT License — see the [`LICENSE`](LICENSE) file for details.  
+Copyright (c) 2026 Alexsan.pro. All rights reserved.
