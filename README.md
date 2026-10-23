@@ -64,21 +64,26 @@ Le dépôt `san_agy_framework` structure la suite complète selon la séparation
 
 ```txt
 san_agy_framework/
+├── package.json                        # Manifeste npm, binaires CLI (agy-framework & san-framework)
+├── LICENSE                             # Licence officielle MIT Alexsan.pro
 ├── README.md                           # Index maître d'architecture et gouvernance (ce fichier)
+├── README.en.md                        # Master Architecture Index (Version anglaise)
 ├── CHANGELOG.md                        # Journal des versions du framework (Keep a Changelog)
+├── CHANGELOG.en.md                     # Framework Changelog (Version anglaise)
 ├── .gitignore                          # Isolation locale et hygiène Git
 │
 ├── logos/                              # Identité visuelle officielle de la bibliothèque
 │   ├── LOGO.md                         # Charte graphique et règles d'utilisation
-│   ├── san_framework_logo.svg          # Logo officiel (Symbole + Typographie)
+│   ├── san_framework_logo.svg          # Logo officiel vectoriel (Symbole + Typographie)
 │   ├── san_framework_icon.svg          # Icône / Favicon vectorielle
-│   └── san_framework_dark.svg          # Variante optimisée pour fonds sombres
+│   ├── san_framework_dark.svg          # Variante vectorielle pour fonds sombres
+│   └── LOGO_ASCII.txt                  # Empreinte ASCII officielle (réservée au terminal CLI)
 │
 ├── roadmaps/                           # Pilotage et ordonnancement interne du framework
 │   ├── MVP_BUILD_FRAMEWORK_23102026.md # Roadmap active de développement
 │   └── archives/                       # Roadmaps validées à 100% et archivées
 │
-├── skills/                             # SPÉCIFICATIONS DES RÔLES PRINCIPAUX (Cahier des charges)
+├── skills/                             # SPÉCIFICATIONS DES RÔLES PRINCIPAUX (Atelier de conception)
 │   ├── san_init.md                     # Onboarding, isolation Git, GEMINI.md et contextes
 │   ├── san_brainstorming.md            # Cadrage amont, triage multicritères et maturation d'idées
 │   ├── san_planner.md                  # Planification de projet, ordonnancement et roadmaps
@@ -99,10 +104,38 @@ san_agy_framework/
 │   ├── san_exporter.md                 # Capture headless Playwright, exports stores et SVG vers PNG
 │   └── san_doc_keeper.md               # Gardien de CHANGELOG.md, README.md, archivage et fast-track
 │
-└── src/                                # LE PRODUIT FINI (Injecté dans <projet>/.agents/ chez le client)
-    ├── skills/                         # Vrais dossiers de skills exécutables (SKILL.md, scripts, templates)
-    └── rules/                          # Modèles de règles initiales (BRAND, PROJECT, PRODUCT, API)
+├── src/                                # LE PRODUIT DISTRIBUABLE (Déployé dans .agents/ chez le client)
+│   ├── cli/                            # Moteur d'installation et CLI interactif universel
+│   │   ├── index.js                    # Point d'entrée binaire (`agy-framework` / `san-framework`)
+│   │   └── installer.js                # Moteur de copie, Smart Merge et hygiène Git
+│   └── skills/                         # Les 17 modules exécutables packagés (SKILL.md, scripts, templates)
+│       ├── san_init/                   # Initialisation, isolation Git et génération de contexte
+│       ├── san_brainstorming/          # Cadrage d'idées, matrice de scoring 40 pts
+│       ├── san_planner/                # Planification de projet et archivage strict
+│       ├── san_subagent_manager/       # Calibrage de sous-agents chirurgicaux et prompts étanches
+│       ├── san_searcher/               # Veille technique et scraper de documentations officielles
+│       ├── san_doc_keeper/             # Versioning SemVer et intégrité documentaire
+│       ├── san_copywriter/             # Plume UX, linter anti-Lorem et localisation de devises
+│       ├── san_design_tokens/          # Compilateur de tokens BRAND.md vers CSS/Tailwind/TS
+│       ├── san_exporter/               # Déclinaisons d'icônes et captures headless Playwright
+│       ├── san_designer/               # Maquettes statiques haute fidélité et scanner /ux-scan
+│       ├── san_ux_ui_expert/           # Lead Frontend Web & Mobile, résilience 3G et 5 états UI
+│       ├── san_backend_expert/         # Architecture SOLID, collections Bruno et idempotence Redis
+│       ├── san_executer/               # Chef d'orchestre Full-Stack et protocole Contract-First
+│       ├── san_qa_security_expert/     # Juge de paix QA E2E, audits OWASP et benchmarks perf
+│       ├── san_devops_expert/          # Runbooks CloudPanel/Mailcow, CI/CD et surveillance système
+│       ├── san_store_legal_expert/     # Conformité stores Play/App Store et chartes juridiques
+│       └── san_growth_expert/          # SEO local Afrique/Congo, ASO stores et plan de tracking
+│
+└── tests/                              # SUITES DE TESTS AUTOMATISÉES DE VALIDATION
+    ├── phase3/                         # Tests d'isolation Git et archivage de roadmaps
+    ├── phase4/                         # Tests des sous-skills transversaux (linter lorem, tokens)
+    ├── phase5/                         # Tests des quality gates frontend et backend
+    ├── phase6/                         # Tests des scanners de permissions et d'infrastructure
+    └── phase7/                         # Tests automatisés du CLI et du moteur d'installation
 ```
+
+> **Note sur le déploiement client :** Chez le client final, Antigravity CLI découvre tous les modules dans le dossier `.agents/skills/`. Les 17 compétences y sont donc déployées comme des modules de premier rang. La séparation entre `/skills` et `/sub-skills` n'existe que dans ce dépôt atelier à des fins de gouvernance architecturale.
 
 ---
 
@@ -200,27 +233,65 @@ Alors que `/skills/` regroupe les rôles directeurs que le développeur déclenc
 Le déploiement du framework s'effectue en une commande sur n'importe quel dépôt cible pour initialiser l'arborescence hermétique `.agents/` :
 
 ```bash
-# Déploiement et initialisation sur la codebase courante
+# Déploiement interactif via npx (aucune installation préalable requise)
 npx @alexsan/agy-framework init
+
+# Alias alternatif disponible
+npx @alexsan/san-framework init
 ```
 
-L'exécution instancie la structure locale complète :
-* Configure automatiquement `.gitignore` et `.git/info/exclude` pour isoler `/.agents/`.
-* Lance `san_init` pour extraire ou collecter le contexte du projet (`BRAND.md`, `PRODUCT.md`, `PROJECT.md`, `API.md`).
-* Déploie les compétences compilées dans `<projet>/.agents/skills/`.
-* Éradique les fichiers d'agents tiers polluants (`CLAUDE.md`, `.cursorrules`, etc.).
+### A. Modes d'installation et Drapeaux CLI
+
+Le CLI fonctionne soit sous forme d'assistant interactif pas-à-pas, soit en mode non-interactif scriptable via des drapeaux dédiés :
+
+| Drapeau CLI | Description |
+| :--- | :--- |
+| `--local` | *(Défaut)* Déploie le framework dans l'espace hermétique local du projet (`./.agents/`). |
+| `--global` | Déploie les compétences dans l'espace global utilisateur Antigravity (`~/.gemini/antigravity-cli/skills/`). |
+| `--all` | Installe les 17 compétences sans confirmation interactive. |
+| `--skills=<liste>` | Sélection granulaire de compétences séparées par des virgules (ex. `--skills=init,planner,qa,devops`). |
+| `--dry-run` | Simule l'installation complète et affiche le rapport sans écrire aucun fichier sur le disque. |
+| `--force` | Force l'écrasement des compétences déjà présentes dans le dossier cible. |
+| `--help`, `-h` | Affiche l'aide complète et les exemples d'utilisation. |
+| `--version`, `-v` | Affiche la version courante du framework. |
+
+#### Exemples de commandes directes :
+
+```bash
+# Installation complète automatique dans le projet courant
+npx @alexsan/agy-framework init --local --all
+
+# Installation ciblée des modules de pilotage et de qualité
+npx @alexsan/agy-framework init --skills=init,planner,qa_security_expert,backend_expert
+
+# Simulation sans écriture pour vérifier les actions prévues
+npx @alexsan/agy-framework init --dry-run
+```
+
+### B. Mécanismes Clés du Moteur de Déploiement (`installer.js`)
+
+1. **Smart Merge Normatif :**  
+   Initialise les gabarits de règles fondamentaux (`BRAND.md`, `PRODUCT.md`, `PROJECT.md`, `API.md`, `LOGO.md`) et l'index maître `GEMINI.md` dans `.agents/rules/`. Si un fichier de règle existe déjà (personnalisé par le développeur), **il n'est jamais écrasé**.
+2. **Isolation Hermétique & Hygiène Git :**  
+   Injecte automatiquement un bloc inviolable dans `.gitignore` et `.git/info/exclude`. Si d'anciens fichiers de configuration d'agents étaient déjà traqués par mégarde, le CLI exécute automatiquement `git rm -r --cached` pour assainir l'index sans toucher à vos fichiers locaux.
+3. **Purge Active Anti-Pollution :**  
+   Nettoie les résidus d'outils et d'agents concurrents (`CLAUDE.md`, `.cursorrules`, `.windsurfrules`, `.copilot`, etc.) afin de garantir une totale pureté opérationnelle.
+4. **Permissions d'Exécution Automatiques :**  
+   Applique automatiquement les droits d'exécution (`chmod +x` / `0o755`) sur tous les scripts d'audit et utilitaires déployés (`scripts/*.sh`, `scripts/*.mjs`).
 
 ---
 
 ## 8. ORDRE DE CRÉATION & FEUILLE DE ROUTE D'IMPLÉMENTATION
 
-1. [x] **`san_qa_security_expert`** : Spécifié et rédigé (responsable unique QA, sécurité et performance).
-2. [x] **`san_devops_expert`** : Spécifié et rédigé (administration serveur CloudPanel, Mailcow, VPS, CI/CD).
-3. [x] **`san_store_legal_expert`** : Spécifié et rédigé (conformité stores, anti-rejet, légal dérivé du code).
-4. [x] **`san_growth_expert`** : Spécifié et rédigé (SEO local, ASO fiches stores, plan de tracking).
-5. [x] **`san_brainstorming`** : Spécifié et rédigé (triage d'idées multicritères et maturation amont).
-6. [x] **Développement des 6 `/sub-skills/`** : Entièrement spécifiés et rédigés avec leurs outillages et scripts.
-7. [ ] **Package de déploiement universel** : Script CLI d'installation automatisée (`npx @alexsan/agy-framework init`).
+1. [x] **Spécifications des 11 Skills Principaux** : Rédigés et validés dans [`/skills/`](skills/).
+2. [x] **Spécifications des 6 Sous-Skills Transversaux** : Rédigés et validés dans [`/sub-skills/`](sub-skills/).
+3. [x] **Identité Visuelle & Outillage de l'Atelier** : Logos vectoriels dans [`/logos/`](logos/), licence MIT et `CHANGELOG.md`.
+4. [x] **Packaging du Socle Onboarding & Cadrage** : `san_init`, `san_brainstorming`, `san_planner` dans `src/skills/` (Tests Phase 3 validés).
+5. [x] **Packaging des Sous-Skills Transversaux** : `san_subagent_manager`, `san_searcher`, `san_doc_keeper`, `san_copywriter`, `san_design_tokens`, `san_exporter` dans `src/skills/` (Tests Phase 4 validés).
+6. [x] **Packaging du Pôle Visuel & Full-Stack** : `san_designer`, `san_ux_ui_expert`, `san_backend_expert`, `san_executer` dans `src/skills/` (Tests Phase 5 validés).
+7. [x] **Packaging du Pôle Qualité, DevOps, Légal & Croissance** : `san_qa_security_expert`, `san_devops_expert`, `san_store_legal_expert`, `san_growth_expert` dans `src/skills/` (Tests Phase 6 validés).
+8. [x] **Moteur d'Installation Universel CLI** : Distribution via `package.json`, CLI interactif `src/cli/index.js`, moteur `src/cli/installer.js` (Tests Phase 7 validés).
+9. [ ] **Validation Globale E2E & Publication** : Tests d'intégration sur projets réels et publication sur le registre npm (`@alexsan/agy-framework`).
 
 ---
 
