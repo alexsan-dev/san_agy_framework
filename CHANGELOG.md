@@ -13,7 +13,41 @@ et ce projet adhère à [Semantic Versioning](https://semver.org/lang/fr/).
 
 ### Planned
 - Implémentation du CLI d'installation (`npx @alexsan/agy-framework init`).
-- Packaging de la Phase 6 (Pôle qualité, DevOps, légal & croissance dans `src/skills/`).
+- Validation globale & Tests d'intégration End-to-End (Phase 8).
+
+---
+
+## [0.5.0] - 2026-10-23
+
+### Added
+- **Phase 6 Validée — Packaging du Pôle Qualité, DevOps, Légal & Croissance dans `src/skills/` :**
+  - **`src/skills/san_qa_security_expert/` :**
+    - `SKILL.md` : Responsable unique QA/Sécurité/Perf, stricte indépendance (zéro correctif codé par l'auditeur), verdict binaire déterministe (`LIVRABLE`/`NON LIVRABLE`), helper Playwright CDP de simulation réseau 3G/EDGE dégradé (750 kbps down / 250 kbps up / 150ms RTT).
+    - `references/owasp_unified_checklist.md` : OWASP Web, API 2023 et Mobile 2024 Top 10 consolidés.
+    - `references/perf_benchmarks.md` : Seuils stricts Core Web Vitals, latences API p95 < 200ms, taille APK < 25 Mo, RAM < 150 Mo, 60 fps.
+    - `references/testing_protocols.md` : Protocoles E2E déterministes Playwright.
+    - `scripts/qa_security_gate.sh` : Script Bash déterministe avec scan CVEs, `tsc --noEmit`, détection de fuites de secrets/clés privées et tests unitaires/E2E.
+    - `templates/QA_REPORT_TEMPLATE.md`, `templates/SECURITY_REPORT_TEMPLATE.md` (scoré sur 100), `templates/PERF_REPORT_TEMPLATE.md`.
+  - **`src/skills/san_devops_expert/` :**
+    - `SKILL.md` : Lead DevOps, administration VPS Ubuntu LTS, CloudPanel, Nginx HTTP/2 TLS 1.3, pools PHP-FPM, PM2, Supervisor, Redis, bases SQL, réversibilité absolue (< 30s) et principe de la sauvegarde testée.
+    - `references/cloudpanel_and_vps.md` & `references/mailcow_and_deliverability.md` (score 10/10 Mail-Tester, SPF -all, DKIM 2048b, DMARC p=reject, rDNS PTR).
+    - `references/backup_and_restore_protocols.md` : Sauvegarde 3-2-1, dumps chiffrés AES-256 GPG et banc de test de restauration déterministe sur conteneur Docker éphémère.
+    - `scripts/infra_health_check.sh` : Script Bash autonome de contrôle SSL openssl, DNS dig, ports ss, espace disque/inodes df, et sonde HTTP 200 `/api/health`.
+    - `templates/INFRA_TEMPLATE.md`, `templates/RUNBOOK_TEMPLATE.md`, `templates/DEPLOYMENT_WORKFLOW.yml`.
+  - **`src/skills/san_store_legal_expert/` :**
+    - `SKILL.md` : Conformité Play Store & App Store, ingénierie anti-rejet, compte test reviewer déterministe (`reviewer@alexsan.pro` / OTP fixe `123456` / 25 000 FCFA virtuels), respect de la directive Apple 5.1.1 (suppression in-app en ≤ 3 taps + purge sous 30j) et chartes légales basées sur la vérité du code.
+    - `references/store_rejection_patterns.md` : Motifs de rejet Google/Apple et remédiations directes.
+    - `scripts/scan_app_permissions.sh` : Script Bash analysant `AndroidManifest.xml`, `Info.plist`, `app.json` et `package.json` pour extraire permissions et SDKs tiers collecteurs.
+    - `templates/STORE_CHECKLIST_TEMPLATE.md`, `templates/PRIVACY_POLICY_TEMPLATE.md`, `templates/TERMS_TEMPLATE.md`, `templates/DATA_MAP_TEMPLATE.md`.
+  - **`src/skills/san_growth_expert/` :**
+    - `SKILL.md` : Lead Growth, éthique 100% White-Hat (zéro faux avis), SEO local Afrique/Congo (Brazzaville, Pointe-Noire, Kinshasa, repères urbains, devises XAF/FCFA/USD, MoMo/Airtel), stratégie ASO stores (30/80 car., 4 volets, storyboard en 5 scènes), et plan de tracking unifié `snake_case`.
+    - `references/local_seo_congo.md`, `references/aso_playbook.md`, `references/tracking_taxonomy.md`.
+    - `scripts/verify_tracking_and_seo.sh` : Script Bash validant `robots.txt`, accessibilité `sitemap.xml`, balises `<meta>` et syntaxe JSON des blocs Schema.org JSON-LD.
+    - `templates/TRACKING_PLAN_TEMPLATE.md`, `templates/STORE_LISTING_TEMPLATE.md`.
+- **Suite de Tests Automatisés Phase 6 (`tests/phase6/test_phase6.sh`) :**
+  - Validation de `scan_app_permissions.sh` sur manifestes Android et Expo.
+  - Validation de `infra_health_check.sh` en mode local.
+  - Validation de `verify_tracking_and_seo.sh` sur mock sitemap, robots et Schema.org.
 
 ---
 

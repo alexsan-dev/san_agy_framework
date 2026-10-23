@@ -13,7 +13,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Planned
 - Universal CLI installer implementation (`npx @alexsan/agy-framework init`).
-- Packaging Phase 6 (Quality, DevOps, legal & growth into `src/skills/`).
+- Global Validation & End-to-End Integration Tests (Phase 8).
+
+---
+
+## [0.5.0] - 2026-10-23
+
+### Added
+- **Phase 6 Validated — Packaging of Quality, DevOps, Legal & Growth into `src/skills/`:**
+  - **`src/skills/san_qa_security_expert/`:**
+    - `SKILL.md`: Unified QA/Security/Perf gatekeeper, strict independence (auditors write zero code patches), deterministic binary verdict (`DELIVERABLE`/`NOT DELIVERABLE`), Playwright CDP helper simulating degraded 3G/EDGE network (750 kbps down / 250 kbps up / 150ms RTT).
+    - `references/owasp_unified_checklist.md`: Consolidated OWASP Web, API 2023, and Mobile 2024 Top 10.
+    - `references/perf_benchmarks.md`: Strict Core Web Vitals thresholds, p95 API latencies < 200ms, APK size < 25 MB, idle RAM < 150 MB, 60 fps.
+    - `references/testing_protocols.md`: Deterministic Playwright E2E testing protocols.
+    - `scripts/qa_security_gate.sh`: Deterministic bash script with CVE scanning, `tsc --noEmit`, secrets/private keys leak detection, and test execution.
+    - `templates/QA_REPORT_TEMPLATE.md`, `templates/SECURITY_REPORT_TEMPLATE.md` (scored on 100 pts), `templates/PERF_REPORT_TEMPLATE.md`.
+  - **`src/skills/san_devops_expert/`:**
+    - `SKILL.md`: Lead DevOps, VPS Ubuntu LTS administration, CloudPanel, Nginx HTTP/2 TLS 1.3, PHP-FPM pools, PM2, Supervisor, Redis, SQL databases, absolute reversibility (< 30s) and tested backup principle.
+    - `references/cloudpanel_and_vps.md` & `references/mailcow_and_deliverability.md` (10/10 Mail-Tester score, SPF -all, DKIM 2048b, DMARC p=reject, strict rDNS PTR).
+    - `references/backup_and_restore_protocols.md`: 3-2-1 backup strategy, AES-256 GPG encrypted dumps, and deterministic container restoration tests.
+    - `scripts/infra_health_check.sh`: Autonomous bash health check for openssl SSL, dig DNS, ss ports, df disk/inodes, and HTTP 200 probe.
+    - `templates/INFRA_TEMPLATE.md`, `templates/RUNBOOK_TEMPLATE.md`, `templates/DEPLOYMENT_WORKFLOW.yml`.
+  - **`src/skills/san_store_legal_expert/`:**
+    - `SKILL.md`: Play Store & App Store compliance, anti-rejection engineering, deterministic reviewer demo account (`reviewer@alexsan.pro` / OTP `123456` / 25 000 FCFA), Apple Directive 5.1.1 (in-app deletion in <= 3 taps + 30-day purge), and code-backed legal drafts.
+    - `references/store_rejection_patterns.md`: Google/Apple rejection reasons and actionable remediations.
+    - `scripts/scan_app_permissions.sh`: Bash script scanning `AndroidManifest.xml`, `Info.plist`, `app.json`, and `package.json` to detect permissions and tracker SDKs.
+    - `templates/STORE_CHECKLIST_TEMPLATE.md`, `templates/PRIVACY_POLICY_TEMPLATE.md`, `templates/TERMS_TEMPLATE.md`, `templates/DATA_MAP_TEMPLATE.md`.
+  - **`src/skills/san_growth_expert/`:**
+    - `SKILL.md`: Lead Growth, 100% White-Hat ethics (zero fake reviews), local Africa/Congo SEO (Brazzaville, Pointe-Noire, Kinshasa, landmarks, XAF/FCFA/USD, MoMo/Airtel), store ASO strategy (30/80 char, 4 sections, 5-scene storyboard), and unified `snake_case` tracking taxonomy.
+    - `references/local_seo_congo.md`, `references/aso_playbook.md`, `references/tracking_taxonomy.md`.
+    - `scripts/verify_tracking_and_seo.sh`: Bash script validating `robots.txt`, `sitemap.xml` accessibility, `<meta>` tags, and Schema.org JSON-LD syntax.
+    - `templates/TRACKING_PLAN_TEMPLATE.md`, `templates/STORE_LISTING_TEMPLATE.md`.
+- **Phase 6 Automated Test Suite (`tests/phase6/test_phase6.sh`):**
+  - Validation of `scan_app_permissions.sh` on Android and Expo manifests.
+  - Validation of `infra_health_check.sh` in local mode.
+  - Validation of `verify_tracking_and_seo.sh` on mock sitemap, robots, and Schema.org.
 
 ---
 

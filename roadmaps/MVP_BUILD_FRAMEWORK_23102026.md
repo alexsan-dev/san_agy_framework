@@ -1,7 +1,7 @@
 # ROADMAP EXHAUSTIVE — CONSTRUCTION DU FRAMEWORK « GOOGLE ANTIGRAVITY » (`san_*`)
 
 > **Fichier :** `/roadmaps/MVP_BUILD_FRAMEWORK_23102026.md`  
-> **Statut :** EN COURS (PHASES 1, 2, 3, 4 & 5 VALIDÉES — PASSAGE EN PHASE 6)  
+> **Statut :** EN COURS (PHASES 1, 2, 3, 4, 5 & 6 VALIDÉES — PASSAGE EN PHASE 7)  
 > **Responsables :** `san_executer` & `san_planner`  
 > **Objectif :** Disposer d'un framework 100 % opérationnel, packagé dans `src/` et installable en une commande CLI sur n'importe quel projet client.  
 > **Convention de nommage :** `[PHASE]_[PROBLEMATIQUE]_[DATE].md` (format JJMMAAAA)
@@ -147,42 +147,42 @@
 
 ## PHASE 6 : PACKAGING DU PÔLE QUALITÉ, DEVOPS, LÉGAL & CROISSANCE DANS `src/skills/`
 
-- [ ] Implémenter le skill exécutable `src/skills/san_qa_security_expert/` :
-  - [ ] `SKILL.md` (responsable unique QA/Sécurité/Perf, verdict binaire `LIVRABLE`/`NON LIVRABLE`).
-  - [ ] `references/owasp_unified_checklist.md` (OWASP Web, API et Mobile Top 10 consolidés).
-  - [ ] `references/perf_benchmarks.md` (seuils stricts : Core Web Vitals, taille APK < 25Mo, RAM, p95).
-  - [ ] `references/testing_protocols.md` (protocoles E2E, dégradation réseau 3G simulée).
-  - [ ] `scripts/qa_security_gate.sh` (script global d'audit de sécurité, CVEs et tests E2E).
-  - [ ] `templates/QA_REPORT_TEMPLATE.md`
-  - [ ] `templates/SECURITY_REPORT_TEMPLATE.md`
-  - [ ] `templates/PERF_REPORT_TEMPLATE.md`
-- [ ] Implémenter le skill exécutable `src/skills/san_devops_expert/` :
-  - [ ] `SKILL.md` (administration VPS/CloudPanel/Mailcow, réversibilité, principe de sauvegarde testée).
-  - [ ] `references/cloudpanel_and_vps.md` (configurations Nginx reverse proxy, Supervisor, PHP workers).
-  - [ ] `references/mailcow_and_deliverability.md` (alignement SPF, DKIM 2048b, DMARC, rDNS PTR).
-  - [ ] `references/backup_and_restore_protocols.md` (sauvegarde 3-2-1 et tests de restauration).
-  - [ ] `scripts/infra_health_check.sh` (script de contrôle SSL, DNS, ports, disque, conteneurs).
-  - [ ] `templates/INFRA_TEMPLATE.md` (`docs/INFRA.md`).
-  - [ ] `templates/RUNBOOK_TEMPLATE.md` (`docs/RUNBOOKS.md`).
-- [ ] Implémenter le skill exécutable `src/skills/san_store_legal_expert/` :
-  - [ ] `SKILL.md` (conformité Play/App Store, anti-rejet, vérité du code, honnêteté juridique).
-  - [ ] `references/store_rejection_patterns.md` (suppression de compte, compte test, justifications permissions).
-  - [ ] `scripts/scan_app_permissions.sh` (extraction automatique des permissions et SDKs dans le code).
-  - [ ] `templates/STORE_CHECKLIST_TEMPLATE.md` (`docs/STORE_CHECKLIST.md`).
-  - [ ] `templates/PRIVACY_POLICY_TEMPLATE.md` (`docs/PRIVACY_POLICY.md`).
-  - [ ] `templates/TERMS_TEMPLATE.md` (`docs/TERMS.md`).
-  - [ ] `templates/DATA_MAP_TEMPLATE.md` (`docs/DATA_MAP.md`).
-- [ ] Implémenter le skill exécutable `src/skills/san_growth_expert/` :
-  - [ ] `SKILL.md` (SEO local Afrique/Congo, ASO stores, plan de tracking unifié, zéro faux avis).
-  - [ ] `references/local_seo_congo.md` (intentions de recherche locales, données structurées Schema.org).
-  - [ ] `references/aso_playbook.md` (fiches Play Store/App Store, storyboards de captures).
-  - [ ] `references/tracking_taxonomy.md` (nommage `snake_case`, Firebase Analytics, Meta Pixel).
-  - [ ] `scripts/verify_tracking_and_seo.sh` (validation automatique du balisage et sitemap).
-  - [ ] `templates/TRACKING_PLAN_TEMPLATE.md` (`docs/TRACKING_PLAN.md`).
-  - [ ] `templates/STORE_LISTING_TEMPLATE.md` (`docs/STORE_LISTING.md`).
-- [ ] Tests de la Phase 6 :
-  - [ ] Tester `scan_app_permissions.sh` sur un faux `AndroidManifest.xml`.
-  - [ ] Tester `infra_health_check.sh` sur environnement local.
+- [x] Implémenter le skill exécutable `src/skills/san_qa_security_expert/` :
+  - [x] `SKILL.md` (responsable unique QA/Sécurité/Perf, verdict binaire `LIVRABLE`/`NON LIVRABLE`).
+  - [x] `references/owasp_unified_checklist.md` (OWASP Web, API et Mobile Top 10 consolidés).
+  - [x] `references/perf_benchmarks.md` (seuils stricts : Core Web Vitals, taille APK < 25Mo, RAM, p95).
+  - [x] `references/testing_protocols.md` (protocoles E2E, dégradation réseau 3G simulée).
+  - [x] `scripts/qa_security_gate.sh` (script global d'audit de sécurité, CVEs et tests E2E).
+  - [x] `templates/QA_REPORT_TEMPLATE.md`
+  - [x] `templates/SECURITY_REPORT_TEMPLATE.md`
+  - [x] `templates/PERF_REPORT_TEMPLATE.md`
+- [x] Implémenter le skill exécutable `src/skills/san_devops_expert/` :
+  - [x] `SKILL.md` (administration VPS/CloudPanel/Mailcow, réversibilité, principe de sauvegarde testée).
+  - [x] `references/cloudpanel_and_vps.md` (configurations Nginx reverse proxy, Supervisor, PHP workers).
+  - [x] `references/mailcow_and_deliverability.md` (alignement SPF, DKIM 2048b, DMARC, rDNS PTR).
+  - [x] `references/backup_and_restore_protocols.md` (sauvegarde 3-2-1 et tests de restauration).
+  - [x] `scripts/infra_health_check.sh` (script de contrôle SSL, DNS, ports, disque, conteneurs).
+  - [x] `templates/INFRA_TEMPLATE.md` (`docs/INFRA.md`).
+  - [x] `templates/RUNBOOK_TEMPLATE.md` (`docs/RUNBOOKS.md`).
+- [x] Implémenter le skill exécutable `src/skills/san_store_legal_expert/` :
+  - [x] `SKILL.md` (conformité Play/App Store, anti-rejet, vérité du code, honnêteté juridique).
+  - [x] `references/store_rejection_patterns.md` (suppression de compte, compte test, justifications permissions).
+  - [x] `scripts/scan_app_permissions.sh` (extraction automatique des permissions et SDKs dans le code).
+  - [x] `templates/STORE_CHECKLIST_TEMPLATE.md` (`docs/STORE_CHECKLIST.md`).
+  - [x] `templates/PRIVACY_POLICY_TEMPLATE.md` (`docs/PRIVACY_POLICY.md`).
+  - [x] `templates/TERMS_TEMPLATE.md` (`docs/TERMS.md`).
+  - [x] `templates/DATA_MAP_TEMPLATE.md` (`docs/DATA_MAP.md`).
+- [x] Implémenter le skill exécutable `src/skills/san_growth_expert/` :
+  - [x] `SKILL.md` (SEO local Afrique/Congo, ASO stores, plan de tracking unifié, zéro faux avis).
+  - [x] `references/local_seo_congo.md` (intentions de recherche locales, données structurées Schema.org).
+  - [x] `references/aso_playbook.md` (fiches Play Store/App Store, storyboards de captures).
+  - [x] `references/tracking_taxonomy.md` (nommage `snake_case`, Firebase Analytics, Meta Pixel).
+  - [x] `scripts/verify_tracking_and_seo.sh` (validation automatique du balisage et sitemap).
+  - [x] `templates/TRACKING_PLAN_TEMPLATE.md` (`docs/TRACKING_PLAN.md`).
+  - [x] `templates/STORE_LISTING_TEMPLATE.md` (`docs/STORE_LISTING.md`).
+- [x] Tests de la Phase 6 :
+  - [x] Tester `scan_app_permissions.sh` sur un faux `AndroidManifest.xml` (`tests/phase6/test_phase6.sh`).
+  - [x] Tester `infra_health_check.sh` sur environnement local (`tests/phase6/test_phase6.sh`).
 
 ---
 

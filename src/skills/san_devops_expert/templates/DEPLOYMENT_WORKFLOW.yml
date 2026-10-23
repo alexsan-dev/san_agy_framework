@@ -1,0 +1,111 @@
+# Pipeline Officiel Antigravity : Déploiement Continu Zéro-Downtime
+# Fichier : .github/workflows/deploy.yml
+name: "Production Zero-Downtime Deployment"
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*.*.*'
+
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false
+
+jobs:
+  quality_and_security_gate:
+    name: "Quality & Security Gate (san_qa_security_expert)"
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout repository"
+        uses: actions/checkout@v4
+
+      - name: "Setup PHP 8.2"
+        if: hashFiles('composer.json') != ''
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, xml, ctype, iconv, intl, pdo, pdo_mysql, redis, bcmath
+          coverage: none
+
+      - name: "Setup Node.js 20"
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: "Exécuter le Quality Gate Déterministe"
+        run: |
+          chmod +x .agents/skills/san_qa_security_expert/scripts/qa_security_gate.sh
+          bash .agents/skills/san_qa_security_expert/scripts/qa_security_gate.sh
+
+  zero_downtime_deploy:
+    name: "Deploy to VPS via Atomic Symlink Switch"
+    needs: quality_and_security_gate
+    runs-on: ubuntu-latest
+    if: success()
+    steps:
+      - name: "Checkout repository"
+        uses: actions/checkout@v4
+
+      - name: "Configuration de la clé SSH sécurisée"
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.PROD_SSH_PRIVATE_KEY }}
+
+      - name: "Exécution du déploiement atomique sur le VPS"
+        env:
+          SSH_HOST: ${{ secrets.PROD_SERVER_IP }}
+          SSH_USER: ${{ secrets.PROD_SSH_USER }}
+          APP_DIR: "/home/alexsan-app"
+        run: |
+          RELEASE_ID=$(date +%Y%m%d_%H%M%S)
+          echo "Démarrage du déploiement de la release : ${RELEASE_ID}"
+
+          ssh -o StrictHostKeyChecking=no ${SSH_USER}@${SSH_HOST} << 'EOF'
+            set -euo pipefail
+            APP_DIR="/home/alexsan-app"
+            RELEASE_DIR="${APP_DIR}/releases/${RELEASE_ID}"
+
+            mkdir -p "${RELEASE_DIR}"
+            git clone --depth 1 --branch main ${{ github.server_url }}/${{ github.repository }}.git "${RELEASE_DIR}"
+
+            cd "${RELEASE_DIR}"
+
+            # Liaison des fichiers partagés persistants (env, uploads, logs)
+            ln -sf "${APP_DIR}/shared/.env" "${RELEASE_DIR}/.env"
+            rm -rf "${RELEASE_DIR}/storage"
+            ln -sf "${APP_DIR}/shared/storage" "${RELEASE_DIR}/storage"
+
+            # Installation des dépendances sans paquets de dev
+            composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
+            npm ci --ignore-scripts
+            npm run build
+
+            # Migrations de base de données atomiques
+            php artisan migrate --force
+
+            # Cache des routes, vues et configurations
+            php artisan config:cache
+            php artisan route:cache
+            php artisan view:cache
+
+            # BASCULE ATOMIQUE DU LIEN SYMBOLIQUE (< 1 seconde)
+            ln -sfn "${RELEASE_DIR}" "${APP_DIR}/htdocs/current"
+
+            # Rechargement gracieux de PHP-FPM et Nginx
+            sudo systemctl reload php8.2-fpm
+            sudo systemctl reload nginx
+
+            # Redémarrage des workers de queue asynchrones
+            sudo supervisorctl restart all
+
+            # Conservation des 5 dernières releases uniquement
+            cd "${APP_DIR}/releases" && ls -dt */ | tail -n +6 | xargs -r rm -rf
+          EOF
+
+      - name: "Health Check Post-Déploiement"
+        run: |
+          chmod +x .agents/skills/san_devops_expert/scripts/infra_health_check.sh
+          bash .agents/skills/san_devops_expert/scripts/infra_health_check.sh ${{ secrets.PROD_DOMAIN }}
