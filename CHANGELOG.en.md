@@ -12,8 +12,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Planned
-- Multi-stack global validation & End-to-End integration tests (Phase 8).
-- Final review, release v1.0.0, and MVP roadmap archiving.
+- Official publication on the public npm registry (`npm publish --access public`).
+- Pilot deployments on production codebases.
+
+---
+
+## [1.0.0] - 2026-10-23
+
+### Added
+- **Phase 8 Validated — Global End-to-End (E2E) Integration & Validation:**
+  - **Exhaustive E2E Test Suite (`tests/phase8/test_e2e_full.sh`):** 24 automated integration verifications passing 100% green.
+  - **Realistic Client Simulation:** Validated deployment onto a realistic Next.js / TypeScript codebase with Git, verifying all 17 modules in `.agents/skills/`, 5 normative rule files, and executable bits on 22 scripts.
+  - **In-Situ Script Execution in Client Context:** Real execution of `build_tokens.mjs` (CSS compilation / WCAG AAA contrast audit), `check_lorem.sh` (zero false positives, strict rejection of placeholder text), `archive_roadmap.sh` (blocking incomplete roadmaps and successfully archiving 100% completed roadmaps).
+  - **Global Deployment (`--global`):** Validated installation of 17 modules into Antigravity CLI user directory (`~/.gemini/antigravity-cli/skills/`).
+  - **Absolute Git Isolation:** Verified zero leaks in `git status --porcelain`, automatic physical purge and Git cache un-tracking of competitor agent artifacts (`CLAUDE.md`, `.cursorrules`).
+  - **Smart Merge & Non-Regression:** Guaranteed preservation of customized user rules (`PRODUCT.md`) and third-party custom skills (`my_custom_skill`).
+  - **Cartesian Compliance Audit of 17 Modules:** Validated YAML frontmatter across all 17 `SKILL.md` files and purged all residual private mentions for complete universality.
+  - **Unified npm Test Tooling (`package.json`):** Added `test:phase8` and master `npm test` script chaining test suites from Phase 3 through Phase 8.
+- **Formal MVP Roadmap Completion & Archiving:**
+  - 100% physical completion of all tasks across Phases 1 through 8.
+  - Deterministic archiving via `archive_roadmap.sh` to `roadmaps/archives/MVP_BUILD_FRAMEWORK_23102026.md`.
 
 ---
 

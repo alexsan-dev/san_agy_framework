@@ -291,7 +291,7 @@ npx @alexsan/agy-framework init --dry-run
 6. [x] **Packaging du Pôle Visuel & Full-Stack** : `san_designer`, `san_ux_ui_expert`, `san_backend_expert`, `san_executer` dans `src/skills/` (Tests Phase 5 validés).
 7. [x] **Packaging du Pôle Qualité, DevOps, Légal & Croissance** : `san_qa_security_expert`, `san_devops_expert`, `san_store_legal_expert`, `san_growth_expert` dans `src/skills/` (Tests Phase 6 validés).
 8. [x] **Moteur d'Installation Universel CLI** : Distribution via `package.json`, CLI interactif `src/cli/index.js`, moteur `src/cli/installer.js` (Tests Phase 7 validés).
-9. [ ] **Validation Globale E2E & Publication** : Tests d'intégration sur projets réels et publication sur le registre npm (`@alexsan/agy-framework`).
+9. [x] **Validation Globale E2E & Release v1.0.0** : Suite de tests d'intégration 24/24 passée à 100 % au vert (`tests/phase8/test_e2e_full.sh`), roadmap MVP archivée et package v1.0.0 prêt pour publication npm.
 
 ---
 

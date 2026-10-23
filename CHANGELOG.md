@@ -12,8 +12,26 @@ et ce projet adhère à [Semantic Versioning](https://semver.org/lang/fr/).
 ## [Unreleased]
 
 ### Planned
-- Validation globale & Tests d'intégration End-to-End multi-stacks (Phase 8).
-- Clôture et archivage de la roadmap MVP.
+- Publication officielle sur le registre npm (`npm publish --access public`).
+- Déploiements pilotes sur des codebases de production.
+
+---
+
+## [1.0.0] - 2026-10-23
+
+### Added
+- **Phase 8 Validée — Validation Globale & Tests d'Intégration End-to-End (E2E) :**
+  - **Suite de tests E2E exhaustive (`tests/phase8/test_e2e_full.sh`) :** 24 vérifications d'intégration automatisées validées à 100 % au vert.
+  - **Simulation de projet client réaliste :** Validation du déploiement sur une application Next.js / TypeScript avec Git, vérification des 17 modules dans `.agents/skills/`, des 5 règles normatives et de l'exécutabilité des 22 scripts.
+  - **Exécution réelle en environnement client :** Validation in-situ de `build_tokens.mjs` (compilation CSS / contraste WCAG AAA), `check_lorem.sh` (détection stricte du faux-texte), `archive_roadmap.sh` (blocage sur roadmap incomplète et succès sur 100 %).
+  - **Déploiement global (`--global`) :** Validation de l'installation des 17 modules dans l'espace utilisateur Antigravity (`~/.gemini/antigravity-cli/skills/`).
+  - **Étanchéité Git absolue :** Vérification de l'absence totale de fuite dans `git status --porcelain`, purge physique et désindexation Git des résidus concurrents (`CLAUDE.md`, `.cursorrules`).
+  - **Smart Merge & Non-Régression :** Préservation garantie des règles personnalisées (`PRODUCT.md`) et des compétences tierces custom (`my_custom_skill`).
+  - **Audit de conformité des 17 modules :** Validation du frontmatter YAML des 17 `SKILL.md` et éradication de toute mention privée résiduelle pour une universalité totale.
+  - **Unification des tests (`package.json`) :** Ajout de `test:phase8` et du script unifié `npm test` orchestrant l'ensemble des suites de tests de la Phase 3 à la Phase 8.
+- **Clôture et Archivage Formel de la Roadmap MVP :**
+  - Validation physique à 100 % de toutes les tâches des Phases 1 à 8.
+  - Archivage déterministe via `archive_roadmap.sh` dans `roadmaps/archives/MVP_BUILD_FRAMEWORK_23102026.md`.
 
 ---
 

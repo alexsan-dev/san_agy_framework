@@ -218,7 +218,7 @@ flowchart TD
 
 | Élément Métadonnée | Apple App Store | Google Play Store | Règle d'Excellence Antigravity |
 | :--- | :---: | :---: | :--- |
-| **Titre de l'application** | Max 30 caractères | Max 30 caractères | Format : `[Marque] : [Bénéfice Clé]` (Ex: `Koteka : Vente & MoMo Congo`). |
+| **Titre de l'application** | Max 30 caractères | Max 30 caractères | Format : `[Marque] : [Bénéfice Clé]` (Ex: `PayFast : Vente & MoMo Congo`). |
 | **Sous-titre / Court résumé** | Max 30 caractères | Max 80 caractères | Promesse unique chiffrée ou levier émotionnel fort. |
 | **Description longue** | Max 4 000 caractères | Max 4 000 caractères | Structurée en 4 volets : Problème résolu, Fonctionnalités clés, Sécurité MoMo, Support 7j/7. |
 | **Mots-clés cachés (iOS)** | Max 100 caractères | N/A (indexe la description) | Séparés par des virgules **sans aucun espace** : `momo,airtel,brazza,congo,argent`. |

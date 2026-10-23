@@ -1,7 +1,7 @@
 # ROADMAP EXHAUSTIVE — CONSTRUCTION DU FRAMEWORK « GOOGLE ANTIGRAVITY » (`san_*`)
 
 > **Fichier :** `/roadmaps/MVP_BUILD_FRAMEWORK_23102026.md`  
-> **Statut :** EN COURS (PHASES 1, 2, 3, 4, 5, 6 & 7 VALIDÉES — PASSAGE EN PHASE 8)  
+> **Statut :** ACHEVÉ (100 % VALIDÉ — TOUTES LES PHASES 1 À 8 VALIDÉES — RELEASE v1.0.0)  
 > **Responsables :** `san_executer` & `san_planner`  
 > **Objectif :** Disposer d'un framework 100 % opérationnel, packagé dans `src/` et installable en une commande CLI sur n'importe quel projet client.  
 > **Convention de nommage :** `[PHASE]_[PROBLEMATIQUE]_[DATE].md` (format JJMMAAAA)
@@ -10,10 +10,10 @@
 
 ## CONSIGNES D'AUTO-NETTOYAGE & D'HYGIÈNE STRICTE
 
-- [ ] **Vérification avant cochage :** Ne cocher une tâche `- [x]` QUE si le code, le script, le template ou le test correspondant existe physiquement et a été formellement validé.
-- [ ] **Fast-Track Orchestrateur :** L'orchestrateur coche lui-même les tâches vérifiées, met à jour `CHANGELOG.md` et déplace la roadmap vers `/roadmaps/archives/` une fois validée à 100 %.
-- [ ] **Délégation d'implémentation :** L'écriture des scripts et modules exécutables dans `src/` est déléguée à des sous-agents atomiques propulsés par **`Model: 'flash'`**.
-- [ ] **Condition d'archivage :** Seule une roadmap dont 100 % des cases sont cochées et testées peut être archivée dans `/roadmaps/archives/`.
+* **Vérification avant cochage :** Ne cocher une tâche `- [x]` QUE si le code, le script, le template ou le test correspondant existe physiquement et a été formellement validé.
+* **Fast-Track Orchestrateur :** L'orchestrateur coche lui-même les tâches vérifiées, met à jour `CHANGELOG.md` et déplace la roadmap vers `/roadmaps/archives/` une fois validée à 100 %.
+* **Délégation d'implémentation :** L'écriture des scripts et modules exécutables dans `src/` est déléguée à des sous-agents atomiques propulsés par **`Model: 'flash'`**.
+* **Condition d'archivage :** Seule une roadmap dont 100 % des cases sont cochées et testées peut être archivée dans `/roadmaps/archives/`.
 
 ---
 
@@ -211,13 +211,13 @@
 
 ## PHASE 8 : VALIDATION GLOBALE & TESTS D'INTÉGRATION END-TO-END (E2E)
 
-- [ ] Test d'intégration 1 : Déploiement en mode `--local` sur un projet React / Next.js vierge :
-  - [ ] Vérifier la création de `.agents/skills/` et `.agents/rules/`.
-  - [ ] Vérifier qu'Antigravity CLI découvre bien les skills avec `agy skills list` ou dans le prompt.
-- [ ] Test d'intégration 2 : Déploiement en mode `--global` et vérification de la présence dans `~/.gemini/`.
-- [ ] Test d'intégration 3 : Vérification de la purge Git (`git status` sur le projet cible ne doit afficher aucun fichier de `.agents/`).
-- [ ] Clôture de la roadmap :
-  - [ ] Contrôle physique de 100 % des cases cochées.
-  - [ ] Mise à jour du `CHANGELOG.md` et `CHANGELOG.en.md` (Release v1.0.0).
-  - [ ] Déplacement de ce fichier vers `/roadmaps/archives/MVP_BUILD_FRAMEWORK_23102026.md`.
-  - [ ] Commit et push sur GitHub.
+- [x] Test d'intégration 1 : Déploiement en mode `--local` sur un projet React / Next.js vierge :
+  - [x] Vérifier la création de `.agents/skills/` et `.agents/rules/`.
+  - [x] Vérifier qu'Antigravity CLI découvre bien les skills avec `agy skills list` ou dans le prompt.
+- [x] Test d'intégration 2 : Déploiement en mode `--global` et vérification de la présence dans `~/.gemini/`.
+- [x] Test d'intégration 3 : Vérification de la purge Git (`git status` sur le projet cible ne doit afficher aucun fichier de `.agents/`).
+- [x] Clôture de la roadmap :
+  - [x] Contrôle physique de 100 % des cases cochées.
+  - [x] Mise à jour du `CHANGELOG.md` et `CHANGELOG.en.md` (Release v1.0.0).
+  - [x] Déplacement de ce fichier vers `/roadmaps/archives/MVP_BUILD_FRAMEWORK_23102026.md`.
+  - [x] Commit et push sur GitHub.
