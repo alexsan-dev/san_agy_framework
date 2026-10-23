@@ -26,3 +26,21 @@ Thumbs.db
 # Antigravity local agent context (if strictly local)
 # Note: client output templates in src/ are tracked, but local runtime .agents/ is ignored
 .agents/
+
+# --- ANTIGRAVITY AI ISOLATION (san_*) ---
+# Espace souverain local Antigravity (Zéro fuite Git)
+/.agents/
+/AGENTS.md
+/GEMINI.md
+
+# Résidus tiers purgés
+/.claude/
+/CLAUDE.md
+/.opencode/
+/.poolside/
+/.cursor/
+/.cursorrules/
+/.windsurf/
+/.windsurfrules/
+/.copilot/
+# ----------------------------------------

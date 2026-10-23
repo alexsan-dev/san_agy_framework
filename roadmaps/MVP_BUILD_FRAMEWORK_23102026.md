@@ -1,7 +1,7 @@
 # ROADMAP EXHAUSTIVE — CONSTRUCTION DU FRAMEWORK « GOOGLE ANTIGRAVITY » (`san_*`)
 
 > **Fichier :** `/roadmaps/MVP_BUILD_FRAMEWORK_23102026.md`  
-> **Statut :** EN COURS (PHASES 1 & 2 VALIDÉES — PASSAGE EN PHASE 3)  
+> **Statut :** EN COURS (PHASES 1, 2 & 3 VALIDÉES — PASSAGE EN PHASE 4)  
 > **Responsables :** `san_executer` & `san_planner`  
 > **Objectif :** Disposer d'un framework 100 % opérationnel, packagé dans `src/` et installable en une commande CLI sur n'importe quel projet client.  
 > **Convention de nommage :** `[PHASE]_[PROBLEMATIQUE]_[DATE].md` (format JJMMAAAA)
@@ -61,28 +61,28 @@
 
 ## PHASE 3 : PACKAGING DU SOCLE D'ONBOARDING & CADRAGE DANS `src/skills/`
 
-- [ ] Implémenter le skill exécutable `src/skills/san_init/` :
-  - [ ] `SKILL.md` (instructions exécutables reconnues par Antigravity, trigger, découverte récursive).
-  - [ ] `scripts/git_ai_hygiene.sh` (purge des configs tierces, désindexation `git rm --cached`, verrouillage `.gitignore` et `.git/info/exclude`).
-  - [ ] `scripts/svg_to_png.mjs` (déclinaison multi-résolution des logos et favicons via Sharp).
-  - [ ] `templates/rules/BRAND_TEMPLATE.md` (design tokens, manifeste sensoriel, courbes cinétiques).
-  - [ ] `templates/rules/PRODUCT_TEMPLATE.md` (vision produit, persona, proposition de valeur).
-  - [ ] `templates/rules/PROJECT_TEMPLATE.md` (stack technique, politique de tests, routage des modèles).
-  - [ ] `templates/rules/API_TEMPLATE.md` (standards REST/WebSockets, format JSON).
-  - [ ] `templates/GEMINI_INDEX_TEMPLATE.md` (table de routage maître `.agents/GEMINI.md`).
-- [ ] Implémenter le skill exécutable `src/skills/san_brainstorming/` :
-  - [ ] `SKILL.md` (processus socratique, questionnaire au dev, prompt d'idéation).
-  - [ ] `references/ideation_scoring_matrix.md` (grille 40 points : Impact, Effort, Terrain Afrique, Risques).
-  - [ ] `references/congo_market_signals.md` (réalités terrain, Mobile Money, usages WhatsApp, data coûteuse).
-  - [ ] `templates/IDEA_TEMPLATE.md` (gabarit pour `/roadmaps/ideas/[THEME]_[DATE].md`).
-- [ ] Implémenter le skill exécutable `src/skills/san_planner/` :
-  - [ ] `SKILL.md` (découpage séquentiel par phases, règles d'auto-nettoyage, critères de complétion 100 %).
-  - [ ] `templates/ROADMAP_TEMPLATE.md` (squelette normé de roadmap avec tests obligatoires).
-  - [ ] `templates/CHANGELOG_TEMPLATE.md` (squelette initial `CHANGELOG.md` selon Keep a Changelog).
-  - [ ] `scripts/archive_roadmap.sh` (script bash vérifiant que 100 % des cases sont cochées avant archivage).
-- [ ] Tests de la Phase 3 :
-  - [ ] Tester `git_ai_hygiene.sh` sur un dépôt Git factice et vérifier la propreté de l'index.
-  - [ ] Tester `archive_roadmap.sh` (rejet si cases non cochées, succès si 100 % coché).
+- [x] Implémenter le skill exécutable `src/skills/san_init/` :
+  - [x] `SKILL.md` (instructions exécutables reconnues par Antigravity, trigger, découverte récursive).
+  - [x] `scripts/git_ai_hygiene.sh` (purge des configs tierces, désindexation `git rm --cached`, verrouillage `.gitignore` et `.git/info/exclude`).
+  - [x] `scripts/svg_to_png.mjs` (déclinaison multi-résolution des logos et favicons via Sharp).
+  - [x] `templates/rules/BRAND_TEMPLATE.md` (design tokens, manifeste sensoriel, courbes cinétiques).
+  - [x] `templates/rules/PRODUCT_TEMPLATE.md` (vision produit, persona, proposition de valeur).
+  - [x] `templates/rules/PROJECT_TEMPLATE.md` (stack technique, politique de tests, routage des modèles).
+  - [x] `templates/rules/API_TEMPLATE.md` (standards REST/WebSockets, format JSON).
+  - [x] `templates/GEMINI_INDEX_TEMPLATE.md` (table de routage maître `.agents/GEMINI.md`).
+- [x] Implémenter le skill exécutable `src/skills/san_brainstorming/` :
+  - [x] `SKILL.md` (processus socratique, questionnaire au dev, prompt d'idéation).
+  - [x] `references/ideation_scoring_matrix.md` (grille 40 points : Impact, Effort, Terrain Afrique, Risques).
+  - [x] `references/congo_market_signals.md` (réalités terrain, Mobile Money, usages WhatsApp, data coûteuse).
+  - [x] `templates/IDEA_TEMPLATE.md` (gabarit pour `/roadmaps/ideas/[THEME]_[DATE].md`).
+- [x] Implémenter le skill exécutable `src/skills/san_planner/` :
+  - [x] `SKILL.md` (découpage séquentiel par phases, règles d'auto-nettoyage, critères de complétion 100 %).
+  - [x] `templates/ROADMAP_TEMPLATE.md` (squelette normé de roadmap avec tests obligatoires).
+  - [x] `templates/CHANGELOG_TEMPLATE.md` (squelette initial `CHANGELOG.md` selon Keep a Changelog).
+  - [x] `scripts/archive_roadmap.sh` (script bash vérifiant que 100 % des cases sont cochées avant archivage).
+- [x] Tests de la Phase 3 :
+  - [x] Tester `git_ai_hygiene.sh` sur un dépôt Git factice et vérifier la propreté de l'index (`tests/phase3/test_git_ai_hygiene.sh`).
+  - [x] Tester `archive_roadmap.sh` (rejet si cases non cochées, succès si 100 % coché) (`tests/phase3/test_archive_roadmap.sh`).
 
 ---
 

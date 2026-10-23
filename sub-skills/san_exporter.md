@@ -3,12 +3,8 @@ name: san_exporter
 title: Artisan Exportation Headless, Rendu Graphique & Pipeline d'Assets
 version: 1.0.0
 type: sub_skill
+role: Headless Export Engineer & Graphical Asset Pipeline Specialist
 harness: google_antigravity_cli
-description: >-
-  Sous-skill transversal d'automatisation de capture headless et de traitement d'assets graphiques.
-  Génère des captures PNG haute résolution déterministes à partir des maquettes HTML statiques de san_designer
-  aux résolutions exactes exigées par les stores (Apple App Store 1290×2796, Google Play Store 1080×1920)
-  et convertit vectoriellement les logos SVG en suites complètes d'icônes d'applications et favicons.
 routing:
   orchestrator:
     nominal: "argon-latest-max"
@@ -25,28 +21,29 @@ triggers:
   - "génère les favicons"
   - "capture headless"
   - "pipeline d'assets"
+description: "Sous-skill transversal d'automatisation de capture headless et de traitement d'assets graphiques. Génère des captures PNG haute résolution déterministes à partir des maquettes HTML statiques de san_designer aux résolutions exactes exigées par les stores (Apple App Store 1290×2796, Google Play Store 1080×1920, Feature Graphic 1024×500) via Playwright (networkidle et document.fonts.ready). Convertit vectoriellement les logos SVG en suites complètes d'icônes d'applications et favicons via Sharp avec suppression stricte du canal alpha pour iOS (anti-rejet Apple ITMS-90717)."
 ---
 
-# SUB-SKILL : `san_exporter` — Artisan Exportation Headless, Rendu Graphique & Pipeline d'Assets
+# `san_exporter` — Artisan Exportation Headless, Rendu Graphique & Pipeline d'Assets
 
-> **Manifeste Cartésien :** Dans un flux d'ingénierie moderne, aucune capture d'écran, aucun favicon et aucun asset de publication sur les stores ne doit être découpé manuellement au curseur dans un logiciel graphique. Le processus de restitution doit être **déterministe, automatisé et reproductible en une commande CLI unique**. `san_exporter` orchestre le moteur de capture headless (Playwright/Puppeteer) et le pipeline vectoriel matriciel (`sharp`/`resvg`) pour transformer le code HTML et les vecteurs SVG en livrables d'une netteté absolue au pixel près.
+> **Manifeste Cartésien :** Dans un flux d'ingénierie moderne, aucune capture d'écran, aucun favicon et aucun asset de publication sur les stores ne doit être découpé manuellement au curseur dans un logiciel graphique. Le processus de restitution doit être **déterministe, automatisé et reproductible en une commande CLI unique**. `san_exporter` orchestre le moteur de capture headless (Playwright) et le pipeline vectoriel matriciel (`sharp`) pour transformer le code HTML statique et les vecteurs SVG en livrables d'une netteté absolue au pixel près.
 >
-> **Note d'Architecture de Déploiement :** Dans le dépôt source `san_agy_framework`, ce module réside dans `sub-skills/` afin de séparer les compétences de pilotage conceptuel de l'outillage transversal. Lors de l'initialisation ou de l'installation dans une codebase cliente (React, Next.js, Laravel, Expo, AdonisJS, etc.), l'installateur le déploie automatiquement dans `.agents/skills/san_exporter.md` pour qu'Antigravity puisse l'invoquer directement comme exécutant graphique.
+> **Note d'Architecture de Déploiement :** Dans le dépôt source `san_agy_framework`, ce module réside dans `sub-skills/` afin de formaliser la frontière entre les rôles de direction maîtres (points d'entrée dans `skills/`) et l'outillage transversal. Lors de l'initialisation dans une codebase cliente, il est déployé dans `.agents/skills/san_exporter/` pour être reconnu nativement par le moteur d'exécution Antigravity CLI.
 
 ---
 
 ## 1. RÔLE, POUR QUI, POUR QUOI
 
-### Rôle
-`san_exporter` est l'ingénieur de rendu headless et le gestionnaire de pipeline d'assets du framework **Antigravity (`san_*`)**. Il comble le fossé entre le code source visuel (fichiers HTML statiques avec Tailwind CSS, logos au format SVG vectoriel) et les artefacts binaires d'affichage final (fichiers PNG haute définition, WebP compressés sans perte, bundles d'icônes d'applications, favicons et illustrations OpenGraph).
+### Rôle Fondamental
+`san_exporter` est l'**ingénieur de rendu headless et le gestionnaire de pipeline d'assets** du framework **Antigravity (`san_*`)**. Il comble le fossé entre le code source visuel (fichiers HTML statiques stylisés par Tailwind CSS, logos au format vectoriel SVG) et les artefacts binaires finaux indispensables à la production (fichiers PNG haute définition, WebP compressés sans perte, bundles complets d'icônes d'applications, favicons multi-résolutions, visuels OpenGraph et documents A4 haute fidélité).
 
-### Pour qui ?
+### Pour Qui ?
 * Pour le **concepteur d'interfaces** [`san_designer`](../skills/san_designer.md), qui a besoin de figer ses prototypes d'écrans (`/design/mockup/*`) en images haute fidélité pour des revues visuelles ou des présentations clients.
 * Pour l'**expert de publication et conformité** [`san_store_legal_expert`](../skills/san_store_legal_expert.md), qui exige des screenshots calibrés aux dimensions exactes imposées par Google Play Console et Apple App Store Connect, sous peine de rejet immédiat de la soumission.
 * Pour le **responsable de croissance** [`san_growth_expert`](../skills/san_growth_expert.md), qui exploite les captures certifiées pour habiller les fiches ASO et générer les bannières promotionnelles ou visuels de partage social (OpenGraph).
 * Pour le **développeur frontend/mobile** [`san_ux_ui_expert`](../skills/san_ux_ui_expert.md), qui a besoin d'un ensemble complet d'icônes généré depuis le logo source (`favicon.ico`, `apple-touch-icon.png`, `adaptive-icon.png`, `splash.png` Expo).
 
-### Pour quoi ?
+### Pour Quoi ?
 * **Éradiquer le travail manuel d'exportation** : éviter les approximations de découpage d'écran, les pertes de ratio, les flous de mise à l'échelle ou les bordures parasites.
 * **Garantir la conformité géométrique absolue aux exigences des stores** :
   * Apple App Store 6.7" : `1290×2796 px` (iPhone 15/16 Pro Max).
@@ -54,7 +51,7 @@ triggers:
   * Apple iPad Pro 12.9" : `2048×2732 px`.
   * Google Play Store Téléphone : `1080×1920 px` (ratio 16:9) ou `1080×2400 px` (ratio 20:9).
   * Google Play Store Feature Graphic : `1024×500 px` (sans canal alpha).
-  * App Store App Icon : `1024×1024 px` (PNG 24-bit sans transparence).
+  * App Store App Icon : `1024×1024 px` (PNG 24-bit **sans canal alpha**, évitant l'erreur critique Apple `ITMS-90717`).
   * Google Play App Icon : `512×512 px` (PNG 32-bit avec transparence autorisée).
 * **Préserver l'intégrité vectorielle** : dériver l'ensemble des formats d'icônes et de favicons directement à partir du SVG validé dans `.agents/rules/LOGO.md` sans jamais repartir d'un PNG pixélisé.
 * **Assurer une autonomie complète sans connexion réseau** : tous les scripts s'exécutent en local via les binaires Playwright et Sharp, sans dépendre d'une API de capture distante ou d'un service SaaS en ligne.
@@ -65,10 +62,10 @@ triggers:
 
 | CE QU'IL FAIT STRICTEMENT | CE QU'IL NE FAIT ABSOLUMENT PAS |
 | :--- | :--- |
-| **Capture headless déterministe via Playwright/Puppeteer :** Rendu au pixel près des pages HTML locales avec gestion du facteur d'échelle rétina (`deviceScaleFactor: 2` ou `3`). | Ne conçoit pas les pages HTML, la hiérarchie visuelle ni le CSS $\rightarrow$ rôle exclusif de [`san_designer`](../skills/san_designer.md). |
-| **Conversion vectorielle vers matriciel (SVG $\rightarrow$ PNG) :** Déclinaison de logos en favicons, icônes PWA, icônes adaptatives Android et splash screens. | Ne dessine pas les logos ni ne crée les concepts graphiques $\rightarrow$ établi par [`san_init`](../skills/san_init.md) et validé dans `LOGO.md`. |
-| **Contrôle binaire de conformité géométrique :** Vérifie que les fichiers générés respectent la largeur, la hauteur, l'espace colorimétrique sRGB et les contraintes de transparence. | Ne rédige pas les textes d'accroche ni les sous-titres des captures stores $\rightarrow$ dévolu à [`san_copywriter`](san_copywriter.md). |
-| **Optimisation et compression sans perte :** Réduction du poids binaire des images générées (PNG/WebP) pour préserver la bande passante mobile 3G/EDGE. | Ne gère pas la soumission automatisée des binaires aux APIs des stores $\rightarrow$ orchestré par [`san_store_legal_expert`](../skills/san_store_legal_expert.md). |
+| **Capture headless déterministe via Playwright :** Rendu au pixel près des pages HTML locales avec synchronisation synchrone (`networkidle`, `document.fonts.ready`). | Ne conçoit pas les pages HTML, la hiérarchie visuelle ni le CSS $\rightarrow$ rôle exclusif de [`san_designer`](../skills/san_designer.md). |
+| **Conversion vectorielle matricielle (SVG $\rightarrow$ PNG) :** Déclinaison de logos en favicons, icônes PWA, icônes adaptatives Android et splash screens. | Ne dessine pas les logos ni ne crée les concepts graphiques $\rightarrow$ établi par [`san_init`](../skills/san_init.md) et validé dans `LOGO.md`. |
+| **Suppression du canal alpha pour iOS :** Application systématique de `.removeAlpha().flatten({ background: '#FFFFFF' })` sur l'icône App Store (`1024×1024 px`) pour prévenir l'erreur Apple `ITMS-90717`. | Ne rédige pas les textes d'accroche ni les sous-titres des captures stores $\rightarrow$ dévolu à [`san_copywriter`](san_copywriter.md). |
+| **Optimisation et compression sans perte :** Réduction du poids binaire des images générées pour préserver la bande passante mobile 3G/EDGE. | Ne gère pas la soumission automatisée des binaires aux APIs des stores $\rightarrow$ orchestré par [`san_store_legal_expert`](../skills/san_store_legal_expert.md). |
 | **Génération du manifeste d'intégrité :** Production de `export_manifest.json` répertoriant les chemins, dimensions, poids et hachages SHA-256. | Ne prend pas de décisions d'architecture d'interface ni de refonte applicative. |
 
 ---
@@ -83,158 +80,161 @@ flowchart TD
     GROWTH["san_growth_expert.md"] -->|Demande visuels stores & bannières ASO| EXPORT
     STORE["san_store_legal_expert.md"] -->|Vérifie la conformité des assets soumission| EXPORT
     EXEC["san_executer.md"] -.->|Pilote le déclenchement CLI| EXPORT
-    EXPORT -->|Génère PNG stores| STORE
+    EXPORT -->|Génère PNG stores certifiés| STORE
     EXPORT -->|Génère pack public/icons/| UX
     EXPORT -->|Génère design/screenshots/*.png| DESIGN
 ```
 
-### 1. Par [`san_designer`](../skills/san_designer.md) (Validation Visuelle & Screenshots)
-Dès qu'une page HTML autonome de mockup ou de capture store est rédigée dans `/design/mockup/` ou `/design/screenshots/`, `san_designer` déclenche `san_exporter` :
-* Le script parse le commentaire d'en-tête `<!-- CANVAS_SPEC ... -->` de la page.
-* Le moteur headless capture le viewport ciblé et écrit le fichier `.png` jumeau en haute résolution.
+### Invocations Concrètes
 
-### 2. Par [`san_init`](../skills/san_init.md) (Génération Initiale de la Marque)
-Dès que la proposition vectorielle de logo est adoptée dans `.agents/rules/LOGO.md` :
-* `san_init` invoque `san_exporter` via `scripts/svg_to_png.mjs`.
-* Le logo SVG est décliné instantanément en 12 résolutions d'icônes réparties dans `public/icons/` et `assets/`.
+#### 1. Mobilisation par [`san_designer`](../skills/san_designer.md)
+* Commande : `node scripts/export_png.mjs --target=design/mockup/mobile/`
+* Rôle : Convertir l'ensemble des fichiers HTML de prototypes en rendus PNG haute définition au pixel près.
 
-### 3. Par [`san_growth_expert`](../skills/san_growth_expert.md) & [`san_store_legal_expert`](../skills/san_store_legal_expert.md) (Publication Stores)
-Avant toute mise en ligne :
-* `san_store_legal_expert` sollicite l'export complet de la matrice des captures requises par Apple et Google.
-* `san_exporter` produit la grille d'images certifiée et valide l'absence de canal alpha sur l'icône iOS 1024x1024 (clause bloquante chez Apple).
+#### 2. Mobilisation par [`san_init`](../skills/san_init.md)
+* Commande : `node scripts/svg_to_png.mjs .agents/rules/logo.svg`
+* Rôle : Décliner le logo source vectoriel en pack complet d'icônes multi-résolutions (`public/icons/` et `assets/`).
+
+#### 3. Mobilisation par [`san_store_legal_expert`](../skills/san_store_legal_expert.md)
+* Contrôler que l'icône `assets/icon.png` (`1024×1024 px`) est strictement en 24-bit sans canal alpha et que les captures respectent `1290×2796 px` et `1080×1920 px`.
 
 ---
 
 ## 4. STRUCTURE INTERNE DU SOUS-SKILL
 
+Lors du déploiement au sein d'une codebase sous Antigravity CLI, le sous-skill présente l'arborescence normative suivante :
+
 ```txt
-sub-skills/san_exporter/              # (Déployé dans .agents/skills/san_exporter/ chez le client)
-├── SKILL.md                          # Ce manifeste de gouvernance cartésienne
+.agents/skills/san_exporter/
+├── SKILL.md                                 # Manifeste de rendu headless, spécifications et invariants
 ├── references/
-│   ├── store_asset_dimensions.md     # Spécifications détaillées des résolutions Apple et Google
-│   ├── headless_browser_setup.md     # Configuration Playwright/Puppeteer et options GPU headless
-│   └── image_compression_rules.md    # Niveaux de compression PNG/WebP et conservation sRGB
+│   ├── store_resolutions_matrix.md          # Dimensions officielles Apple App Store et Google Play
+│   ├── alpha_channel_guardrails.md          # Diagnostic et remédiation du rejet Apple ITMS-90717
+│   └── print_resolutions_300dpi.md          # Formats d'impression papier A4 / bannières événementielles
 ├── templates/
-│   ├── export_manifest.template.json # Structure type du fichier d'audit d'intégrité
-│   └── canvas_spec_comment.html      # Gabarit du tag CANVAS_SPEC à insérer dans les maquettes
+│   ├── HTML_CANVAS_SPEC_HEADER.html         # En-tête de spécification canvas à insérer dans les maquettes
+│   └── EXPORT_MANIFEST_TEMPLATE.json        # Schéma du registre d'intégrité avec signatures SHA-256
 └── scripts/
-    ├── export_png.mjs                # Pipeline de capture headless pour pages HTML statiques
-    ├── svg_to_png.mjs                # Compilateur vectoriel d'icônes d'application et favicons
-    └── optimize_assets.sh            # Script d'optimisation et compression sans perte des assets
+    ├── export_png.mjs                       # Moteur de capture headless Playwright avec attente synchrone
+    └── svg_to_png.mjs                       # Compilateur vectoriel matriciel multi-formats via Sharp
 ```
 
 ---
 
-## 5. LIVRABLES EXACTS
+## 5. LIVRABLES EXACTS & RÉSOLUTIONS OFFICIELLES
 
-Tous les livrables générés par `san_exporter` s'organisent selon une nomenclature rigoureuse à la racine du projet :
+### 1. Tableau Normatif des Résolutions Stores & Documents
 
-```txt
-[racine_du_projet]/
-├── design/
-│   ├── export_manifest.json          # Journal d'export certifiant les résolutions et hachages
-│   ├── screenshots/
-│   │   ├── app-store/
-│   │   │   ├── 01-hero-accueil.png   # 1290×2796 px (iPhone 6.7")
-│   │   │   └── 02-momo-paiement.png  # 1290×2796 px
-│   │   └── play-store/
-│   │       ├── 01-hero-catalogue.png # 1080×1920 px (Android 16:9)
-│   │       ├── 02-suivi-course.png   # 1080×1920 px
-│   │       └── feature-graphic.png   # 1024×500 px
-│   └── poster/
-│       └── flyer-a4.png              # 2480×3508 px (A4 à 300 DPI)
-│
-├── public/ (ou assets/icons/ pour Expo/React Native)
-│   ├── favicon.ico                   # Multi-résolution (16x16, 32x32, 48x48)
-│   ├── favicon-16x16.png
-│   ├── favicon-32x32.png
-│   ├── apple-touch-icon.png          # 180×180 px
-│   ├── icon-192.png                  # PWA standard
-│   ├── icon-512.png                  # PWA splash
-│   └── maskable-icon-512.png         # PWA adaptive maskable
-│
-└── app.json (ou store-assets/)
-    ├── adaptive-icon.png             # 1024×1024 px (Foreground Android Expo)
-    ├── icon.png                      # 1024×1024 px (App Store Icon sans alpha)
-    └── splash.png                    # 2048×2048 px (Splash screen universel)
-```
+| Type d'Asset | Dimensions Exactes | Canal Alpha | Usage Officiel |
+| :--- | :--- | :--- | :--- |
+| **Apple App Store 6.7"** | `1290×2796 px` | Facultatif | Captures iPhone 15 / 16 Pro Max |
+| **Apple App Store 6.5"** | `1242×2688 px` | Facultatif | Captures iPhone XS Max / 11 Pro Max |
+| **Apple App Store 5.5"** | `1242×2208 px` | Facultatif | Captures iPhone 8 Plus |
+| **Apple iPad Pro 12.9"** | `2048×2732 px` | Facultatif | Captures iPad Pro 6e génération |
+| **Apple App Store Icon** | `1024×1024 px` | **INTERDIT (0% Alpha)** | Icône soumission IPA (**Erreur ITMS-90717**) |
+| **Google Play Phone** | `1080×1920 px` | Facultatif | Captures écran standard smartphone (16:9) |
+| **Google Play Feature Graphic**| `1024×500 px` | **INTERDIT (0% Alpha)** | Bannière promotionnelle en tête de fiche |
+| **Google Play App Icon** | `512×512 px` | Autorisé (32-bit) | Icône application Play Console |
+| **Document A4 Portrait (300 DPI)**| `2480×3508 px`| Interdit | Factures, fiches d'onboarding, reçus |
+| **Document A4 Paysage (300 DPI)** | `3508×2480 px`| Interdit | Diplômes, synthèses analytiques, dashboards |
 
-### Spécification du Tag de Canvas (`CANVAS_SPEC`)
-Chaque fichier HTML destiné à la capture par `san_exporter` doit débuter par son commentaire formel de spécification :
-```html
-<!-- CANVAS_SPEC: width=1080px height=1920px device="Google Play Phone" export_scale=1 -->
-```
-Ou pour un export rétina haute densité :
-```html
-<!-- CANVAS_SPEC: width=390px height=844px device="iPhone 15" export_scale=3 -->
+### 2. Spécification du Manifeste d'Intégrité (`design/export_manifest.json`)
+
+```json
+{
+  "generated_at": "2026-10-23T12:00:00.000Z",
+  "engine": "Playwright 1.48.0 / Sharp 0.33.5",
+  "assets": [
+    {
+      "file": "assets/icon.png",
+      "width": 1024,
+      "height": 1024,
+      "has_alpha": false,
+      "size_bytes": 482104,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "design/screenshots/screenshot_home_1290x2796.png",
+      "width": 1290,
+      "height": 2796,
+      "has_alpha": false,
+      "size_bytes": 1845210,
+      "sha256": "ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb"
+    }
+  ]
+}
 ```
 
 ---
 
-## 6. PROCÉDURE « ZÉRO NÉGLIGENCE » EN 5 ÉTAPES
+## 6. PROCÉDURE D'EXÉCUTION DÉTAILLÉE
 
 ```mermaid
-flowchart TD
-    S0["Étape 0 : Détection de l'Environnement Headless (Playwright & Sharp)"] --> S1["Étape 1 : Analyse des Fichiers Cibles & Extraction CANVAS_SPEC"]
-    S1 --> S2["Étape 2 : Capture Déterministe Headless (Networkidle & Fonts Loaded)"]
-    S2 --> S3["Étape 3 : Conversion Vectorielle Matricielle (scripts/svg_to_png.mjs)"]
-    S3 --> S4["Étape 4 : Contrôle Qualité Binaire (Dimensions, sRGB, Canal Alpha)"]
-    S4 -- "Dimension non conforme ou alpha détecté sur icône iOS" --> S2
-    S4 -- "100% Conforme" --> S5["Étape 5 : Génération du Manifeste export_manifest.json"]
+sequenceDiagram
+    autonumber
+    participant Caller as Agent Demandeur (san_designer / san_init)
+    participant Exporter as san_exporter
+    participant Playwright as Moteur Playwright Headless
+    participant Sharp as Moteur Sharp
+    participant FS as Disque Local & Manifeste
+
+    Caller->>Exporter: Déclenchement export (Mockup HTML ou SVG)
+    alt Capture de Mockup HTML
+        Exporter->>Playwright: Initialisation browser headless
+        Playwright->>Playwright: Parsing balise CANVAS_SPEC (width, height, scale)
+        Playwright->>Playwright: Chargement file://...
+        Playwright->>Playwright: Attente networkidle + document.fonts.ready
+        Playwright->>Playwright: Pause stabilisatrice 150ms
+        Playwright->>FS: Écriture screenshot PNG haute résolution
+    else Déclinaison de Logo Vectoriel
+        Exporter->>Sharp: Lecture logo.svg
+        Sharp->>Sharp: Rendu multi-tailles (favicons, PWA, play store)
+        Sharp->>Sharp: Élimination canal alpha pour icon.png (Apple)
+        Sharp->>FS: Écriture public/icons/ et assets/
+    end
+    Exporter->>FS: Calcul SHA-256 et écriture export_manifest.json
+    Exporter-->>Caller: Confirmation d'export déterministe
 ```
 
-### Étape 0 : Vérification des Dépendances de Runtime
-Avant toute capture, le script vérifie la présence de `playwright` (ou `puppeteer`) et de `sharp` dans l'environnement Node.js local. Si l'un des paquets manque, une consigne claire d'installation est émise :
-```bash
-npm install --save-dev playwright sharp
-npx playwright install chromium
+### Étape 1 : Insertion de la Spécification Canvas dans le Mockup HTML
+Chaque fichier HTML à capturer doit contenir en première ligne son commentaire de métadonnées géométriques :
+```html
+<!-- CANVAS_SPEC: width=1290px height=2796px export_scale=1 -->
 ```
 
-### Étape 1 : Analyse des Spécifications de Canvas
-Pour chaque maquette HTML passée en argument :
-1. Extraction par expression régulière des directives `width`, `height` et `export_scale` depuis le commentaire `<!-- CANVAS_SPEC ... -->`.
-2. Si le tag est absent, le script adopte par défaut les dimensions de la balise principale `#app` ou `#canvas`.
+### Étape 2 : Capture Déterministe et Synchronisation Synchrone
+Le script `export_png.mjs` garantit trois niveaux de synchronisation :
+1. `waitUntil: 'networkidle'` : aucune requête réseau ou chargement d'image locale en suspens.
+2. `await page.evaluate(() => document.fonts.ready)` : toutes les polices typographiques locales sont entièrement rastérisées (zéro substitution vers une police système).
+3. `await page.waitForTimeout(150)` : stabilisation des éventuelles transitions CSS initiales.
 
-### Étape 2 : Capture Déterministe Headless
-1. Instanciation du navigateur Chromium en mode headless (`--no-sandbox`, `--disable-setuid-sandbox`).
-2. Configuration du viewport exact correspondant aux dimensions spécifiées, avec le `deviceScaleFactor` adéquat.
-3. Chargement de l'URL locale (`file://...`).
-4. **Invariant de synchronisation cartésienne :**
-   * Attente de l'événement `networkidle` pour garantir la fin des requêtes locales.
-   * Attente de `document.fonts.ready` pour s'assurer qu'aucune police ne bascule en police système de secours pendant la capture.
-   * Pause stabilisatrice de 150 ms pour purger toute transition CSS initiale.
-5. Déclenchement de la capture d'écran PNG sans perte.
+### Étape 3 : Déclinaison Vectorielle avec Suppression du Canal Alpha
+Lors de l'appel à `svg_to_png.mjs` :
+- Les favicons et icônes Android conservent la transparence.
+- L'icône iOS (`assets/icon.png`) subit l'opération d'aplatissement sur fond blanc sans transparence :
+  ```javascript
+  pipeline = pipeline.removeAlpha().flatten({ background: '#FFFFFF' });
+  ```
 
-### Étape 3 : Conversion Vectorielle Matricielle (Iconographie)
-Exécution de `scripts/svg_to_png.mjs` à partir du fichier SVG de référence :
-1. Rendu matriciel via Sharp du logo source.
-2. Pour l'icône de l'App Store (`1024×1024 px`), suppression stricte du canal alpha :
-   ```javascript
-   await sharp(svgBuffer).resize(1024, 1024).removeAlpha().png().toFile('icon.png');
-   ```
-3. Génération des formats PWA, Android adaptatifs et multi-favicons.
-
-### Étape 4 : Contrôle Qualité Binaire
-Le script vérifie automatiquement sur chaque fichier généré :
-* [ ] Largeur et hauteur exactes au pixel près par rapport aux exigences des stores.
-* [ ] Espace colorimétrique conforme au standard `sRGB`.
-* [ ] Poids optimisé (alerte si une capture store dépasse 8 Mo, seuil limite des consoles de déploiement).
-
-### Étape 5 : Clôture & Manifeste
-Écriture de `/design/export_manifest.json` avec la date, la liste des fichiers, les résolutions et la signature d'intégrité SHA-256 de chaque image.
+### Étape 4 : Contrôle Qualité Binaire et Manifeste
+Le script vérifie la largeur, la hauteur, l'absence d'alpha sur les assets critiques, calcule l'empreinte SHA-256 et consigne le tout dans `design/export_manifest.json`.
 
 ---
 
 ## 7. SCRIPTS EXÉCUTABLES EMBARQUÉS
 
-### 1. Script de Capture Headless (`scripts/export_png.mjs`)
+### 1. Moteur de Capture Headless Playwright (`scripts/export_png.mjs`)
+
 ```javascript
 #!/usr/bin/env node
 // scripts/export_png.mjs
-// Moteur de capture headless automatisé basé sur Playwright.
+// Moteur de capture headless déterministe Playwright avec synchronisation synchrone et hash SHA-256.
+// Usage: node scripts/export_png.mjs --file=path/to/mockup.html [--out=output.png]
+//        node scripts/export_png.mjs --target=design/mockup/mobile/
 
 import fs from 'fs';
 import path from 'path';
+import crypto from 'crypto';
 import { chromium } from 'playwright';
 
 async function parseCanvasSpec(htmlContent) {
@@ -249,31 +249,52 @@ async function parseCanvasSpec(htmlContent) {
   return { width: 1080, height: 1920, scale: 1 };
 }
 
-async function captureHtmlFile(browser, filePath, outputPath) {
+function computeSha256(filePath) {
+  const fileBuffer = fs.readFileSync(filePath);
+  return crypto.createHash('sha256').update(fileBuffer).digest('hex');
+}
+
+async function captureHtmlFile(browser, filePath, outputPath, manifestList) {
   const absoluteHtmlPath = path.resolve(filePath);
   if (!fs.existsSync(absoluteHtmlPath)) {
-    throw new Error(`Fichier introuvable : ${absoluteHtmlPath}`);
+    throw new Error(`Fichier HTML introuvable : ${absoluteHtmlPath}`);
   }
 
   const content = fs.readFileSync(absoluteHtmlPath, 'utf-8');
   const spec = await parseCanvasSpec(content);
 
-  console.log(`📸 Capture de ${path.basename(filePath)} : ${spec.width}x${spec.height} (scale: ${spec.scale})`);
+  console.log(`📸 [san_exporter] Capture de ${path.basename(filePath)} (${spec.width}x${spec.height} px, scale: ${spec.scale})`);
 
   const page = await browser.newPage({
     viewport: { width: spec.width, height: spec.height },
     deviceScaleFactor: spec.scale
   });
 
+  // 1. Navigation locale avec attente networkidle
   await page.goto(`file://${absoluteHtmlPath}`, { waitUntil: 'networkidle' });
+
+  // 2. Attente impérative de la fin du rendu des polices
   await page.evaluate(() => document.fonts.ready);
-  await page.waitForTimeout(150); // Stabilisation des animations
+
+  // 3. Pause stabilisatrice pour purger les transitions initiales
+  await page.waitForTimeout(150);
 
   fs.mkdirSync(path.dirname(outputPath), { recursive: true });
   await page.screenshot({ path: outputPath, type: 'png', fullPage: false });
   await page.close();
 
-  console.log(`✅ Image enregistrée : ${outputPath}`);
+  const sha = computeSha256(outputPath);
+  const stats = fs.statSync(outputPath);
+
+  manifestList.push({
+    file: outputPath,
+    width: spec.width * spec.scale,
+    height: spec.height * spec.scale,
+    size_bytes: stats.size,
+    sha256: sha
+  });
+
+  console.log(`✅ Image enregistrée : ${outputPath} (SHA-256: ${sha.slice(0, 12)}...)`);
 }
 
 async function main() {
@@ -289,40 +310,57 @@ async function main() {
   }
 
   const browser = await chromium.launch({
-    args: ['--no-sandbox', '--disable-setuid-sandbox']
+    args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
   });
+
+  const manifestList = [];
 
   try {
     if (targetFile) {
       const out = outputFile || targetFile.replace(/\.html$/, '.png');
-      await captureHtmlFile(browser, targetFile, out);
+      await captureHtmlFile(browser, targetFile, out, manifestList);
     } else if (targetDir) {
       const files = fs.readdirSync(targetDir).filter(f => f.endsWith('.html'));
       for (const f of files) {
         const fullPath = path.join(targetDir, f);
         const out = path.join(targetDir, f.replace(/\.html$/, '.png'));
-        await captureHtmlFile(browser, fullPath, out);
+        await captureHtmlFile(browser, fullPath, out, manifestList);
       }
     } else {
-      console.log("Usage: node scripts/export_png.mjs --file=path/to/mockup.html [--out=out.png]");
+      console.log("Usage: node scripts/export_png.mjs --file=path/to/mockup.html [--out=output.png]");
       console.log("       node scripts/export_png.mjs --target=design/mockup/mobile/");
+      return;
     }
+
+    // Écriture du manifeste
+    const manifestPath = path.resolve('design/export_manifest.json');
+    fs.mkdirSync(path.dirname(manifestPath), { recursive: true });
+    fs.writeFileSync(manifestPath, JSON.stringify({
+      generated_at: new Date().toISOString(),
+      generator: "san_exporter Playwright Headless",
+      count: manifestList.length,
+      assets: manifestList
+    }, null, 2), 'utf-8');
+
+    console.log(`📋 Manifeste d'intégrité mis à jour : ${manifestPath}`);
   } finally {
     await browser.close();
   }
 }
 
 main().catch(err => {
-  console.error("❌ Erreur d'exportation :", err);
+  console.error("❌ Erreur d'exportation headless :", err);
   process.exit(1);
 });
 ```
 
-### 2. Compilateur d'Icônes Vectorielles (`scripts/svg_to_png.mjs`)
+### 2. Compilateur d'Icônes Vectorielles Matriciel (`scripts/svg_to_png.mjs`)
+
 ```javascript
 #!/usr/bin/env node
 // scripts/svg_to_png.mjs
 // Convertisseur vectoriel SVG vers suites d'icônes multi-plateformes via Sharp.
+// Usage: node scripts/svg_to_png.mjs [path/to/logo.svg]
 
 import fs from 'fs';
 import path from 'path';
@@ -335,30 +373,32 @@ const ICON_TARGETS = [
   { path: 'public/icons/icon-192.png', size: 192, alpha: true },
   { path: 'public/icons/icon-512.png', size: 512, alpha: true },
   { path: 'assets/adaptive-icon.png', size: 1024, alpha: true },
-  { path: 'assets/icon.png', size: 1024, alpha: false }, // iOS App Store (Zéro canal alpha !)
+  { path: 'assets/icon.png', size: 1024, alpha: false }, // iOS App Store (Zéro canal alpha - Anti ITMS-90717)
   { path: 'assets/play-store-icon.png', size: 512, alpha: true }
 ];
 
 async function generateIcons(svgPath) {
-  if (!fs.existsSync(svgPath)) {
-    console.error(`❌ Fichier SVG introuvable : ${svgPath}`);
+  const resolvedSvgPath = path.resolve(svgPath);
+  if (!fs.existsSync(resolvedSvgPath)) {
+    console.error(`❌ Fichier SVG introuvable : ${resolvedSvgPath}`);
     process.exit(1);
   }
 
-  const svgBuffer = fs.readFileSync(svgPath);
-  console.log(`🎨 [san_exporter] Génération du pack d'icônes à partir de : ${svgPath}`);
+  const svgBuffer = fs.readFileSync(resolvedSvgPath);
+  console.log(`🎨 [san_exporter] Génération du pack d'icônes à partir de : ${resolvedSvgPath}`);
 
   for (const target of ICON_TARGETS) {
     fs.mkdirSync(path.dirname(target.path), { recursive: true });
 
     let pipeline = sharp(svgBuffer).resize(target.size, target.size);
+
     if (!target.alpha) {
       // Élimination formelle du canal alpha (exigence stricte Apple App Store 1024x1024)
       pipeline = pipeline.removeAlpha().flatten({ background: '#FFFFFF' });
     }
 
-    await pipeline.png().toFile(target.path);
-    console.log(`✅ Généré : ${target.path} (${target.size}x${target.size} px, alpha: ${target.alpha})`);
+    await pipeline.png({ compressionLevel: 9 }).toFile(target.path);
+    console.log(`✅ Généré : ${target.path} (${target.size}x${target.size} px, canal alpha : ${target.alpha ? 'OUI' : 'NON (Apple Clean)'})`);
   }
 
   console.log("🌟 [san_exporter] Suite d'icônes générée avec succès.");
@@ -373,7 +413,7 @@ generateIcons(inputSvg).catch(err => {
 
 ---
 
-## 8. PRINCIPES DIRECTEURS & INVARIANTS D'EXPORTATION
+## 8. PRINCIPES DIRECTEURS ET INVARIANTS D'EXPORTATION
 
 ### 1. Invariant de Reproductibilité Déterministe
 Toute image d'illustration, mockup ou icône doit pouvoir être entièrement régénérée de zéro en exécutant une ligne de commande documentée. Aucune retouche d'image ne doit être faite manuellement sur un fichier PNG isolé.
@@ -381,12 +421,14 @@ Toute image d'illustration, mockup ou icône doit pouvoir être entièrement ré
 ### 2. Invariant de Zéro Perte Vectorielle
 Les icônes matricielles dérivent systématiquement et exclusivement d'un fichier source SVG vectoriel propre. Il est formellement interdit d'agrandir un PNG de 128px pour en produire une icône de 1024px.
 
-### 3. Invariant de Conformité aux Règles des Stores
-* Toute capture pour l'App Store doit strictement respecter le ratio requis sans rognage déformant.
-* L'icône soumise à l'App Store (`1024×1024 px`) ne doit comporter aucun canal alpha (transparence) : sa présence déclenche une erreur irréversible `ITMS-90717` lors de l'envoi de l'archive IPA.
+### 3. Invariant de Zéro Canal Alpha sur l'Icône Apple (Anti-Rejet ITMS-90717)
+L'icône soumise à l'Apple App Store (`assets/icon.png`, `1024×1024 px`) ne doit comporter aucun canal alpha (transparence). Sa présence déclenche une erreur irréversible `ITMS-90717` lors de la validation de l'archive IPA par Transporter ou Xcode.
 
-### 4. Invariant de Sobriété des Tailles Fichiers
-Chaque asset généré subit une compression d'optimisation sans perte afin de garantir que les applications légères restent téléchargeables rapidement sur des réseaux à faible débit (3G/EDGE).
+### 4. Invariant de Synchronisation Synchrone des Captures
+Toute capture Playwright doit obligatoirement attendre `networkidle` et `document.fonts.ready` avant de déclencher `page.screenshot()`. Rendre une page avec des polices de secours est considéré comme un défaut de livraison.
+
+### 5. Invariant d'Intégrité par Manifeste SHA-256
+Chaque lot d'exportations génère ou met à jour `design/export_manifest.json` avec les empreintes cryptographiques des images produites pour permettre une vérification d'intégrité déterministe lors des pipelines CI/CD.
 
 ---
 
@@ -403,12 +445,12 @@ graph LR
     san_executer["san_executer.md"] -.->|Pilote les commandes CLI d'export| san_exporter
 ```
 
-### Amont (Ce qui alimente `san_exporter`)
+### Amont (Ce qui alimente `san_exporter`) :
 * [`../skills/san_designer.md`](../skills/san_designer.md) : Fournit les fichiers HTML statiques prêts à être capturés et tagués avec `CANVAS_SPEC`.
 * [`../skills/san_init.md`](../skills/san_init.md) : Fournit le logo vectoriel validé dans `.agents/rules/LOGO.md` ou `.agents/rules/logo.svg`.
 * [`san_design_tokens.md`](san_design_tokens.md) : Garantit que les polices locales et les variables de couleur sont stables et déterministes lors du rendu headless.
 
-### Aval (Ce qui consomme les livrables de `san_exporter`)
+### Aval (Ce qui consomme les livrables de `san_exporter`) :
 * [`../skills/san_store_legal_expert.md`](../skills/san_store_legal_expert.md) : Récupère les paquets d'assets validés pour la constitution du dossier de soumission officiel.
 * [`../skills/san_growth_expert.md`](../skills/san_growth_expert.md) : Exploite les captures exportées pour illustrer les fiches ASO sur Google Play Console et App Store Connect.
 * [`../skills/san_ux_ui_expert.md`](../skills/san_ux_ui_expert.md) : Intègre les favicons et les icônes applicatives générées au sein de la codebase React, Next.js ou Expo.

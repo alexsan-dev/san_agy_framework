@@ -13,8 +13,37 @@ et ce projet adhère à [Semantic Versioning](https://semver.org/lang/fr/).
 
 ### Planned
 - Implémentation du CLI d'installation (`npx @alexsan/agy-framework init`).
-- Packaging des vrais modules exécutables dans `/src/skills/` et `/src/sub-skills/`.
-- Tests d'intégration et scénarios de validation sur codebases clientes test.
+- Packaging de la Phase 4 (Sous-skills d'exécution transversaux dans `src/skills/`).
+- Packaging de la Phase 5 (Pôle conception visuelle & Full-Stack dans `src/skills/`).
+- Packaging de la Phase 6 (Pôle qualité, DevOps, légal & croissance dans `src/skills/`).
+
+---
+
+## [0.2.0] - 2026-10-23
+
+### Added
+- **Phase 3 Validée — Packaging du Socle d'Onboarding & Cadrage dans `src/skills/` :**
+  - **`src/skills/san_init/` :**
+    - `SKILL.md` : Guide opérationnel complet avec frontmatter YAML conforme Antigravity, protocole d'initialisation en 7 phases, détection déterministe de 10 stacks logicielles.
+    - `scripts/git_ai_hygiene.sh` : Script Bash autonome (`chmod +x`), purge des anciens agents (`CLAUDE.md`, `.cursorrules`, etc.), désindexation cache Git (`git rm --cached`) et verrouillage hermétique (`.gitignore` et `.git/info/exclude`).
+    - `scripts/svg_to_png.mjs` : Déclinaison vectorielle multi-résolution avec moteur Sharp et gestion des fallbacks système.
+    - Gabarits de règles : `BRAND_TEMPLATE.md`, `PRODUCT_TEMPLATE.md`, `PROJECT_TEMPLATE.md`, `API_TEMPLATE.md`, `LOGO_TEMPLATE.md`, `rules_json_template.json` et index maître `GEMINI_INDEX_TEMPLATE.md`.
+  - **`src/skills/san_brainstorming/` :**
+    - `SKILL.md` : Processus socratique d'investigation en 5 questions fermées, seuils d'arbitrage et protocoles de déclenchement.
+    - `references/ideation_scoring_matrix.md` : Grille d'évaluation quantifiée sur 40 points (Impact, Faisabilité, Réalité Terrain Afrique, Risques) avec clauses éliminatoires.
+    - `references/congo_market_signals.md` : Intelligence terrain sur la connectivité 3G, Mobile Money (Airtel/MTN MoMo), usages WhatsApp et parcs terminaux Android low-end.
+    - `scripts/score_idea.py` : Moteur de calcul déterministe CLI et export JSON.
+    - `templates/IDEA_TEMPLATE.md` : Squelette normalisé pour `/roadmaps/ideas/*.md` avec payload de transition vers `san_planner`.
+  - **`src/skills/san_planner/` :**
+    - `SKILL.md` : Découpage cartésien en 6 phases séquentielles étanches (CPM), règle stricte de Preuve par le Code, matrice des tests obligatoires par stack et Fast-Track orchestrateur.
+    - `templates/ROADMAP_TEMPLATE.md` : Squelette normé de feuille de route avec tests obligatoires.
+    - `templates/CHANGELOG_TEMPLATE.md` : Gabarit conforme à Keep a Changelog.
+    - `scripts/archive_roadmap.sh` : Script Bash autonome vérifiant que 100 % des cases sont cochées (`- [x]`) avant archivage vers `/roadmaps/archives/`.
+- **Suite de Tests Automatisés Phase 3 (`tests/phase3/`) :**
+  - `test_git_ai_hygiene.sh` : Test d'intégration complet sur dépôt Git temporaire pollué (100 % passants).
+  - `test_archive_roadmap.sh` : Tests unitaires de rejet des roadmaps incomplètes/vides et validation d'archivage déterministe (100 % passants).
+- **Élévation Complète des Spécifications (`skills/` et `sub-skills/`) :**
+  - Refonte intégrale des 11 skills principaux et 6 sous-skills avec code de production, schémas TypeScript, formules mathématiques et zéro placeholder.
 
 ---
 

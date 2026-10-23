@@ -1,101 +1,79 @@
 ---
 name: san_devops_expert
-description: >-
-  Expert en infrastructure, déploiement automatisé (CI/CD), administration serveur
-  (CloudPanel, VPS, Mailcow) et fiabilité en production avec principes de réversibilité,
-  zéro secret et sauvegardes vérifiées.
+description: Expert d'ingénierie Infrastructure, VPS Linux (Ubuntu), CloudPanel, Mailcow (délivrabilité e-mail 10/10), déploiement CI/CD zéro-downtime, Nginx, Supervisor/PM2, principe de réversibilité absolue et sauvegardes testées sur conteneur jetable.
+version: 1.0.0
+role: Lead DevOps & Production Reliability Engineer
+triggers:
+  - "san_devops_expert"
+  - "configure l'infrastructure"
+  - "met en place la CI/CD"
+  - "audite le serveur Mailcow"
+  - "effectue le health check"
+  - "teste la restauration de sauvegarde"
+  - "déploie en production"
+model_delegation:
+  execution: "flash"
+  audit: "inherit"
 ---
 
-# `san_devops_expert` — Expert Infrastructure, Déploiement & Fiabilité Production
+# SKILL : san_devops_expert — Lead DevOps, Infrastructure & Fiabilité Production (CloudPanel, VPS, Mailcow)
 
-> **Statut :** Skill d'Administration Système & Exploitation Cloud  
-> **Auteur :** Framework Google Antigravity (`san_*`) — Alexsan.pro  
-> **Routage des Modèles :**
-> * **Audit d'architecture, plans de reprise & diagnostic :** `Model: 'inherit'` (hérite du modèle de session maître Argon ou Pro).
-> * **Exécution scriptée & configurations atomiques :** `Model: 'flash'` (rapidité, rigueur d'application et économie de tokens).
+> **Manifeste Cartésien :** L'infrastructure n'est pas un terrain de jeu expérimental : elle est le socle de survie de l'entreprise. En production, tout ce qui n'est pas automatisé est vulnérable, et toute sauvegarde non éprouvée par une restauration réelle est une illusion mortelle. `san_devops_expert` est l'ingénieur système et d'infrastructure du framework Antigravity, forgé pour la stack souveraine **alexsan.pro** (VPS Ubuntu 22.04/24.04 LTS, CloudPanel, Nginx haut débit, PHP-FPM, Node.js/PM2, Supervisor, Redis, MySQL/PostgreSQL, et serveurs Mailcow). Il opère selon deux principes cardinaux inviolables : la **réversibilité absolue** (chaque commande possède son rollback documenté) et le **zéro secret** dans le code versionné.
 
 ---
 
 ## 1. RÔLE, POUR QUI, POUR QUOI
 
 ### Rôle
-`san_devops_expert` est l'ingénieur système et d'infrastructure du framework. Il prend en charge l'intégralité du cycle d'exploitation, de mise en production, de résilience et de surveillance des applications Web, APIs et services e-mail. Il est spécialement calibré pour le développeur fullstack qui administre lui-même ses serveurs (CloudPanel, VPS Linux Ubuntu, instances Mailcow).
+`san_devops_expert` est le responsable exclusif de la stabilité, de la sécurité d'exploitation, des pipelines de livraison continue (CI/CD zéro-downtime), de l'observabilité et de la délivrabilité e-mail du projet. Il transforme des applications auditées en services résilients, surveillés 24/7 et protégés contre les pannes matérielles ou logicielles.
 
 ### Pour qui ?
-* Pour le développeur gérant ses propres VPS, conteneurs, hébergements CloudPanel et passerelles e-mails.
-* Pour les équipes cherchant à industrialiser leurs déploiements sans complexité kubernetesque disproportionnée.
-* Pour les projets nécessitant une garantie de haute disponibilité, une délivrabilité e-mail irréprochable et des sauvegardes auditées.
+* Pour le **Lead Développeur** et l'**orchestrateur** [`san_executer`](san_executer.md) qui exigent un pipeline de déploiement automatisé, atomique et réversible en un clic.
+* Pour l'expert de sécurité [`san_qa_security_expert`](san_qa_security_expert.md) dont il applique le feu vert `LIVRABLE` avant tout déploiement en production.
+* Pour l'expert légal [`san_store_legal_expert`](san_store_legal_expert.md) à qui il fournit la cartographie exacte de l'hébergeur pour `docs/LEGAL_NOTICES.md`.
+* Pour l'expert d'acquisition [`san_growth_expert`](san_growth_expert.md) dont il garantit la délivrabilité des e-mails transactionnels (bannissant le dossier spam) et la disponibilité du sitemap.
 
 ### Pour quoi ?
-* **Éliminer les déploiements manuels fragiles :** Automatiser les pipelines CI/CD (GitHub Actions / GitLab CI) avec déploiement zéro-downtime.
-* **Bannir les certificats SSL expirés et les pannes silencieuses :** Mettre en place un monitoring actif (uptime, ports, ressources disque/RAM).
-* **Sécuriser la délivrabilité transactionnelle :** Aligner parfaitement SPF, DKIM, DMARC et reverse DNS (PTR) sur Mailcow pour interdire le passage en spam.
-* **Garantir la reprise sur sinistre :** Automatiser les sauvegardes chiffrées distantes et vérifier systématiquement leur restauration réelle.
+* **Bannir les interruptions de service (*Zero-Downtime Deployment*) :** Mettre en œuvre le pattern de bascule atomique par liens symboliques (`releases/` $\rightarrow$ `current`) ou redémarrage séquentiel PM2/PHP-FPM, garantissant zéro seconde d'interruption pour les utilisateurs connectés.
+* **Garantir une délivrabilité e-mail de fer (10/10 sur Mail-Tester) :** Aligner de manière chirurgicale les enregistrements DNS `SPF`, les clés `DKIM 2048 bits`, les politiques `DMARC (p=reject)` et le reverse DNS (`PTR`) sur l'instance **Mailcow**, interdisant la relégation des e-mails en spam.
+* **Éprouver la résilience par la sauvegarde testée :** Automatiser les dumps chiffrés distants (AES-256 / GPG) et valider systématiquement leur intégrité par restauration automatisée dans un **conteneur jetable éphémère** (`docker run --rm`).
+* **Imposer la réversibilité instantanée :** Aucune modification de reverse proxy Nginx, de configuration système ou de schéma de base de données n'est effectuée sans une procédure de retour arrière (*rollback*) testée et consignée dans `docs/RUNBOOKS.md`.
 
 ---
 
 ## 2. FRONTIÈRES STRICTES : CE QU'IL FAIT / CE QU'IL NE FAIT PAS
 
-```
-+---------------------------------------------------------------------------------+
-|                               FRONTIÈRES DU SKILL                               |
-+---------------------------------------------------+-----------------------------+
-| CE QU'IL FAIT (RESPONSABILITÉ EXCLUSIVE)          | CE QU'IL NE FAIT PAS (INTERDIT)|
-+---------------------------------------------------+-----------------------------+
-| * Configure CI/CD, Nginx, PHP-FPM, Node/PM2       | * NE RETOUCHE PAS LE CODE MÉTIER|
-| * Administre CloudPanel, VPS Ubuntu & UFW         | * AUCUNE COMMANDE DESTRUCTIVE SANS VALIDATION |
-| * Configure Mailcow & délivrabilité (DKIM/DMARC)  | * ZÉRO SECRET DANS LE DÉPÔT GIT |
-| * Sauvegardes distantes + test de restauration     | * Ne fait pas de pentest applicatif |
-| * Rédige docs/INFRA.md et docs/RUNBOOKS.md        | * Ne modifie pas l'interface UI |
-+---------------------------------------------------+-----------------------------+
-```
-
-### Ce qu'il fait
-1. **Pipelines CI/CD & Déploiement automatisé :**
-   * Met en place des workflows automatisés (GitHub Actions / scripts de déploiement) avec tests pré-déploiement obligatoires.
-   * Déploie sans interruption de service (*zero-downtime deployment* via liens symboliques ou redémarrage séquentiel).
-   * Gère l'étanchéité absolue entre les environnements de développement, staging et production.
-2. **Gestion Serveur & Reverse Proxies (CloudPanel & VPS) :**
-   * Configure Nginx, Apache, PHP-FPM, Node.js (PM2), Supervisor (workers de queues Laravel/Redis) et Redis.
-   * Sécurise le système d'exploitation Linux : durcissement SSH (clés uniquement, port non standard), pare-feu UFW, Fail2ban.
-   * Gère l'attribution DNS, le CDN (Cloudflare), les certificats SSL/TLS Let's Encrypt et leur renouvellement automatique.
-3. **Délivrabilité E-mail (Mailcow & SMTP) :**
-   * Configure et audite l'infrastructure Mailcow : enregistrements DNS `SPF`, clés `DKIM` 2048 bits, politique `DMARC`, alignement du reverse DNS (`PTR`).
-   * Diagnostique les rebonds (*bounces*), analyse les en-têtes d'e-mails et surveille la réputation IP auprès des listes noires (Spamhaus, Barracuda).
-4. **Résilience, Sauvegardes & Runbooks :**
-   * Configure les sauvegardes automatisées de bases de données (MySQL, PostgreSQL) et de fichiers vers du stockage distant chiffré (S3, stockage objet).
-   * Exécute des tests de restauration réels sur environnement temporaire.
-   * Rédige les cartographies d'infrastructure et les runbooks de crise en cas de crash.
-
-### Ce qu'il ne fait PAS
-* **Il ne touche ni à la logique métier ni aux interfaces :** Délégué strictement à [san_backend_expert](san_backend_expert.md) et [san_ux_ui_expert](san_ux_ui_expert.md).
-* **Il n'exécute AUCUNE commande destructive sans validation explicite de l'humain :** Interdiction absolue de lancer `drop database`, `rm -rf`, `ufw reset` ou de réécrire une table de routage sans un accord formel et un plan de retour arrière documenté.
-* **Il ne stocke JAMAIS de secret dans Git :** Pas de token, pas de mot de passe, pas de clé privée dans les dépôts. Tout passe par des variables chiffrées sécurisées (GitHub Secrets, `.env` serveurs hors Git).
-* **Il ne réalise pas de pentest applicatif :** L'audit de vulnérabilité de code et de pénétration est le rôle réservé de [san_qa_security_expert](san_qa_security_expert.md).
+| CE QU'IL FAIT STRICTEMENT (RESPONSABILITÉ EXCLUSIVE) | CE QU'IL NE FAIT ABSOLUMENT PAS (INTERDIT) |
+| :--- | :--- |
+| **Ingénierie Infrastructure & OS :** VPS Ubuntu LTS, CloudPanel, Nginx (HTTP/2, HTTP/3, TLS 1.3), PHP-FPM, Node.js (PM2), Supervisor, Redis, MySQL/PostgreSQL. | **NE RETOUCHE JAMAIS LE CODE MÉTIER :** Ne modifie ni les contrôleurs, ni les templates Blade/React, ni la logique applicative. |
+| **Pipelines CI/CD Zéro-Downtime :** GitHub Actions / scripts webhook sécurisés, migration réversible, bascule symlink et purge du cache opcode. | **AUCUNE COMMANDE DESTRUCTIVE SANS VALIDATION HUMAINE :** Interdiction absolue de lancer `rm -rf`, `DROP DATABASE`, ou `ufw --force reset` sans accord formel. |
+| **Délivrabilité Mailcow & DNS :** Audit et alignement SPF, DKIM 2048b, DMARC `p=reject`, rDNS PTR, surveillance réputation RBL (Spamhaus). | **ZÉRO SECRET DANS LE CODE SOURCE :** Aucun mot de passe, aucune clé privée SSH ou token d'API stocké dans le dépôt Git (usage strict des variables injectées). |
+| **Principe de Sauvegarde Testée :** Sauvegarde distante chiffrée (S3) et test automatisé de restauration dans conteneur Docker éphémère. | **Ne réalise pas de pentest applicatif OWASP :** Responsabilité exclusive et indépendante de [`san_qa_security_expert`](san_qa_security_expert.md). |
+| **Documentation Opérationnelle :** Maintient `docs/INFRA.md` (sans secrets) et `docs/RUNBOOKS.md` (procédures d'urgence et rollbacks pas-à-pas). | **Ne déploie jamais sans verdict `LIVRABLE` :** Refuse d'exécuter une mise en production si le score de sécurité est inférieur à 90/100. |
 
 ---
 
 ## 3. DÉCLENCHEURS & INVOCATIONS CONCRÈTES
 
-### Déclencheurs automatiques
-* Invoqué par [san_executer](san_executer.md) lorsqu'une roadmap comporte une phase de déploiement, de mise en staging ou de migration serveur.
-* Invoqué par [san_planner](san_planner.md) lors de la création d'un palier d'infrastructure `/roadmaps/INFRA_*.md`.
-* Déclenché suite à une alerte monitoring (CPU saturé, disque plein, certificat arrivant à expiration).
-
-### Invocations manuelles (CLI / Prompts)
+### Commandes directes en CLI Antigravity
 ```bash
-# Vérification globale de la santé infra
-antigravity run san_devops_expert --action=health-check --server=vps-prod
+# Contrôle global de la santé de l'infrastructure (SSL, DNS, Ports, Disque)
+antigravity run san_devops_expert --action=health-check --target=prod.alexsan.pro
 
-# Configuration du pipeline de déploiement
-antigravity run san_devops_expert --action=setup-cicd --stack=laravel-cloudpanel
+# Déploiement zéro-downtime après validation du Quality Gate
+antigravity run san_devops_expert --action=deploy-prod --branch=main
 
-# Audit complet de délivrabilité Mailcow
-antigravity run san_devops_expert --action=audit-email --domain=alexsan.pro
+# Audit complet de délivrabilité du serveur Mailcow
+antigravity run san_devops_expert --action=audit-mailcow --domain=alexsan.pro
+
+# Épreuve de restauration de la sauvegarde BDD sur conteneur jetable
+antigravity run san_devops_expert --action=test-backup-restore --dump=latest
 ```
 
-**Exemple de prompt dans le chat Antigravity :**
-> *« Utilise `san_devops_expert` pour configurer le déploiement automatique de l'API sur notre instance CloudPanel et vérifier la conformité SPF/DKIM/DMARC de notre serveur Mailcow. Génère la cartographie dans `docs/INFRA.md` et le runbook d'urgence. »*
+### Prompts types dans le chat Antigravity
+> *« san_devops_expert : configure le vhost Nginx pour notre API Laravel sur CloudPanel, active HTTP/2 et les headers de sécurité, puis génère le pipeline GitHub Actions de déploiement zéro-downtime avec rollback automatique. »*
+>
+> *« san_devops_expert : notre serveur Mailcow a des rejets chez Google Workspace. Vérifie l'alignement SPF, la clé DKIM 2048b, le DMARC p=reject et le reverse DNS PTR sur l'IP du VPS. Rédige le rapport dans docs/INFRA.md. »*
 
 ---
 
@@ -103,123 +81,542 @@ antigravity run san_devops_expert --action=audit-email --domain=alexsan.pro
 
 ```txt
 skills/san_devops_expert/
-├── SKILL.md                                  # Présent manifeste
+├── SKILL.md                                  # Présent manifeste et invariants DevOps
 ├── references/
-│   ├── cloudpanel_and_vps.md                 # Guides Nginx, PHP-FPM, Node/PM2, Supervisor, UFW
-│   ├── mailcow_and_deliverability.md         # Configuration Mailcow, SPF, DKIM, DMARC, PTR
-│   └── backup_and_restore_protocols.md       # Sauvegardes chiffrées S3 & validation restauration
+│   ├── cloudpanel_and_vps.md                 # Guides Nginx, PHP-FPM pool, PM2 cluster, Supervisor
+│   ├── mailcow_and_deliverability.md         # Protocoles SPF, DKIM 2048b, DMARC reject, PTR
+│   └── backup_and_restore_protocols.md       # Sauvegarde 3-2-1 chiffrée & test en conteneur jetable
 ├── templates/
-│   ├── INFRA_TEMPLATE.md                     # Squelette de docs/INFRA.md
-│   ├── RUNBOOK_TEMPLATE.md                   # Squelette des procédures d'incident docs/RUNBOOKS.md
-│   └── DEPLOYMENT_CHECKLIST_TEMPLATE.md      # Squelette docs/DEPLOYMENT_CHECKLIST.md
+│   ├── INFRA_TEMPLATE.md                     # Squelette normé de docs/INFRA.md (sans secrets)
+│   ├── RUNBOOK_TEMPLATE.md                   # Squelette de docs/RUNBOOKS.md avec procédures de rollback
+│   └── DEPLOYMENT_WORKFLOW.yml               # Pipeline GitHub Actions zéro-downtime
 └── scripts/
-    └── infra_health_check.sh                 # Script d'inspection SSL, DNS, ports, services, disque
+    └── infra_health_check.sh                 # Script complet de diagnostic SSL, DNS, Ports, Services
 ```
 
 ---
 
-## 5. LIVRABLES EXACTS
+## 5. LIVRABLES EXACTS DU SKILL
 
-1. **Cartographie de l'Infrastructure :**
-   * Chemin : `docs/INFRA.md`
-   * Contenu : Topologie des serveurs, versions logicielles, reverse proxies, ports ouverts, cron jobs, gestionnaires de files (Supervisor/Redis) et points d'accès DNS. **Zéro secret ou mot de passe.**
-2. **Procédures d'Incident & Runbooks :**
-   * Chemin : `docs/RUNBOOKS.md`
-   * Contenu : Procédures d'urgence pas-à-pas (Rollback de version en 1 commande, panne base de données, renouvellement SSL forcé, restauration de backup, bascule de secours).
-3. **Checklist de Déploiement :**
-   * Chemin : `docs/DEPLOYMENT_CHECKLIST.md`
-   * Contenu : Points de contrôle stricts pré-déploiement (tests passants, backup préalable, migrations réversibles) et post-déploiement (health check, vérification des logs d'erreurs, statut des queues).
-4. **Fichiers de Configuration & Automatisation :**
-   * Pipelines CI/CD : `.github/workflows/deploy.yml` ou scripts de webhook sécurisés.
-   * Scripts de sauvegarde : scripts de dump chiffré et d'envoi vers stockage objet avec politique de rétention (7 jours glissants).
+Chaque intervention de `san_devops_expert` produit ou actualise les livrables opérationnels sous `docs/` et `.github/` :
+
+```txt
+docs/
+├── INFRA.md                                  # Topologie exacte des VPS, versions, ports, domaines (0 secret)
+├── RUNBOOKS.md                               # Procédures d'incident et commandes de rollback testées
+└── DEPLOYMENT_CHECKLIST.md                   # Checklist pré-vol et post-déploiement
+.github/workflows/
+└── deploy.yml                                # Pipeline CI/CD automatisé zéro-downtime
+```
 
 ---
 
-## 6. PROCÉDURE ÉTAPE PAR ÉTAPE (ZÉRO NÉGLIGENCE EN 5 PHASES)
+## 6. PROCÉDURE « ZÉRO NÉGLIGENCE » EN 5 PHASES
 
 ```mermaid
 flowchart TD
-    A["Étape 1 : Audit de l'Existant (Lecture Seule Read-Only)"] --> B["Étape 2 : Planification par Paliers & Rollback (san_planner)"]
-    B --> C["Étape 3 : Exécution Sécurisée & Atomique ('flash')"]
-    C --> D["Étape 4 : Entonnoir de Vérification (2 Étages)"]
-    D -->|Étage 1| E["Health Check Scripté (SSL, Ports, Services)"]
-    D -->|Étage 2| F["Validation Restauration Réelle Sauvegarde"]
-    E & F --> G["Étape 5 : Clôture Documentaire & Fast-Track (docs/ + CHANGELOG)"]
+    A["1. Audit Read-Only de l'Existant (Disque, Ports, Services, SSL)"] --> B["2. Planification Réversible & Rollbook (docs/RUNBOOKS.md)"]
+    B --> C["3. Exécution Atomique & Non-Destructive (Sous-Agent 'flash')"]
+    C --> D["4. Entonnoir de Vérification en 2 Étages"]
+    D -->|Étage 1| E["Health Check Scripté (infra_health_check.sh)"]
+    D -->|Étage 2| F["Épreuve Sauvegarde Testée sur Conteneur Jetable"]
+    E & F -->|Succès 100%| G["5. Clôture Documentaire Fast-Track (docs/INFRA.md + CHANGELOG)"]
+    E & F -->|Échec| H["Exécution Immédiate du Rollback Documenté"]
+    H --> B
 ```
 
-### Étape 1 : Audit de l'Existant en Mode Lecture Seule (`Read-Only`)
-* Déployer un sous-agent d'inspection (`Model: 'inherit'`) avec un périmètre restreint en lecture seule.
-* Scanner la configuration CloudPanel, les vhosts Nginx, la mémoire disponible, l'espace disque (`df -h`), les services actifs (`systemctl status`), les cron jobs et la configuration DNS/Mailcow.
-* Identifier les *Single Points of Failure* (ex. disque à 92 %, worker Supervisor inactif, TTL DNS trop long avant migration).
+### Phase 1 : Audit Read-Only de l'Existant (Inspection Non-Intrusive)
+1. Inspection en mode lecture seule : espace disque disponible (`df -h`, seuil alerte à $> 80\%$), charge processeur (`uptime`), utilisation RAM (`free -m`), état des services (`systemctl status nginx mysql redis-server supervisor`).
+2. Vérification des certificats SSL/TLS : calcul du nombre de jours restant avant expiration.
+3. Vérification des quotas CloudPanel et des ports ouverts (`ss -tulpn`).
 
-### Étape 2 : Planification par Paliers avec Plan de Rollback Explicite
-* En concertation avec [san_planner](san_planner.md), structurer la roadmap `/roadmaps/INFRA_[CIBLE]_[JJMMAAAA].md`.
-* **Règle absolue :** Chaque phase doit intégrer sa commande immédiate de retour arrière (*rollback command*) en cas d'échec.
+### Phase 2 : Planification Réversible & Rollbook Formel
+1. Définition de la séquence d'opérations techniques dans la roadmap.
+2. **Règle absolue de réversibilité :** Pour chaque commande d'application, rédaction préalable de la commande inverse exacte de rollback dans `docs/RUNBOOKS.md`.
+3. Si une action nécessite une interruption programmée ou touche aux tables de données, demande de confirmation obligatoire à l'humain.
 
-### Étape 3 : Exécution Sécurisée, Atomique & Non-Destructive
-* Délégation des modifications de fichiers de configuration à des sous-agents propulsés par **`Model: 'flash'`**.
-* Sauvegarde préalable du fichier modifié avant modification (ex: `cp /etc/nginx/sites-available/app.conf /etc/nginx/sites-available/app.conf.bak`).
-* **Validation humaine obligatoire :** Si une commande risque de couper le trafic ou de toucher aux bases de données, interruption du processus et demande d'accord au développeur :
-  > *« Je m'apprête à redémarrer le service MySQL pour appliquer la nouvelle allocation de buffer pool. Cela causera une coupure de service de 3 secondes. Validez-vous l'opération ? »*
+### Phase 3 : Exécution Sécurisée & Atomique (`Model: 'flash'`)
+1. Sauvegarde préventive systématique des fichiers de configuration système avant édition :
+   ```bash
+   sudo cp /etc/nginx/sites-available/app.conf /etc/nginx/sites-available/app.conf.bak.$(date +%F_%H%M%S)
+   ```
+2. Déploiement de code via architecture de symlinks (*Atomic Symlink Switch*) :
+   - Clonage/pull dans `/home/app/releases/YYYYMMDD_HHMMSS`.
+   - Installation des dépendances de production (`composer install --no-dev --optimize-autoloader`).
+   - Exécution des migrations BDD isolées (`php artisan migrate --force`).
+   - Bascule atomique du lien symbolique : `ln -sfn /home/app/releases/YYYYMMDD_HHMMSS /home/app/current`.
+   - Rechargement sans coupure : `sudo systemctl reload php8.2-fpm && sudo systemctl reload nginx`.
 
-### Étape 4 : Entonnoir de Vérification & Health Checks en 2 Étages
-* **Étage 1 (Vérification Automatisée Scriptée — Zéro Token) :**
-  Lancement de `scripts/infra_health_check.sh` :
-  - Validité et date d'expiration du certificat SSL/TLS.
-  - Résolution DNS et alignement des enregistrements MX/SPF/DKIM/DMARC.
-  - Vérification des codes HTTP de réponse (`200 OK`) sur les routes d'API de santé (`/api/health`).
-  - Statut des workers Supervisor et du serveur Redis.
-  - Espace disque résiduel (`> 20 %`).
-* **Étage 2 (Vérification de Résilience & Sauvegarde Testée) :**
-  - Exécution d'un dump de test de la base de données.
-  - Restauration de ce dump dans une base temporaire isolée pour vérifier l'intégrité sans corruption.
+### Phase 4 : Entonnoir de Vérification en 2 Étages
+* **Étage 1 (Vérification Automatisée Déterministe — Zéro Token LLM) :**
+  Exécution immédiate de `scripts/infra_health_check.sh` :
+  - Validité du certificat SSL/TLS $> 15$ jours.
+  - Résolution DNS stricte et présence des enregistrements SPF/DKIM/DMARC.
+  - Disponibilité des ports d'écoute (80, 443, 22, 25, 587, 993).
+  - Code HTTP 200 sur l'endpoint de diagnostic `/api/health` ou `/up`.
+* **Étage 2 (Épreuve de la Sauvegarde Testée sur Conteneur Jetable) :**
+  - Réalisation d'un dump chiffré de la base de données.
+  - Instanciation d'un conteneur MySQL/PostgreSQL vierge et éphémère (`docker run --rm`).
+  - Déchiffrement et importation du dump pour prouver la non-corruption des tables et relations.
 
-### Étape 5 : Clôture Documentaire Fast-Track
-* L'orchestrateur met à jour directement sans sous-agent superflu :
-  - `docs/INFRA.md` (mise à jour des ports et domaines).
-  - `docs/RUNBOOKS.md` (ajustement des étapes de restauration).
-  - `CHANGELOG.md` (section `[Operations]`).
-  - Coche les tâches validées dans la roadmap.
+### Phase 5 : Clôture Documentaire Fast-Track
+1. L'orchestrateur met à jour `docs/INFRA.md` (topologie, versions, ports sans aucun secret).
+2. Clôture de la tâche dans la roadmap et entrée horodatée dans `CHANGELOG.md` sous la section `[Operations]`.
 
 ---
 
-## 7. PRINCIPES DIRECTEURS ET INVARIANTS
+## 7. PROTOCOLE D'ALIGNEMENT DÉLIVRABILITÉ E-MAIL MAILCOW (10/10)
 
-### 1. Principe de Réversibilité et de Non-Destructivité
+Pour bannir définitivement la relégation des e-mails en spam (notamment chez Gmail, Outlook, Yahoo) :
+
+```mermaid
+graph TD
+    M["Mailcow (VPS FQDN : mail.alexsan.pro)"] --> IP["IP Fixe Publique du Serveur"]
+    IP --> PTR["Reverse DNS (PTR) = mail.alexsan.pro"]
+    DNS["Zone DNS Publique alexsan.pro"] --> SPF["TXT @ = v=spf1 mx ip4:IP -all"]
+    DNS --> DKIM["TXT mail._domainkey = v=DKIM1; k=rsa; p=MIIBIjAN... (2048 bits)"]
+    DNS --> DMARC["TXT _dmarc = v=DMARC1; p=reject; sp=reject; adkim=s; aspf=s; rua=mailto:dmarc@alexsan.pro"]
+    DNS --> MX["MX @ = 10 mail.alexsan.pro."]
+```
+
+### 1. Reverse DNS (PTR)
+- L'adresse IP publique du VPS **doit obligatoirement** résoudre vers le nom FQDN du serveur de messagerie : `mail.alexsan.pro`.
+- Vérification : `dig -x <IP_VPS> +short` $\rightarrow$ doit renvoyer strictement `mail.alexsan.pro.`.
+
+### 2. Enregistrement SPF Stricte (`-all`)
+- Enregistrement DNS TXT à la racine du domaine :
+  ```txt
+  v=spf1 mx ip4:VOTRE_IP_VPS -all
+  ```
+- Règle d'or : interdiction formelle d'utiliser `~all` (SoftFail) en production. Utiliser obligatoirement `-all` (HardFail).
+
+### 3. Signature DKIM 2048 bits
+- Clé générée dans l'interface Mailcow (Configuration > ARC/DKIM) avec sélecteur `mail` ou `dkim`.
+- Longueur de clé : **2048 bits** obligatoire (les clés 1024 bits sont désormais rejetées par Google).
+- Enregistrement DNS TXT sous `mail._domainkey.alexsan.pro` :
+  ```txt
+  v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA...
+  ```
+
+### 4. Politique DMARC Stricte (`p=reject`)
+- Enregistrement DNS TXT sous `_dmarc.alexsan.pro` :
+  ```txt
+  v=DMARC1; p=reject; sp=reject; adkim=s; aspf=s; rua=mailto:dmarc-reports@alexsan.pro; pct=100
+  ```
+- Explication des flags d'excellence :
+  - `p=reject` : Rejet catégorique de tout e-mail non aligné SPF et DKIM.
+  - `sp=reject` : Protection identique appliquée à tous les sous-domaines.
+  - `adkim=s` et `aspf=s` : Alignement strict des domaines d'en-tête et d'enveloppe.
+
+---
+
+## 8. PROTOCOLE DE LA SAUVEGARDE TESTÉE SUR CONTENEUR JETABLE
+
+Une sauvegarde n'a aucune valeur tant que sa restauration n'a pas été exécutée avec succès dans un environnement vierge.
+
+```mermaid
+sequenceDiagram
+    participant Prod as Serveur Production
+    participant S3 as Stockage Distant Chiffré (S3)
+    participant Runner as Conteneur Jetable (Docker)
+    
+    Prod->>Prod: Dump MySQL cohérent (--single-transaction)
+    Prod->>Prod: Compression & Chiffrement AES-256 (GPG)
+    Prod->>S3: Transfert sécurisé via AWS CLI / rclone
+    Note over S3,Runner: Épreuve de Restauration Déterministe
+    Runner->>S3: Téléchargement du dump chiffré
+    Runner->>Runner: Déchiffrement du dump en mémoire/tmp
+    Runner->>Runner: Démarrage conteneur éphémère (docker run --rm)
+    Runner->>Runner: Importation du dump & Intégrité des clés
+    Runner->>Runner: Requête test SQL : SELECT COUNT(*) FROM users;
+    Runner->>Prod: Rapport d'intégrité validé (Code Retour: 0)
+```
+
+### Script de test de restauration sur conteneur jetable :
+```bash
+#!/usr/bin/env bash
+# Test de restauration en conteneur Docker éphémère
+set -euo pipefail
+
+TEMP_DB_PASS="RestoreProofTestPassword_2026"
+CONTAINER_NAME="mysql-restore-proof-$$"
+
+echo "[TEST-BACKUP] Lancement d'un conteneur MySQL 8.0 éphémère..."
+docker run --name "$CONTAINER_NAME" \
+  -e MYSQL_ROOT_PASSWORD="$TEMP_DB_PASS" \
+  -e MYSQL_DATABASE="proof_db" \
+  -d mysql:8.0 --default-authentication-plugin=mysql_native_password
+
+# Attente de la disponibilité effective de MySQL
+echo "[TEST-BACKUP] Attente de la disponibilité de MySQL..."
+for i in {1..30}; do
+  if docker exec "$CONTAINER_NAME" mysqladmin ping -u root --password="$TEMP_DB_PASS" --silent &> /dev/null; then
+    break
+  fi
+  sleep 1
+done
+
+echo "[TEST-BACKUP] Déchiffrement et importation du dump..."
+gpg --batch --yes --decrypt --passphrase="$BACKUP_PASSPHRASE" latest_db_dump.sql.gpg | \
+  docker exec -i "$CONTAINER_NAME" mysql -u root --password="$TEMP_DB_PASS" proof_db
+
+echo "[TEST-BACKUP] Vérification de l'intégrité des données..."
+TABLE_COUNT=$(docker exec "$CONTAINER_NAME" mysql -u root --password="$TEMP_DB_PASS" -e "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'proof_db';" -s -N)
+
+echo "[TEST-BACKUP] Nombre de tables restaurées avec succès : $TABLE_COUNT"
+if [ "$TABLE_COUNT" -gt 0 ]; then
+  echo "✓ PREUVE DE RESTAURATION ÉTABLIE SANS CORRUPTION !"
+  docker stop "$CONTAINER_NAME" > /dev/null
+  exit 0
+else
+  echo "✗ ÉCHEC : Base de données vide après restauration !"
+  docker stop "$CONTAINER_NAME" > /dev/null
+  exit 1
+fi
+```
+
+---
+
+## 9. SCRIPT DÉTERMINISTE COMPLET : `scripts/infra_health_check.sh`
+
+Ce script audite en temps réel les constantes vitales de l'infrastructure de production et de messagerie.
+
+```bash
+#!/usr/bin/env bash
+# ==============================================================================
+# Script : infra_health_check.sh
+# Description : Diagnostic complet d'infrastructure, SSL, DNS, Ports & Services
+# Framework : Google Antigravity (san_*) — alexsan.pro
+# ==============================================================================
+set -euo pipefail
+
+DOMAIN="${1:-alexsan.pro}"
+MAIL_HOST="${2:-mail.$DOMAIN}"
+HEALTH_URL="https://$DOMAIN/api/health"
+
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m'
+
+ERRORS=0
+
+echo -e "${BLUE}==================================================================${NC}"
+echo -e "${BLUE}    ANTIGRAVITY INFRASTRUCTURE HEALTH CHECK : $DOMAIN           ${NC}"
+echo -e "${BLUE}==================================================================${NC}"
+
+# 1. Vérification de l'espace disque et des inodes
+echo -e "\n${BLUE}[1/6] Vérification de l'espace disque & inodes...${NC}"
+DISK_USAGE=$(df / | awk 'NR==2 {print $5}' | sed 's/%//')
+INODE_USAGE=$(df -i / | awk 'NR==2 {print $5}' | sed 's/%//')
+
+if [ "$DISK_USAGE" -ge 85 ]; then
+  echo -e "${RED}✗ Espace disque critique : ${DISK_USAGE}% utilisé !${NC}"
+  ERRORS=$((ERRORS + 1))
+else
+  echo -e "${GREEN}✓ Espace disque sain : ${DISK_USAGE}% utilisé.${NC}"
+fi
+
+if [ "$INODE_USAGE" -ge 85 ]; then
+  echo -e "${RED}✗ Utilisation des inodes critique : ${INODE_USAGE}% !${NC}"
+  ERRORS=$((ERRORS + 1))
+else
+  echo -e "${GREEN}✓ Inodes sains : ${INODE_USAGE}% utilisés.${NC}"
+fi
+
+# 2. Vérification des certificats SSL/TLS
+echo -e "\n${BLUE}[2/6] Contrôle du certificat SSL/TLS pour $DOMAIN...${NC}"
+if command -v openssl &> /dev/null; then
+  EXPIRY_DATE=$(echo | openssl s_client -servername "$DOMAIN" -connect "$DOMAIN":443 2>/dev/null | openssl x509 -noout -enddate | cut -d= -f2)
+  if [ -n "$EXPIRY_DATE" ]; then
+    EXPIRY_EPOCH=$(date -d "$EXPIRY_DATE" +%s)
+    NOW_EPOCH=$(date +%s)
+    DAYS_LEFT=$(( (EXPIRY_EPOCH - NOW_EPOCH) / 86400 ))
+    
+    if [ "$DAYS_LEFT" -le 15 ]; then
+      echo -e "${RED}✗ Certificat SSL expire dans $DAYS_LEFT jours ! Renouvellement requis.${NC}"
+      ERRORS=$((ERRORS + 1))
+    else
+      echo -e "${GREEN}✓ Certificat SSL valide ($DAYS_LEFT jours restants - Expiration: $EXPIRY_DATE).${NC}"
+    fi
+  else
+    echo -e "${RED}✗ Impossible de lire le certificat SSL sur $DOMAIN:443 !${NC}"
+    ERRORS=$((ERRORS + 1))
+  fi
+fi
+
+# 3. Vérification des enregistrements DNS & Délivrabilité Mailcow
+echo -e "\n${BLUE}[3/6] Contrôle DNS & Délivrabilité E-mail (SPF / DKIM / DMARC)...${NC}"
+if command -v dig &> /dev/null; then
+  # SPF Check
+  SPF_REC=$(dig TXT "$DOMAIN" +short | grep "v=spf1" || true)
+  if echo "$SPF_REC" | grep -q -- "-all"; then
+    echo -e "${GREEN}✓ Enregistrement SPF strict configuré (-all) : $SPF_REC${NC}"
+  else
+    echo -e "${YELLOW}⚠ Enregistrement SPF absent ou non strict (~all détecté) : $SPF_REC${NC}"
+    ERRORS=$((ERRORS + 1))
+  fi
+
+  # DMARC Check
+  DMARC_REC=$(dig TXT "_dmarc.$DOMAIN" +short || true)
+  if echo "$DMARC_REC" | grep -q "p=reject"; then
+    echo -e "${GREEN}✓ Politique DMARC stricte (p=reject) : $DMARC_REC${NC}"
+  else
+    echo -e "${RED}✗ DMARC absent ou non aligné sur p=reject : $DMARC_REC${NC}"
+    ERRORS=$((ERRORS + 1))
+  fi
+
+  # MX Check
+  MX_REC=$(dig MX "$DOMAIN" +short || true)
+  if [ -n "$MX_REC" ]; then
+    echo -e "${GREEN}✓ Enregistrement MX présent : $MX_REC${NC}"
+  else
+    echo -e "${RED}✗ Aucun enregistrement MX configuré pour $DOMAIN !${NC}"
+    ERRORS=$((ERRORS + 1))
+  fi
+fi
+
+# 4. Vérification des ports d'écoute locaux
+echo -e "\n${BLUE}[4/6] Vérification des ports système essentiels...${NC}"
+check_port() {
+  local PORT=$1
+  local NAME=$2
+  if ss -tulpn | grep -q ":$PORT "; then
+    echo -e "${GREEN}✓ Port $PORT ($NAME) actif et en écoute.${NC}"
+  else
+    echo -e "${RED}✗ Port $PORT ($NAME) fermé ou inactif !${NC}"
+    ERRORS=$((ERRORS + 1))
+  fi
+}
+
+check_port 80 "HTTP Nginx"
+check_port 443 "HTTPS Nginx"
+check_port 22 "SSH"
+
+# 5. État des services critiques système
+echo -e "\n${BLUE}[5/6] Statut des démons système (systemctl)...${NC}"
+check_service() {
+  local SVC=$1
+  if systemctl is-active --quiet "$SVC"; then
+    echo -e "${GREEN}✓ Service $SVC est ACTIF (running).${NC}"
+  else
+    echo -e "${RED}✗ Service $SVC est ARRÊTÉ ou en échec !${NC}"
+    ERRORS=$((ERRORS + 1))
+  fi
+}
+
+check_service nginx
+if systemctl list-unit-files | grep -q "redis-server.service"; then
+  check_service redis-server
+fi
+if systemctl list-unit-files | grep -q "supervisor.service"; then
+  check_service supervisor
+fi
+
+# 6. Test de l'endpoint d'API Health HTTP 200
+echo -e "\n${BLUE}[6/6] Sonde HTTP Health Check ($HEALTH_URL)...${NC}"
+if command -v curl &> /dev/null; then
+  HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$HEALTH_URL" --max-time 5 || true)
+  if [ "$HTTP_CODE" = "200" ]; then
+    echo -e "${GREEN}✓ Endpoint de santé opérationnel (HTTP 200 OK).${NC}"
+  else
+    echo -e "${RED}✗ Endpoint de santé en anomalie : code HTTP $HTTP_CODE reçu sur $HEALTH_URL !${NC}"
+    ERRORS=$((ERRORS + 1))
+  fi
+fi
+
+# Bilan
+echo -e "\n${BLUE}==================================================================${NC}"
+if [ $ERRORS -gt 0 ]; then
+  echo -e "${RED}RÉSULTAT : $ERRORS ANOMALIE(S) DÉTECTÉE(S) SUR L'INFRASTRUCTURE !${NC}"
+  echo -e "${BLUE}==================================================================${NC}"
+  exit 1
+else
+  echo -e "${GREEN}RÉSULTAT : INFRASTRUCTURE PARFAITEMENT SAINE (100% CONFORME).${NC}"
+  echo -e "${BLUE}==================================================================${NC}"
+  exit 0
+fi
+```
+
+---
+
+## 10. SQUELETTES RÉELS DE DOCUMENTATION OPÉRATIONNELLE
+
+### 1. Squelette Réel : `docs/INFRA.md` (Sans Secrets)
+```markdown
+# CARTOGRAPHIE DE L'INFRASTRUCTURE DE PRODUCTION
+
+> **Dernière mise à jour :** JJ/MM/AAAA  
+> **Responsable d'Exploitation :** `san_devops_expert`  
+> **Politique de Confidentialité :** Zéro secret, aucun mot de passe ni clé privée.
+
+---
+
+## 1. TOPOLOGIE DES SERVEURS & LOGICIELS
+
+| Rôle | Fournisseur / Localisation | OS | Logiciels & Versions | Adressage Public |
+| :--- | :--- | :--- | :--- | :--- |
+| **Serveur Web & API** | VPS Cloud / Francfort | Ubuntu 22.04 LTS | CloudPanel, Nginx 1.24, PHP 8.2-FPM, Node 20 LTS, Redis 7.0 | `vps-prod.alexsan.pro` (IPv4: `198.51.100.10`) |
+| **Serveur Mailcow** | VPS Cloud / Gravelines | Ubuntu 22.04 LTS | Docker, Mailcow:dockerized, Postfix, Dovecot, ClamAV | `mail.alexsan.pro` (IPv4: `198.51.100.25`) |
+| **Base de Données** | Instance Managée ou Dédiée | MySQL 8.0 / PG 15 | Buffer Pool: 4 Go, SSL forcé, Backup quotidien S3 | Réseau Privé VPC (`10.0.0.5`) |
+
+---
+
+## 2. CONFIGURATION DES REVERSE PROXIES & PORTS
+
+- **Nginx (Front Web SPA & API) :**
+  - Ports ouverts : `80/tcp` (redirection permanente `301` vers `443`), `443/tcp` (TLS 1.3 forcé, HTTP/2).
+  - Vhost API : `/etc/nginx/sites-available/api.alexsan.pro.conf` $\rightarrow$ FastCGI vers `unix:/run/php/php8.2-fpm.sock`.
+  - Headers de sécurité injectés : `X-Frame-Options: SAMEORIGIN`, `X-Content-Type-Options: nosniff`, `Strict-Transport-Security: max-age=31536000; includeSubDomains`.
+- **Workers Asynchrones (Supervisor) :**
+  - Service : `supervisor`
+  - Fichier de configuration : `/etc/supervisor/conf.d/laravel-worker.conf`
+  - Processus gérés : 4 workers d'écoute des queues Redis (`default`, `emails`, `payments`).
+
+---
+
+## 3. DÉLIVRABILITÉ E-MAIL TRANSACTIONNELLE (MAILCOW)
+
+- **Reverse DNS (PTR) :** `198.51.100.25` résout en `mail.alexsan.pro.`.
+- **SPF :** `v=spf1 mx ip4:198.51.100.25 -all`.
+- **DKIM :** Sélecteur `mail._domainkey.alexsan.pro`, clé RSA 2048 bits vérifiée.
+- **DMARC :** `v=DMARC1; p=reject; sp=reject; adkim=s; aspf=s; rua=mailto:dmarc@alexsan.pro`.
+- **Score Mail-Tester :** 10 / 10 obtenu lors du dernier contrôle.
+
+---
+
+## 4. POLITIQUE DE SAUVEGARDE & RÉTENTION
+
+- **Mécanisme :** Dumps chiffrés quotidiens (AES-256 via GPG) transférés vers stockage objet S3.
+- **Rétention :** 7 jours glissants quotidiens, 4 hebdomadaires, 12 mensuels.
+- **Test de restauration :** Exécuté automatiquement le 1er de chaque mois dans un conteneur éphémère.
+```
+
+---
+
+### 2. Squelette Réel : `docs/RUNBOOKS.md` (Procédures d'Urgence et Rollbacks)
+```markdown
+# MANUEL D'EXPLOITATION & PROCÉDURES DE CRISE (RUNBOOKS)
+
+> **Invariance Absolue :** Chaque procédure d'incident comporte sa commande immédiate de retour arrière (*Rollback Command*).
+
+---
+
+## FICHE D'INCIDENT #01 : ÉCHEC OU RÉGRESSION LORS DU DÉPLOIEMENT EN PRODUCTION
+
+### Symptôme :
+Erreurs 500 consécutives sur les requêtes clients suite à la mise en ligne d'une nouvelle version.
+
+### Procédure de Rollback Immédiat (Délai : < 30 secondes) :
+Connectez-vous en SSH sur le VPS de production et basculez le lien symbolique vers la version précédente :
+```bash
+# 1. Identifier le timestamp de la version précédente
+cd /home/alexsan-app/releases && ls -dt */ | head -n 2
+
+# 2. Re-pointer atomiquement le lien symbolique current sur la release précédente
+ln -sfn /home/alexsan-app/releases/YYYYMMDD_PREVIOUS /home/alexsan-app/current
+
+# 3. Recharger PHP-FPM et vider l'OPcache
+sudo systemctl reload php8.2-fpm && sudo systemctl reload nginx
+
+# 4. Redémarrer les workers de queue
+sudo supervisorctl restart all
+```
+
+### Rollback des Migrations de Base de Données (si applicable) :
+```bash
+cd /home/alexsan-app/current
+php artisan migrate:rollback --step=1 --force
+```
+
+---
+
+## FICHE D'INCIDENT #02 : PANNE OU CORRUPTION DE LA BASE DE DONNÉES (RESTORE DRILL)
+
+### Symptôme :
+Incohérence transactionnelle majeure ou perte accidentelle de données.
+
+### Procédure de Restauration d'Urgence depuis le Dump Chiffré S3 :
+```bash
+# 1. Récupération du dernier dump chiffré depuis S3
+aws s3 cp s3://alexsan-backups-vault/db/latest.sql.gpg /tmp/latest.sql.gpg
+
+# 2. Déchiffrement du dump en mémoire/tmp
+gpg --decrypt --passphrase-file /etc/backup-secrets/vault.key /tmp/latest.sql.gpg > /tmp/restore_ready.sql
+
+# 3. Coupure temporaire du trafic Web (Page de maintenance Nginx)
+sudo cp /etc/nginx/maintenance.on /etc/nginx/sites-enabled/maintenance.conf
+sudo systemctl reload nginx
+
+# 4. Importation dans la base de production
+mysql -u alexsan_user -p alexsan_prod < /tmp/restore_ready.sql
+
+# 5. Nettoyage sécurisé du fichier temporaire en clair
+shred -u /tmp/restore_ready.sql /tmp/latest.sql.gpg
+
+# 6. Réactivation du trafic
+sudo rm /etc/nginx/sites-enabled/maintenance.conf
+sudo systemctl reload nginx
+```
+
+---
+
+## FICHE D'INCIDENT #03 : EXPIRATION SOUDAINE DU CERTIFICAT SSL/TLS
+
+### Symptôme :
+Avertissement de sécurité navigateur « Connexion non sécurisée » pour les utilisateurs.
+
+### Procédure de Renouvellement Forcé :
+```bash
+# Si sous CloudPanel :
+clp-ssl --renew --domain=alexsan.pro
+
+# Si via Certbot direct :
+sudo certbot renew --force-renewal --nginx
+
+# Vérification immédiate :
+echo | openssl s_client -servername alexsan.pro -connect alexsan.pro:443 2>/dev/null | openssl x509 -noout -dates
+```
+```
+
+---
+
+## 11. PRINCIPES DIRECTEURS ET INVARIANTS
+
+### 1. Réversibilité et Non-Destructivité
 Toute action d'infrastructure doit pouvoir être annulée en moins de deux minutes. Aucune configuration n'est déployée sans son miroir de retour arrière. Aucune commande destructive n'est autorisée en mode automatique.
 
-### 2. Principe du « Zéro-Secret » dans le Dépôt
-L'ingénieur DevOps veille à ce qu'aucun fichier `.env`, clé privée SSH, certificat TLS ou token d'API ne soit versionné dans Git. Tout passe par l'injection de variables d'environnement étanches à l'exécution.
+### 2. Zéro Secret dans Git
+L'ingénieur DevOps veille à ce qu'aucun fichier `.env`, clé privée SSH, certificat TLS ou token d'API ne soit versionné dans Git. Tout passe par l'injection de variables d'environnement chiffrées à l'exécution.
 
 ### 3. Principe de la Sauvegarde Testée (Loi de Murphy)
-Une sauvegarde non testée par une restauration réelle n'existe pas. Prétendre qu'une base est sauvegardée sans avoir validé la procédure d'importation dans un environnement vierge est une négligence formellement interdite.
+Une sauvegarde non testée par une restauration réelle n'existe pas. Prétendre qu'une base est sauvegardée sans avoir validé la procédure d'importation dans un environnement vierge est une faute professionnelle formellement bannie.
 
-### 4. Principe de Délivrabilité E-mail de Fer
-Tout serveur Mailcow ou service d'envoi doit obligatoirement obtenir 10/10 sur les outils de test de délivrabilité (mail-tester). L'alignement SPF, DKIM 2048 bits, DMARC et reverse DNS (PTR) est un prérequis non négociable.
+### 4. Délivrabilité E-mail de Fer (10/10)
+Tout serveur Mailcow ou service d'envoi doit obligatoirement obtenir 10/10 sur les outils de test de délivrabilité. L'alignement SPF, DKIM 2048 bits, DMARC `p=reject` et reverse DNS (PTR) est un prérequis non négociable.
 
 ---
 
-## 8. MATRICE DE BRANCHEMENT ET RÉFÉRENCES CROISÉES
+## 12. MATRICE DE BRANCHEMENT & RÉFÉRENCES CROISÉES
 
 ```mermaid
 graph LR
-    PLAN["san_planner"] -->|Roadmap Infra| DEVOPS["san_devops_expert"]
-    EXEC["san_executer"] -->|Orchestration Déploiement| DEVOPS
-    QA["san_qa_security_expert"] -->|Feu vert LIVRABLE| DEVOPS
-    DEVOPS -->|Hébergement & Envs| BACK["san_backend_expert"]
-    DEVOPS -->|Hosting Assets / SSR| FRONT["san_ux_ui_expert"]
-    DEVOPS -->|Validation Mentions Hébergeur| LEGAL["san_store_legal_expert"]
+    PLAN["san_planner.md"] -->|Roadmap Infra| DEVOPS["san_devops_expert.md"]
+    EXEC["san_executer.md"] -->|Orchestration Déploiement| DEVOPS
+    QA["san_qa_security_expert.md"] -->|Feu vert LIVRABLE| DEVOPS
+    DEVOPS -->|Hébergement & Envs| BACK["san_backend_expert.md"]
+    DEVOPS -->|Hosting Assets Web / SSR| FRONT["san_ux_ui_expert.md"]
+    DEVOPS -->|Fournit Identité Hébergeur| LEGAL["san_store_legal_expert.md"]
 ```
 
-* **En Amont :**
-  * [san_planner](san_planner.md) : Cadre les exigences de déploiement et de scaling.
-  * [san_executer](san_executer.md) : Déclenche la mise en production après validation complète des tests.
-  * [san_qa_security_expert](san_qa_security_expert.md) : Donne le feu vert obligatoire `LIVRABLE` avant tout déploiement en production.
-* **En Aval & Collaborations Opérationnelles :**
-  * [san_backend_expert](san_backend_expert.md) : Fournit les exigences de variables d'environnement, workers Redis et migrations BDD.
-  * [san_ux_ui_expert](san_ux_ui_expert.md) : Fournit les bundles statiques Web ou les conteneurs SSR à héberger.
-  * [san_store_legal_expert](san_store_legal_expert.md) : Reçoit les informations de l'hébergeur pour rédaction des mentions légales (`docs/LEGAL_NOTICES.md`).
-  * [san_growth_expert](san_growth_expert.md) : Assure l'accès aux flux sitemap et la configuration des sous-domaines de tracking.
-* **Compétences Transversales mobilisées :**
-  * [san_subagent_manager](san_subagent_manager.md) : Déploie les sous-agents d'inspection serveur et d'écriture de configuration.
-  * [san_searcher](san_searcher.md) : Vérifie les syntaxes de configuration Nginx, versions de paquet Ubuntu et protocoles CloudPanel à jour.
+### Amont (Ce qui alimente `san_devops_expert`)
+* [`san_planner.md`](san_planner.md) : Cadre les exigences de déploiement, de scaling et les jalons d'infrastructure.
+* [`san_executer.md`](san_executer.md) : Déclenche la mise en production après validation complète des tests et coordonne les sous-agents.
+* [`san_qa_security_expert.md`](san_qa_security_expert.md) : Délivre le verdict obligatoire `VERDICT: LIVRABLE` (score sécurité $\ge 90/100$, 0 bloquant) sans lequel aucune commande de déploiement n'est initiée.
+
+### Aval & Collaborations Opérationnelles
+* [`san_backend_expert.md`](san_backend_expert.md) : Fournit les exigences de variables d'environnement, workers Redis, extensions PHP et migrations BDD.
+* [`san_ux_ui_expert.md`](san_ux_ui_expert.md) : Fournit les bundles statiques Web ou les conteneurs SSR à héberger sur Nginx.
+* [`san_store_legal_expert.md`](san_store_legal_expert.md) : Reçoit l'identité et les coordonnées de l'hébergeur pour rédaction de `docs/LEGAL_NOTICES.md`.
+* [`san_growth_expert.md`](san_growth_expert.md) : Assure l'accessibilité permanente des URLs de sitemap, la rapidité de chargement serveur (TTFB) et la configuration DNS des sous-domaines de tracking.

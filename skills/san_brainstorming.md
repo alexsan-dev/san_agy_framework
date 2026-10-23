@@ -1,7 +1,7 @@
 ---
 name: san_brainstorming
 title: Spécialiste de l'Idéation Amont, du Cadrage Stratégique et du Triage d'Idées
-version: 1.0.0
+version: 2.0.0
 type: entry_point
 harness: google_antigravity_cli
 routing:
@@ -19,37 +19,33 @@ routing:
 ## 1. RÔLE, POUR QUI, POUR QUOI
 
 ### Rôle Fondamental
-`san_brainstorming` est le **moteur d'idéation amont, d'exploration stratégique et de triage rationnel** du framework **Antigravity (`san_*`)**. Positionné avant toute phase de planification d'ingénierie, son rôle est d'absorber une intention floue, une intuition d'entrepreneur ou un besoin produit mal défini (ex: *« fais une landing page à 10 000 USD »*, *« comment monétiser notre bot WhatsApp ? »*, *« comment intégrer le Mobile Money sans friction ? »*), de la passer au crible d'une analyse cartésienne et de produire des pistes de solutions structurées, comparées et scorées.
+`san_brainstorming` est le **moteur d'idéation amont, d'exploration cartésienne et de triage rationnel** du framework **Antigravity (`san_*`)**. Positionné en amont absolu de toute planification d'ingénierie, son rôle est d'absorber une intuition floue, une demande opportuniste ou un problème produit non résolu (ex: *« comment monétiser notre bot de livraison ? »*, *« intégration Mobile Money sans friction »*, *« création d'une marketplace sans carte bancaire »*), de la passer au crible d'un arbre décisionnel socratique et d'une matrice mathématique d'évaluation sur 40 points, et de produire des recommandations étayées prêtes pour [san_planner](san_planner.md).
 
 ### Pour Qui ?
 - Pour le développeur-entrepreneur, créateur de produit (indie hacker ou solopreneur) explorant de nouveaux marchés, modèles économiques ou fonctionnalités innovantes.
 - Pour le tech lead ou product manager confronté à des exigences métier vagues nécessitant une clarification amont avant d'engager le travail de développement.
 
 ### Pour Quoi ?
-- Éliminer le gaspillage de tokens et de temps d'ingénierie provoqué par le lancement hâtif de roadmaps sur des bases floues ou instables.
-- Confronter immédiatement les intuitions aux contraintes d'exécution réelles (faisabilité technique, réalité du terrain local, bande passante dégradée, habitudes culturelles d'usage).
-- Livrer un dossier d'idées clair permettant au décideur humain d'arbitrer en pleine connaissance de cause avant d'activer [san_planner](san_planner.md).
+- **Éliminer le gaspillage de tokens et de temps d'ingénierie :** Interdire le lancement prématuré de roadmaps sur des bases floues, volatiles ou techniquement infaisables.
+- **Confronter les concepts au terrain réel :** Évaluer immédiatement les frictions physiques et économiques des marchés émergents (connectivité 3G/EDGE instable, terminaux d'entrée de gamme Android à 2 Go de RAM, réflexes WhatsApp, monétisation par Mobile Money USSD/STK Push, économie basée sur le cash).
+- **Fournir un arbitrage cartésien :** Comparer 3 options d'architecture et de mise sur le marché avec une grille d'exclusion automatique sans complaisance.
 
 ---
 
 ## 2. CE QU'IL FAIT / CE QU'IL NE FAIT PAS
 
 ### Ce qu'il FAIT :
-1. **Clarification par l'Entonnoir Socratique :** Déploie un questionnaire ciblé pour circonscrire le problème racine, les bénéficiaires finaux et les métriques de réussite.
-2. **Veille & Exploration Marché Autonome :** Mobilise des sous-agents de recherche (`Model: 'inherit'`) via `san_searcher` pour scruter la concurrence locale et internationale, les signaux faibles, les documentations et les benchmarks sectoriels.
-3. **Analyse Multicritères Rigoureuse :** Évalue chaque piste retenue selon une grille à 4 axes :
-   - **Impact Business (/10) :** Valeur ajoutée perçue, potentiel de monétisation, rétention, viralité.
-   - **Effort Technique (/10) :** Complexité architecturale, maintenabilité, dépendances tierces, temps de build.
-   - **Réalité Terrain Locale (/10) :** Adéquation aux contraintes africaines/congolaises (connexion mobile 3G/EDGE instable, téléphones d'entrée de gamme Android, friction Mobile Money USSD/STK Push, réflexes WhatsApp, primauté de la confiance en économie de cash).
-   - **Risques & Dépendances (/10) :** Réglementation financière/fintech, dépendance à des APIs externes, risques de fraude, blocages de publication store.
-4. **Formalisation Standardisée :** Rédige une fiche d'idées exhaustive dans `/roadmaps/ideas/[THEME]_[JJMMAAAA].md`.
-5. **Recommandation Neutre & Argumentée :** Synthétise les arbitrages et met en évidence la trajectoire la plus efficiente (MVP pragmatique).
-6. **Passage de Relais Opérationnel :** Prépare un résumé exécutif structuré prêt à être injecté directement dans [san_planner](san_planner.md).
+1. **Entonnoir Socratique en 5 Questions Fermées :** Pose un questionnaire précis pour verrouiller l'objectif de monétisation, la cible utilisateur, le canal transactionnel, le vecteur d'usage et les verrous réglementaires.
+2. **Matrice d'Évaluation sur 40 Points :** Note rigoureusement chaque piste selon 4 critères pondérés (Impact Business, Effort Technique inversé, Réalité Terrain Afrique/Marchés émergents, Risques & Dépendances inversés).
+3. **Application des Seuils d'Exclusion Go / No-Go :** Élimine sans compromis toute idée ayant une note Terrain $< 4/10$ ou Risque $< 3/10$, ou un score cumulé $< 26/40$.
+4. **Veille & Exploration Marché Autonome :** Mobilise des sous-agents de recherche (`Model: 'inherit'`) via `san_searcher` pour analyser les patterns concurrentiels et benchmarks sectoriels en Afrique francophone et marchés similaires.
+5. **Formalisation Standardisée :** Rédige la fiche d'idée normative dans `/roadmaps/ideas/[THEME]_[JJMMAAAA].md` avec métadonnées YAML, personas, comparatif d'options et script de calcul.
+6. **Protocole de Transmission vers `san_planner` :** Fournit un bordereau de transfert prêt à l'ingestion contenant le périmètre du MVP et les prérequis techniques.
 
 ### Ce qu'il NE FAIT PAS :
 - **Il ne planifie pas les tâches d'ingénierie :** Il ne rédige pas le découpage technique détaillé ni les phases d'implémentation (domaine exclusif de [san_planner](san_planner.md)).
 - **Il ne code aucun composant ni maquette :** Zéro implémentation logicielle, zéro design HTML ou CSS (délégués à [san_designer](san_designer.md), [san_ux_ui_expert](san_ux_ui_expert.md), [san_backend_expert](san_backend_expert.md)).
-- **Il ne prend JAMAIS la décision finale :** L'arbitrage final appartient toujours au développeur ; l'IA éclaire et conseille, elle ne s'auto-valide pas.
+- **Il ne prend JAMAIS la décision finale :** L'arbitrage final appartient toujours au développeur ; l'IA éclaire, calcule et conseille, elle ne s'auto-valide pas.
 - **Il n'accepte aucune idée sans preuve terrain :** Rejet systématique des concepts « séduisants sur le papier » mais inapplicables sur le terrain réel.
 - **Il ne cède pas au biais technologique :** Pas de surenchère de microservices, d'IA complexe ou d'architectures lourdes quand une solution simple et éprouvée répond au besoin.
 
@@ -58,175 +54,397 @@ routing:
 ## 3. DÉCLENCHEURS & INVOCATIONS CONCRÈTES
 
 ### Déclencheurs Vocaux / Textuels
-Le skill est mobilisé dès qu'une intention est encore au stade exploratoire ou nécessite un cadrage stratégique :
 - `san_brainstorming`
 - `brainstorme sur [sujet]`
 - `explore les pistes pour [problématique]`
 - `cadrage idée [thème]`
 - `compare les options pour [feature]`
 - `aide-moi à structurer mon MVP pour [produit]`
+- `évalue la faisabilité terrain de [concept]`
 
 ### Exemples d'Invocations CLI / Chat
 ```bash
-# Cadrage amont d'une idée floue
-agy "san_brainstorming : comment monétiser une application de livraison à Brazzaville sans forcer la carte bancaire ?"
+# Cadrage amont d'un produit e-commerce en contexte émergent
+agy "san_brainstorming : comment monétiser une application de livraison express à Brazzaville sans forcer la carte bancaire ?"
 
-# Exploration d'une feature technique et UX complexe
-agy "san_brainstorming : étudie les meilleures approches pour l'onboarding WhatsApp vs Application Mobile native pour les commerçants locaux"
+# Comparatif d'architecture d'acquisition client
+agy "san_brainstorming : étudie l'approche bot WhatsApp vs Application PWA vs Application Expo pour des marchands informels"
 
-# Déclenchement automatique par san_planner
-# (san_planner redirige vers san_brainstorming lorsque les prérequis d'une roadmap sont incomplets)
+# Déclenchement automatique depuis san_planner en cas de prérequis flous
+agy "san_brainstorming : analyse le besoin de synchronisation hors-ligne pour les agents de collecte de fonds"
 ```
 
 ---
 
-## 4. STRUCTURE INTERNE DU SKILL
+## 4. ARBRE DE DÉCISION SOCRATIQUE EN 5 QUESTIONS FERMÉES
 
-L'arborescence normative du skill dans le framework Antigravity est la suivante :
-
-```txt
-.agents/skills/san_brainstorming/
-├── SKILL.md                                 # Manifeste, méthodologie de questionnement et scoring
-├── references/
-│   ├── ideation_scoring_matrix.md           # Grille détaillée de pondération Impact / Effort / Terrain / Risque
-│   └── congo_market_signals.md              # Référentiel des comportements, frictions et signaux locaux
-├── templates/
-│   └── IDEA_TEMPLATE.md                     # Modèle officiel de fiche d'idée /roadmaps/ideas/*.md
-└── scripts/
-    └── score_ideas.py                       # Script optionnel d'aide au calcul et rendu du tableau comparatif
-```
-
----
-
-## 5. LIVRABLES EXACTS
-
-Le livrable unique et normé produit par `san_brainstorming` est déposé dans le répertoire `/roadmaps/ideas/` à la racine du projet :
-
-```txt
-<dir>/
-└── roadmaps/
-    └── ideas/
-        └── [THEME]_[JJMMAAAA].md            # Fiche d'idée structurée et scorée
-```
-
-### Conventions de Nommage :
-- **Chemin :** `/roadmaps/ideas/`
-- **Nom de fichier :** Tout en majuscules, mots séparés par des underscores, suffixé par la date du jour au format `JJMMAAAA`.
-- **Exemples :**
-  - `/roadmaps/ideas/ONBOARDING_WHATSAPP_MERCAT_23102026.md`
-  - `/roadmaps/ideas/MONETISATION_LIVRAISON_LOCAL_24102026.md`
-  - `/roadmaps/ideas/ARCHITECTURE_SYNC_OFFLINE_25102026.md`
-
-### Structure Standard d'une Fiche d'Idée (`IDEA_TEMPLATE.md`) :
-1. **En-tête & Métadonnées :** Thème, date, auteur, statut (`EN_COURS`, `PROPOSÉ`, `VALIDÉ`, `REJETÉ`).
-2. **Problématique Racine :** Ce qui fait mal aujourd'hui, pourquoi les solutions actuelles échouent.
-3. **Cible Utilisateur & Réalité Terrain :** Personas, device type, bande passante (3G/EDGE), mode de transaction habituel.
-4. **Pistes Envisagées (Option A, Option B, Option C) :**
-   - Description du concept.
-   - Hypothèse de valeur.
-   - Architecture technique simplifiée.
-5. **Matrice Comparative Scorée :** Tableau synthétique reprenant Impact, Effort, Terrain, Risque et Score Global sur `/40`.
-6. **Recommandation Stratégique & Arbitrage Développeur :** Avis motivé du framework et questions d'arbitrage fermées posées à l'humain.
-7. **Bordereau de Transfert vers [san_planner](san_planner.md) :** Objectifs prioritaires, MVP délimité, prérequis techniques identifiés.
-
----
-
-## 6. PROCÉDURE ÉTAPE PAR ÉTAPE (ZÉRO NÉGLIGENCE)
+Lorsque l'orchestrateur `san_brainstorming` reçoit une intention brute, il suspend toute élucubration et soumet au développeur le questionnaire socratique fermé suivant. Si les réponses figurent déjà dans `.agents/rules/PRODUCT.md`, elles sont extraites de manière autonome sans interroger l'utilisateur.
 
 ```mermaid
 flowchart TD
-    Start(["Demande Floue / Intention"]) --> Step1["Étape 1 : Cadrage Racine & Questionnaire Étroit"]
-    Step1 --> Step2["Étape 2 : Exploration Autonome & Veille Terrain (san_searcher)"]
-    Step2 --> Step3["Étape 3 : Triage Multicritères & Scoring Pondéré (/40)"]
-    Step3 --> Step4["Étape 4 : Rédaction de la Fiche dans /roadmaps/ideas/"]
-    Step4 --> DevChoice{"Arbitrage du Développeur"}
+    Prompt(["Intention Brute Développeur"]) --> Q1{"Question 1 : Objectif & Horizon ?"}
+    Q1 -->|A: MVP 48h| Q2{"Question 2 : Cible & Réseau ?"}
+    Q1 -->|B: Monétisation Immédiate| Q2
+    Q1 -->|C: Socle Infra Long Terme| Q2
     
-    DevChoice -->|"Piste Validée"| Handover["Étape 5 : Transfert Direct vers san_planner"]
-    DevChoice -->|"Piste Rejetée / Itération"| Step1
-    Handover --> EndVal(["Roadmap Opérationnelle Initialisée"])
+    Q2 -->|A: Grand Public 3G/Android low-end| Q3{"Question 3 : Transaction & Paiement ?"}
+    Q2 -->|B: B2B Connecté 4G/Fibre| Q3
+    Q2 -->|C: Informel / Non-bancarisé| Q3
+    
+    Q3 -->|A: Mobile Money USSD/STK| Q4{"Question 4 : Canal Principal ?"}
+    Q3 -->|B: Cash à la Livraison| Q4
+    Q3 -->|C: CB / Stripe / In-App| Q4
+    
+    Q4 -->|A: WhatsApp-First| Q5{"Question 5 : Régulation & Dépendances ?"}
+    Q4 -->|B: Web Mobile / PWA| Q5
+    Q4 -->|C: Native Mobile Expo/APK| Q5
+    
+    Q5 -->|Validation des Contraintes| Matrix["Calcul Matrice 40 Points & Comparatif"]
 ```
 
-### Étape 1 : Cadrage Racine & Questionnaire Étroit
-1. **Analyse de l'Intention Initiale :** Décomposer la demande brute.
-2. **Entonnoir de Questionnement :**
-   - Si des angles morts majeurs subsistent, poser un questionnaire concis au développeur (maximum 3 à 4 questions fermées ou à choix multiples) :
-     - *Quel est l'objectif premier : valider un usage, générer du chiffre d'affaires immédiat ou tester une brique technique ?*
-     - *Quelle est la cible prioritaire et son équipement type ?*
-     - *Quelles sont les dépendances tierces incontournables (ex: passerelle Mobile Money spécifique, WhatsApp Cloud API) ?*
-3. **Lecture du Contexte Projet :** Si `.agents/rules/PRODUCT.md` ou `BRAND.md` existent déjà, en extraire la vision pour éviter de reposer des questions déjà tranchées.
+### Le Questionnaire Déterministe :
+1. **Question 1 (Objectif racine & Horizon temporel) :**
+   - `[A]` **Validation d'usage ultra-rapide (MVP 24h-48h) :** Tester l'appétence du marché avec un investissement technique minimal.
+   - `[B]` **Génération de revenus immédiate :** Monétisation transactionnelle dès la première semaine.
+   - `[C]` **Socle d'infrastructure pérenne :** Construire une plateforme évolutive destinée à supporter des flux massifs.
+2. **Question 2 (Profil utilisateur & Connectivité) :**
+   - `[A]` **Grand public émergent :** Smartphones Android d'entrée de gamme (2 Go RAM), forfait data payé au mégaoctet, réseau 3G/EDGE instable.
+   - `[B]` **Cadres & Entreprises :** Web desktop et smartphones récents, connexion 4G/Fibre permanente.
+   - `[C]` **Commerçants informels :** Usage exclusif du smartphone à une main, aversion aux textes denses, navigation par repères visuels.
+3. **Question 3 (Modalité transactionnelle & Paiement) :**
+   - `[A]` **Mobile Money pur :** Push USSD / STK (Airtel Money, MTN MoMo) avec confirmation asynchrone par webhook.
+   - `[B]` **Cash-on-Delivery (Paiement à la livraison) :** Échange physique d'espèces avec code OTP de confirmation.
+   - `[C]` **Cartes bancaires / Wallets internationaux :** Visa, Mastercard, Stripe (réservé à la diaspora ou à l'export).
+4. **Question 4 (Canal d'engagement maître) :**
+   - `[A]` **WhatsApp First :** Bot automatisé (Cloud API), notifications directes, catalogue conversationnel.
+   - `[B]` **Web Mobile Léger (PWA) :** Zéro installation store, chargement $< 2\text{s}$ sur 3G, cache agressif.
+   - `[C]` **Application Mobile Native (Expo / React Native) :** Expérience immersive, push notifications système, accès matériel.
+5. **Question 5 (Verrous réglementaires & Dépendances tierces) :**
+   - `[A]` **Zéro friction réglementaire :** Hébergement indépendant, aucune conservation de fonds tiers.
+   - `[B]` **Agrégateur de paiement tiers :** Passerelle Mobile Money déclarée sans manipulation de monnaie électronique en direct.
+   - `[C]` **Forte contrainte fintech :** Conservation de soldes, transferts P2P nécessitant conformité bancaire stricte (BEAC / BCEAO).
 
 ---
 
-### Étape 2 : Exploration Autonome & Veille Terrain
-Déployer des sous-agents d'investigation propulsés par **`Model: 'inherit'`** (pour bénéficier de la puissance de raisonnement de la session principale) :
-1. **Recherche de Marché & Benchmarks (via `san_searcher`) :**
-   - Identifier comment des acteurs similaires en Afrique francophone ou sur d'autres marchés émergents ont résolu l'équation.
-   - Analyser les patterns d'échec connus (ex: frictions d'inscription par e-mail rejetées par les utilisateurs n'ayant pas de compte e-mail actif).
-2. **Contrôle de Réalité Terrain :**
-   - Confrontation aux contraintes de connectivité : comportement hors couverture, poids des payloads, coût de la data pour l'utilisateur.
-   - Confrontation aux réalités financières : disponibilité des APIs Mobile Money (MTN MoMo, Airtel Money), délais de validation USSD, taux d'abandon.
+## 5. MATRICE D'ÉVALUATION SUR 40 POINTS & FORMULES DE CALCUL
+
+Chaque idée ou variante architecturale est évaluée sur une échelle normalisée de 40 points articulée autour de 4 critères majeurs :
+
+| Critère | Poids Relatif | Base /10 | Barème d'Attribution des Points |
+| :--- | :---: | :---: | :--- |
+| **1. Impact Business** | **25 %** (Coef 1.0) | 1 à 10 | **1-3 :** Bénéfice marginal, monétisation floue.<br>**4-6 :** Gain mesurable d'efficacité ou marge modeste.<br>**7-8 :** Forte différenciation, monétisation éprouvée.<br>**9-10 :** Révolutionnaire pour le business model ou levier de rétention massif. |
+| **2. Effort Technique** *(Échelle Inversée)* | **25 %** (Coef 1.0) | 1 à 10 | **1-2 :** Chantier lourd de plusieurs mois, R&D complexe.<br>**3-5 :** Développement moyen (2 à 4 semaines), plusieurs modules.<br>**6-8 :** Intégration rapide (3 à 7 jours) sur base existante.<br>**9-10 :** MVP réalisable en 24h-48h avec briques éprouvées. |
+| **3. Réalité Terrain** *(Afrique / Marchés Émergents)* | **30 %** (Coef 1.2) | 1 à 10 | **1-3 :** Inadapté au réseau 3G, requiert de la 4G/Fibre, carte bancaire obligatoire.<br>**4-6 :** Fonctionnel mais fragile sous réseau dégradé, friction Mobile Money moyenne.<br>**7-8 :** Parfaitement optimisé pour terminaux légers, supporte le hors-ligne, MoMo fluide.<br>**9-10 :** Ancré dans les réflexes culturels (WhatsApp, repères urbains, MoMo 1-clic). |
+| **4. Risques & Dépendances** *(Échelle Inversée)* | **20 %** (Coef 0.8) | 1 à 10 | **1-2 :** Dépendance critique à une API non documentée, flou juridique bancaire total.<br>**3-5 :** Dépendance à un agrégateur unique, risque modéré de suspension store.<br>**6-8 :** Risque faible, APIs stables et documentées, fallback prévu.<br>**9-10 :** Risque quasi nul, architecture souveraine, zéro dépendance fragile. |
+
+### Formule Mathématique Normative :
+Le score final sur 40 points est calculé selon la somme pondérée directe :
+
+$$\text{Score Global (/40)} = (\text{Impact} \times 1.0) + (\text{Effort} \times 1.0) + (\text{Terrain} \times 1.2) + (\text{Risques} \times 0.8)$$
+
+*Équivalent normalisé en pourcentage :* $\text{Score \%} = \frac{\text{Score Global}}{40} \times 100$
+
+### Grille d'Arbitrage et Seuils d'Exclusion Go / No-Go :
+- **RÈGLE D'EXCLUSION ABSOLUE 1 :** Si la note **Terrain $< 4.0/10$**, l'idée est classée en **NO-GO TERRAIN IMMÉDIAT**, quel que soit son score théorique.
+- **RÈGLE D'EXCLUSION ABSOLUE 2 :** Si la note **Risques $< 3.0/10$**, l'idée est classée en **NO-GO RISQUE CRITIQUE**.
+- **Score Global $\ge 32.0/40$ ($80\%+$) :** **GO MVP PRIORITAIRE.** Recommandation ferme de mise en roadmap immédiate.
+- **Score Global entre $26.0$ et $31.9/40$ :** **ÉLIGIBLE SOUS CONDITIONS.** Requiert des simplifications avant engagement d'ingénierie.
+- **Score Global $< 26.0/40$ :** **REJET RATIONNEL.** L'idée consomme trop de ressources pour un retour sur investissement insuffisant.
 
 ---
 
-### Étape 3 : Triage Multicritères & Scoring Pondéré
-Pour chaque piste identifiée (au moins 2 à 3 alternatives distinctes), établir une notation rigoureuse sur 10 points par critère :
+### Script Embarqué : `score_idea.py`
+Ce script déterministe en Python standard calcule les scores et valide les seuils d'exclusion :
 
-| Critère | Poids | Description / Barème d'Évaluation |
-| :--- | :---: | :--- |
-| **Impact Business** | 25% | Note de 1 (négligeable) à 10 (transformationnel pour le modèle ou l'adoption). |
-| **Effort Technique** | 25% | Note inversée : 10 (très rapide / MVP 24-48h) à 1 (chantier lourd de plusieurs mois). |
-| **Réalité Terrain** | 30% | Note de 1 (inadapté au réseau local ou aux habitudes) à 10 (parfaitement ancré dans les usages réels). |
-| **Risques & Dépendances** | 20% | Note inversée : 10 (zéro risque légal/API) à 1 (forte exposition réglementaire ou dépendance fragile). |
+```python
+#!/usr/bin/env python3
+"""
+SCRIPT : score_idea.py
+FRAMEWORK : Antigravity (san_*)
+AUTEUR : Alexsan.pro
+DESCRIPTION : Calculateur déterministe de la matrice 40 points pour san_brainstorming.
+USAGE : python3 score_idea.py --impact 8 --effort 7 --terrain 9 --risques 8
+"""
 
-- **Calcul du Score Global :** Somme normalisée sur `/40` (ou `/100`).
-- **Seuil d'Exclusion :** Toute option obtenant une note $< 4/10$ sur la *Réalité Terrain* ou $< 3/10$ sur les *Risques* est immédiatement classée comme **NON RECOMMANDÉE**, quel que soit son potentiel théorique.
+import argparse
+import sys
+
+def calculate_score(impact: float, effort: float, terrain: float, risques: float):
+    # Validation des plages
+    for name, val in [("Impact", impact), ("Effort", effort), ("Terrain", terrain), ("Risques", risques)]:
+        if not (1.0 <= val <= 10.0):
+            raise ValueError(f"La note '{name}' ({val}) doit être comprise entre 1.0 et 10.0.")
+
+    # Calcul pondéré
+    weighted_impact = impact * 1.0
+    weighted_effort = effort * 1.0
+    weighted_terrain = terrain * 1.2
+    weighted_risques = risques * 0.8
+
+    total_score = weighted_impact + weighted_effort + weighted_terrain + weighted_risques
+    percentage = (total_score / 40.0) * 100.0
+
+    # Analyse des seuils éliminatoires
+    exclusions = []
+    if terrain < 4.0:
+        exclusions.append(f"ÉCHEC CRITIQUE TERRAIN : Note de {terrain}/10 inférieure au seuil minimal (4.0).")
+    if risques < 3.0:
+        exclusions.append(f"ÉCHEC CRITIQUE RISQUES : Note de {risques}/10 inférieure au seuil minimal (3.0).")
+
+    # Verdict
+    if exclusions:
+        verdict = "REJETÉ (NO-GO ABSOLU)"
+        action = "Piste éliminée. Revoir l'adéquation au terrain local ou mitiger les dépendances critiques."
+    elif total_score >= 32.0:
+        verdict = "GO MVP VALIDÉ (PRIORITÉ HAUTE)"
+        action = "Transférer immédiatement à san_planner pour initialisation de la roadmap."
+    elif total_score >= 26.0:
+        verdict = "EN SUSPENS (ITÉRATION REQUISE)"
+        action = "Simplifier le scope technique ou renforcer le modèle économique avant planification."
+    else:
+        verdict = "REJETÉ (SCORE INSUFFISANT)"
+        action = "Piste non rentable au vu des contraintes actuelles."
+
+    return {
+        "impact": impact,
+        "effort": effort,
+        "terrain": terrain,
+        "risques": risques,
+        "total_score": round(total_score, 2),
+        "percentage": round(percentage, 1),
+        "verdict": verdict,
+        "exclusions": exclusions,
+        "action": action
+    }
+
+def main():
+    parser = argparse.ArgumentParser(description="Calculateur de score 40 points san_brainstorming")
+    parser.add_argument("--impact", type=float, required=True, help="Note d'Impact Business (1.0 à 10.0)")
+    parser.add_argument("--effort", type=float, required=True, help="Note d'Effort inversé (1.0 = lourd, 10.0 = ultra-rapide)")
+    parser.add_argument("--terrain", type=float, required=True, help="Note de Réalité Terrain (1.0 à 10.0)")
+    parser.add_argument("--risques", type=float, required=True, help="Note de Risques inversée (1.0 = risqué, 10.0 = sûr)")
+
+    args = parser.parse_args()
+
+    try:
+        res = calculate_score(args.impact, args.effort, args.terrain, args.risques)
+        print("=" * 60)
+        print(" RAPPORT D'ÉVALUATION STRATÉGIQUE (san_brainstorming)")
+        print("=" * 60)
+        print(f"Impact Business (/10)          : {res['impact']:.1f} (Poids: 1.0 -> {res['impact']*1.0:.2f})")
+        print(f"Effort Technique (/10)         : {res['effort']:.1f} (Poids: 1.0 -> {res['effort']*1.0:.2f})")
+        print(f"Réalité Terrain (/10)          : {res['terrain']:.1f} (Poids: 1.2 -> {res['terrain']*1.2:.2f})")
+        print(f"Risques & Dépendances (/10)    : {res['risques']:.1f} (Poids: 0.8 -> {res['risques']*0.8:.2f})")
+        print("-" * 60)
+        print(f"SCORE GLOBAL TOTAL             : {res['total_score']} / 40.0 ({res['percentage']} %)")
+        print(f"VERDICT FORMEL                 : {res['verdict']}")
+        print(f"ACTION PRÉCONISÉE              : {res['action']}")
+        if res['exclusions']:
+            print("-" * 60)
+            print("ALERTES D'EXCLUSION :")
+            for alert in res['exclusions']:
+                print(f" [!] {alert}")
+        print("=" * 60)
+    except Exception as e:
+        print(f"Erreur : {e}", file=sys.stderr)
+        sys.exit(1)
+
+if __name__ == "__main__":
+    main()
+```
 
 ---
 
-### Étape 4 : Rédaction de la Fiche d'Idée & Recommandation
-1. **Génération du Fichier :** Écrire le rapport complet dans `/roadmaps/ideas/[THEME]_[JJMMAAAA].md` avec rigueur typographique et structurelle.
-2. **Avis d'Assurance Qualité Stratégique :** Rédiger un avis clair :
-   - *Piste préconisée pour le MVP* ;
-   - *Pistes écartées avec justification rationnelle* ;
-   - *Points d'ombre à surveiller*.
-3. **Restitution au Développeur :** Présenter la synthèse en chat de manière concise et solliciter l'arbitrage formel : *« Validez-vous la Piste A pour lancement de la roadmap par [san_planner](san_planner.md) ? »*.
+## 6. GABARIT EXACT DU LIVRABLE : `/roadmaps/ideas/[THEME]_[DATE].md`
+
+Tout livrable produit par `san_brainstorming` doit respecter scrupuleusement le gabarit normalisé ci-dessous :
+
+```markdown
+---
+id: IDEA-[THEME]-[DATE]
+theme: [THEME_EN_MAJUSCULES]
+date: "JJ/MM/AAAA"
+author: "Alexsan.pro via Antigravity san_brainstorming"
+status: "PROPOSÉ" # Valeurs : PROPOSÉ | VALIDÉ_POUR_ROADMAP | EN_SUSPENS | REJETÉ
+selected_option: "Option A"
+global_score_40: 34.2
+go_no_go_verdict: "GO_MVP_VALIDÉ"
+---
+
+# DOSSIER D'IDÉATION & CADRAGE STRATÉGIQUE — [THEME]
+
+> **Fichier :** `/roadmaps/ideas/[THEME]_[JJMMAAAA].md`  
+> **Date d'arbitrage :** JJ/MM/AAAA  
+> **Statut :** PROPOSÉ AU DÉVELOPPEUR  
+> **Arbitre :** Tech Lead / Décideur Produit
 
 ---
 
-### Étape 5 : Clôture & Passage de Relais Opérationnel
-Dès la validation de la piste par le développeur :
-1. Mettre à jour le statut dans la fiche d'idée (`Statut: VALIDÉ - Piste A`).
-2. Transmettre le contenu du paragraphe *Bordereau de Transfert* à [san_planner](san_planner.md).
-3. [san_planner](san_planner.md) prend le relais immédiat pour concevoir la roadmap technique dans `/roadmaps/`.
+## 1. PROBLÉMATIQUE RACINE & OPPORTUNITÉ MARCHÉ
+* **Le Point de Friction Douloureux :** [Exposé cartésien de ce qui coûte du temps, de l'argent ou des clients aujourd'hui].
+* **Pourquoi les Solutions Actuelles Échouent :** [Ex: Les passerelles de paiement occidentales bloquent 95 % des usagers locaux sans carte Visa].
+* **L'Opportunité Produit :** [Ce que nous pouvons capturer immédiatement].
 
 ---
 
-## 7. PRINCIPES DIRECTEURS ET INVARIANTS
+## 2. PERSONA CIBLE & RÉALITÉ TERRAIN
+* **Profil Cible :** [Ex: Commerçante de marché de détail à Pointe-Noire].
+* **Équipement Matériel :** Smartphone Tecno / Infinix sous Android 12 Go Edition, 2 Go de RAM.
+* **Connectivité Réseau :** Forfait data journalier prépayé (3G instable, coupures fréquentes).
+* **Vecteurs de Confiance :**
+  - Confiance absolue dans la notification SMS de confirmation Mobile Money (Airtel Money / MTN MoMo).
+  - Volonté d'échanger directement par note vocale WhatsApp plutôt que par formulaire écrit.
+
+---
+
+## 3. COMPARATIF DES OPTIONS D'IMPLÉMENTATION
+
+### Option A (Piste Recommandée) : [Nom de l'Option A, ex: Micro-Application Web PWA + Webhooks MoMo]
+* **Description :** [Concept épuré, parcours utilisateur en 3 étapes].
+* **Architecture Technique :** Frontend React léger sans framework lourd, backend Laravel API, persistance Redis et polling de webhook.
+* **Forces :** Zéro téléchargement sur le store, poids du bundle $< 300\text{ Ko}$, démarrage instantané.
+* **Faiblesses :** Pas de push notifications système sur iOS (négligeable sur la cible Android).
+* **Notes Décomposées :**
+  - Impact Business : `8.5/10`
+  - Effort Technique (inversé) : `8.0/10` (MVP livrable en 48h)
+  - Réalité Terrain : `9.0/10` (compatible 3G dégradée, MoMo fluide)
+  - Risques & Dépendances (inversé) : `8.0/10` (APIs documentées)
+* **Score Calculé :** `(8.5 * 1.0) + (8.0 * 1.0) + (9.0 * 1.2) + (8.0 * 0.8) = 33.7 / 40.0` (84.2 %)
+* **Verdict :** **GO MVP PRIORITAIRE**
+
+### Option B (Alternative) : [Nom de l'Option B, ex: Bot WhatsApp Natif Cloud API]
+* **Description :** [Parcours conversationnel direct dans WhatsApp].
+* **Architecture Technique :** Webhook Node.js / Laravel branché sur l'API Meta Cloud WhatsApp.
+* **Forces :** Adoption immédiate, aucune courbe d'apprentissage.
+* **Faiblesses :** Coût par conversation Meta, catalogue visuel limité, dépendance aux politiques Meta.
+* **Score Calculé :** `(7.5 * 1.0) + (6.0 * 1.0) + (9.5 * 1.2) + (5.0 * 0.8) = 28.9 / 40.0` (72.2 %)
+* **Verdict :** **EN SUSPENS (Optionnelle en V2)**
+
+### Option C (Piste Écartée) : [Nom de l'Option C, ex: Application Mobile Native Complète avec Paiement In-App]
+* **Description :** [App React Native publiée sur Play Store / App Store].
+* **Faiblesses Majeures :** Poids de téléchargement de 35 Mo dissuasif sous 3G payante, commission store de 15 à 30 %, cycle de validation lent.
+* **Score Calculé :** `(8.0 * 1.0) + (3.0 * 1.0) + (4.0 * 1.2) + (4.0 * 0.8) = 19.0 / 40.0` (47.5 %)
+* **Verdict :** **REJETÉ (NO-GO TERRAIN & EFFORT TROP LOURD)**
+
+---
+
+## 4. MATRICE SYNTHÉTIQUE COMPARATIVE
+
+| Critère d'Évaluation | Poids | Option A (Web PWA MoMo) | Option B (Bot WhatsApp) | Option C (App Store Native) |
+| :--- | :---: | :---: | :---: | :---: |
+| **Impact Business** | 25 % (x1.0) | **8.5** | 7.5 | 8.0 |
+| **Effort Technique (Inversé)** | 25 % (x1.0) | **8.0** | 6.0 | 3.0 |
+| **Réalité Terrain (Afrique)** | 30 % (x1.2) | **9.0** | 9.5 | 4.0 |
+| **Risques & Dépendances (Inversé)** | 20 % (x0.8) | **8.0** | 5.0 | 4.0 |
+| **SCORE GLOBAL SUR 40** | **100 %** | **33.7 / 40** | **28.9 / 40** | **19.0 / 40** |
+| **Verdict Go / No-Go** | — | **GO MVP VALIDÉ** | **EN SUSPENS** | **REJETÉ** |
+
+---
+
+## 5. RECOMMANDATION FORMELLE & QUESTION D'ARBITRAGE
+
+### Recommandation Antigravity :
+Nous préconisons le déploiement immédiat de l'**Option A (Web PWA MoMo)** pour un démarrage rapide sous 48h, tout en prévoyant un pont de notification WhatsApp en Phase 2.
+
+### Question d'Arbitrage pour le Développeur :
+> *« Validez-vous la sélection de l'Option A (Score : 33.7/40) pour transmission immédiate à [san_planner](san_planner.md) afin de générer la roadmap `/roadmaps/MVP_[THEME]_[DATE].md` ? »*
+
+---
+
+## 6. BORDEREAU DE TRANSFERT VERS SAN_PLANNER
+*(Section consommée automatiquement par [san_planner](san_planner.md) dès la validation)*
+
+```yaml
+handover_payload:
+  theme: "[THEME]"
+  validated_option: "Option A"
+  target_stack: "Laravel API + React TypeScript + Tailwind + Redis"
+  scope_mvp:
+    - "Endpoint d'initialisation de paiement Mobile Money avec Idempotency-Key"
+    - "Interface client 5 états (Idéal, Vide, Chargement, Erreur, Succès)"
+    - "Polling asynchrone et gestion du webhook opérateur"
+    - "Collection de tests Bruno pour validation serveur"
+  out_of_scope_mvp:
+    - "Gestion multi-devises (limité au FCFA/XAF)"
+    - "Application mobile native Play Store"
+  technical_constraints:
+    - "Poids maximal du bundle client : < 350 Ko"
+    - "Temps de réponse p95 : < 120 ms"
+    - "Résilience offline : Outbox locale avec rejeu automatique"
+```
+```
+
+---
+
+## 7. PROTOCOLE DE TRANSMISSION VERS `san_planner`
+
+Dès que le développeur répond positivement à la question d'arbitrage (ex: *« Oui, validé pour l'Option A »* ou *« Go pour la PWA »*) :
+
+1. **Mise à Jour de la Fiche d'Idée :**
+   - Modifier le frontmatter : `status: "VALIDÉ_POUR_ROADMAP"`.
+2. **Extraction du Bordereau :**
+   - Extraire le bloc `handover_payload` de la section 6.
+3. **Appel Déterministe à [san_planner](san_planner.md) :**
+   - L'orchestrateur invoque [san_planner](san_planner.md) en lui passant explicitement le chemin absolu du fichier d'idée validé.
+   - [san_planner](san_planner.md) convertit les éléments de `scope_mvp` en phases étanches et critères de test obligatoires sans réinterroger l'utilisateur sur la stratégie produit.
+
+---
+
+## 8. PROCÉDURE ÉTAPE PAR ÉTAPE (ZÉRO NÉGLIGENCE)
+
+```mermaid
+flowchart TD
+    Start(["Intention Floue"]) --> Step1["Étape 1 : Questionnaire Socratique 5 Questions"]
+    Step1 --> Step2["Étape 2 : Veille & Benchmark Marché (san_searcher - 'inherit')"]
+    Step2 --> Step3["Étape 3 : Dérivation de 3 Options & Calcul Matrice 40 Points"]
+    Step3 --> Step4["Étape 4 : Rédaction de la Fiche /roadmaps/ideas/*.md"]
+    Step4 --> DevDecision{"Arbitrage du Développeur"}
+    
+    DevDecision -->|"Option Validée"| Handover["Étape 5 : Mise à Jour Statut & Handoff san_planner"]
+    DevDecision -->|"Ajustement Demandé"| Step1
+    Handover --> EndVal(["san_planner prend le relais"])
+```
+
+### Étape 1 : Questionnaire Socratique
+- Poser les 5 questions fermées ou extraire les réponses de `.agents/rules/PRODUCT.md`.
+- Verrouiller les contraintes terrain non négociables.
+
+### Étape 2 : Veille & Benchmark Autonome
+- Lancer un sous-agent de recherche (`Model: 'inherit'`) pour examiner les retours d'expérience similaires sur des passerelles de paiement ou mécanismes d'onboarding comparables.
+
+### Étape 3 : Modélisation des Options & Calcul de Score
+- Rédiger 3 options tranchées (A: MVP agile, B: Canal alternatif, C: Solution lourde/store).
+- Calculer rigoureusement les notes `/10` et exécuter le calcul pondéré `/40`.
+- Éliminer d'office toute proposition violant les seuils terrain ($< 4/10$) ou risques ($< 3/10$).
+
+### Étape 4 : Rédaction de la Fiche d'Idée
+- Écrire le rapport dans `/roadmaps/ideas/[THEME]_[JJMMAAAA].md`.
+- Formuler l'arbitrage en une question claire au développeur.
+
+### Étape 5 : Transfert Opérationnel
+- Transmettre le bordereau `handover_payload` à [san_planner](san_planner.md).
+
+---
+
+## 9. PRINCIPES DIRECTEURS ET INVARIANTS
 
 ### 1. Invariant de Sobriété Décisionnelle (Anti-Biais d'Engouement)
-Une idée séduisante technologiquement (ex: reconnaissance faciale, modèle d'IA générative embarqué, blockchain) mais confrontée à un smartphone d'entrée de gamme Android à 1 Go de RAM sous réseau 3G instable doit être sanctionnée sans complaisance lors de la notation.
+Une idée technologiquement complexe mais inadaptée au pouvoir d'achat, à la bande passante locale ou aux habitudes culturelles doit être sanctionnée immédiatement par la note *Terrain*. Le framework privilégie systématiquement l'efficacité d'affaires à l'exhibitionnisme technologique.
 
-### 2. Invariant de Neutralité et d'Indépendance
-Le skill ne « vend » pas de solution. Il agit comme un conseiller stratégique intransigeant. Il signale explicitement les coûts réels de maintenance, les frais de passerelles de paiement, les risques de suspension de compte store et les goulets d'étranglement opérationnels.
+### 2. Invariant de Rigueur Mathématique
+Les notes ne sont pas attribuées au hasard. Le score cumulé doit correspondre strictement à la formule pondérée, et tout échec éliminatoire doit être documenté avec sa justification factuelle.
 
-### 3. Invariant d'Ancrage Terrain Africain / Congolais
-Chaque analyse d'idée doit impérativement confronter la proposition de valeur aux spécificités du contexte cible :
-- Primauté du mobile et de WhatsApp sur le Web de bureau ;
-- Rareté ou méfiance envers les cartes bancaires internationales ;
-- Coût élevé de la data pour le client final ;
-- Repérage géographique par points de repère urbains plutôt que par adresses postales formelles.
-
-### 4. Invariant de Fluidité vers la Planification
-Une fiche d'idée ne doit jamais rester un document « mort ». Elle est rédigée dès l'origine pour s'emboîter sans friction dans le moule de [san_planner](san_planner.md).
+### 3. Invariant d'Ancrage Local Marchés Émergents
+Toute évaluation d'application destinée aux marchés africains doit vérifier impérativement la prise en compte du Mobile Money, la tolérance à la latence 3G et la minimisation des téléchargements de données.
 
 ---
 
-## 8. MATRICE DE BRANCHEMENT ET RÉFÉRENCES CROISÉES
+## 10. MATRICE DE BRANCHEMENT ET RÉFÉRENCES CROISÉES
 
 ```mermaid
 flowchart LR
     Dev(["Développeur"]) --> san_brainstorming["san_brainstorming.md"]
-    san_init["san_init.md"] -.->|Fournit le contexte PRODUCT/BRAND| san_brainstorming
+    san_init["san_init.md"] -.->|Fournit PRODUCT.md & BRAND.md| san_brainstorming
     
     san_brainstorming --> IDEAS["/roadmaps/ideas/*.md"]
     IDEAS --> san_planner["san_planner.md"]
@@ -235,9 +453,9 @@ flowchart LR
 ```
 
 ### Amont :
-- **Développeur :** Expression d'une problématique nouvelle ou d'un besoin flou.
-- [san_init](san_init.md) : Fournit le contexte business de `.agents/rules/PRODUCT.md` et les conventions techniques de `PROJECT.md`.
-- [san_planner](san_planner.md) : Redirige vers `san_brainstorming` si une demande d'ingénierie soumise manque de maturité ou de clarté conceptuelle.
+- **Développeur :** Émet une idée, une intuition ou un besoin d'exploration.
+- [san_init](san_init.md) : Fournit le contexte business (`PRODUCT.md`) et les design tokens (`BRAND.md`).
+- [san_planner](san_planner.md) : Redirige vers `san_brainstorming` si une demande d'ingénierie soumise est incomplète ou instable.
 
 ### Aval :
 - [san_planner](san_planner.md) : Consomme la fiche d'idée validée pour générer la roadmap opérationnelle découpée en phases.
@@ -245,6 +463,6 @@ flowchart LR
 - [san_designer](san_designer.md) : Exploite les conclusions sur la cible et les contraintes visuelles pour orienter les wireframes.
 
 ### Compétences Transversales Mobilisées :
-- `san_searcher` : Exécute les recherches documentaires, l'analyse concurrentielle et la collecte de retours d'expérience.
+- `san_searcher` : Exécute les recherches documentaires et l'analyse concurrentielle locale.
 - `san_subagent_manager` : Déploie et configure les sous-agents d'investigation spécialisés.
-- `san_copywriter` : Précise les formulations de valeur et les accroches conceptuelles.
+- `san_copywriter` : Précise les formulations de proposition de valeur et les accroches.

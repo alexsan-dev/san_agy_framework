@@ -1,41 +1,50 @@
 ---
 name: san_designer
-description: Expert en conception visuelle haute fidélité en code (HTML statique + Tailwind CSS), mockups multi-supports, screenshots de stores (Play Store, App Store), affiches/posters, respect absolu de BRAND.md, signature cinétique, réalisme terrain africain (3G, plein soleil, repères locaux) et workflow d'audit cognitif en 2 étages (/ux-scan).
-version: 1.0.0
-role: Expert Design Visuel, UI Prototyping & Visual Craft
+title: Expert Design Visuel Haute Fidélité, UI Mockups 100% Code & Visual Craft
+version: 2.0.0
+type: domain_expert
+harness: google_antigravity_cli
+routing:
+  orchestrator:
+    nominal: "argon-latest-max"
+    fallback_1: "gemini-3.1-pro-high"
+    fallback_2: "gemini-3.8-flash-high"
+  subagents:
+    execution: "flash"
+    ux_scan_auditors: "inherit"
 triggers:
   - "/ux-scan"
+  - "san_designer"
   - "conçois les maquettes"
   - "génère les screenshots stores"
   - "crée les mockups"
   - "affiche promotionnelle"
+  - "feature graphic"
   - "design visuel"
-model_delegation:
-  execution: "flash"
-  audit: "inherit"
 ---
 
-# SKILL : san_designer — Expert Design Visuel Haute Fidélité, UI Mockups & Visual Craft
+# `san_designer` — Expert Design Visuel Haute Fidélité, UI Mockups 100% Code & Visual Craft
 
-> **Manifeste Cartésien :** Le design d'interface moderne ne se fige pas dans des maquettes graphiques statiques déconnectées du code. `san_designer` fait d'Antigravity un designer d'élite qui conçoit l'intégralité de ses interfaces directement en **code HTML sémantique + Tailwind CSS autonome**, exportable en PNG haute résolution en une commande reproductible, incarnant l'âme vivante de marque de `.agents/rules/BRAND.md`, et soumis à un entonnoir d'audit rigoureux en 2 étages.
+> **Manifeste de l'Artisanat Numérique :** Le design d'interface moderne ne tolère aucun découplage entre la maquette et le code. Les fichiers graphiques propriétaires et statiques s'étiolent dès la première itération. `san_designer` fait d'Antigravity un directeur artistique et concepteur d'élite qui conçoit **100 % de ses maquettes, captures de stores et visuels directement en code HTML sémantique + Tailwind CSS local**, avec zéro dépendance CDN externe et polices locales embarquées. Chaque écran incarne l'âme vivante de marque de `.agents/rules/BRAND.md`, répond aux contraintes physiques du terrain (plein soleil, 3G, ergonomie du pouce) et se soumet à l'entonnoir d'audit d'élite `/ux-scan`.
 
 ---
 
 ## 1. RÔLE, POUR QUI, POUR QUOI
 
-### Rôle
-`san_designer` est le concepteur visuel d'interface et d'assets graphiques du framework Antigravity. Il intervient en amont ou en appui de l'ingénierie logicielle pour concevoir, prototyper et valider visuellement tous les écrans, captures de stores et supports de communication d'un produit numérique.
+### Rôle Fondamental
+`san_designer` est le maître d'œuvre de la conception visuelle, du prototypage haute fidélité et des assets graphiques du framework **Antigravity (`san_*`)**. Il opère en amont et en symbiose avec l'ingénierie logicielle pour concevoir, prototyper, auditer et figer visuellement tous les écrans, captures de stores et supports de communication d'un produit numérique avant toute phase d'assemblage applicatif.
 
-### Pour qui ?
-* Pour le **développeur full-stack** ou **lead tech** qui a besoin de maquettes d'écrans haute fidélité avant de coder les composants dynamiques.
-* Pour l'**entrepreneur / créateur de produit** qui a besoin de captures d'écran calibrées pour les stores (Google Play Store, Apple App Store) ou d'affiches percutantes pour ses campagnes marketing.
-* Pour le chef d'orchestre [`san_executer`](san_executer.md) qui délègue la validation visuelle amont avant l'intégration frontend par [`san_ux_ui_expert`](san_ux_ui_expert.md).
+### Pour Qui ?
+- **Pour le développeur full-stack & lead tech :** Qui a besoin de maquettes d'écrans exécutables et fidèles au pixel près en HTML/Tailwind, réutilisables directement pour l'intégration frontend sans friction d'interprétation.
+- **Pour l'expert frontend & mobile ([`san_ux_ui_expert`](san_ux_ui_expert.md)) :** Qui reçoit des maquettes éprouvées, structurées et validées ergonomiquement pour les transformer en composants dynamiques React.js et React Native / Expo.
+- **Pour le chef d'orchestre ([`san_executer`](san_executer.md)) :** Qui délègue l'assurance visuelle et cognitive amont avant d'engager les chantiers de code lourd.
+- **Pour les experts de publication ([`san_store_legal_expert`](san_store_legal_expert.md), [`san_growth_expert`](san_growth_expert.md)) :** Qui reçoivent des captures certifiées aux dimensions exactes des stores (Play Store, App Store, Feature Graphic).
 
-### Pour quoi ?
-* Éliminer le fossé classique entre « ce qui a été dessiné » et « ce qui est codé » : les maquettes étant écrites en HTML + classes Tailwind, elles partagent les exacts tokens du code de production.
-* Bannir définitivement le style « template IA générique sans âme » grâce au respect strict de la direction artistique définie dans `BRAND.md`.
-* Intégrer d'emblée la **réalité terrain africaine et congolaise** (lisibilité sous soleil ardent, téléphones d'entrée de gamme, adresses par repères urbains, paiements Mobile Money, repères familiers inspirés de WhatsApp).
-* Garantir une reproductibilité industrielle grâce à des scripts de capture automatisée Playwright/Puppeteer.
+### Pour Quoi ?
+- **Éliminer la fracture « Design vs Code » :** Les maquettes étant rédigées avec les classes utilitaires réelles de Tailwind CSS et un balisage HTML sémantique, le design partage rigoureusement les mêmes tokens et la même syntaxe que le code final de production.
+- **Bannir l'artifice et les stéréotypes IA (*Anti-AI Taste*) :** Refuser les interfaces prévisibles et génériques (cartes blanches uniformes sur fond grisâtre, dégradés violets fluo non justifiés) pour façonner une identité visuelle vivante, singulière et mémorable dictée par `.agents/rules/BRAND.md`.
+- **Intégrer d'emblée la réalité physique du terrain :** Lisibilité en plein soleil à fort éclairage ambiant (contraste élevé), adaptation aux smartphones d'entrée et milieu de gamme, ergonomie à une main dans les transports, et ancrage culturel authentique (paiements Mobile Money, repères urbains, montants réels en FCFA).
+- **Industrialiser l'export visuel :** Génération déterministe de fichiers PNG haute résolution en une commande via Playwright, garantissant une reproductibilité absolue en environnement local ou d'intégration continue.
 
 ---
 
@@ -43,213 +52,536 @@ model_delegation:
 
 | CE QU'IL FAIT STRICTEMENT | CE QU'IL NE FAIT ABSOLUMENT PAS |
 | :--- | :--- |
-| **Conception visuelle 100 % en code HTML + Tailwind CSS** autonome (aucun CDN externe, polices locales). | Ne code pas les composants dynamiques, l'état applicatif ni les frameworks JS (React, Expo, Vue, hooks, stores) $\rightarrow$ rôle exclusif de [`san_ux_ui_expert`](san_ux_ui_expert.md). |
-| **Maquettes multi-supports réactives** : Mobile (`390×844`), Tablette (`820×1180`), Desktop (`1440×900`), adaptées à chaque contexte de consultation. | Ne touche jamais aux APIs, aux migrations SQL, ni à la logique serveur $\rightarrow$ domaine de [`san_backend_expert`](san_backend_expert.md). |
-| **Screenshots stores haute résolution** : App Store (`1290×2796`), Play Store (`1080×1920`) avec encadrement de device fidèle (Dynamic Island, encoche, status bar). | Ne planifie pas les fonctionnalités globales ni la stratégie de versioning $\rightarrow$ gouverné par [`san_planner`](san_planner.md). |
-| **Affiches et supports promotionnels** (`/design/poster/*`) en HTML/CSS dimensionné au millimètre. | Ne réalise pas les tests End-to-End applicatifs ni les pentests de sécurité $\rightarrow$ sous la responsabilité de [`san_qa_security_expert`](san_qa_security_expert.md). |
-| **Simulation des 5 états UI** : Idéal, Vide (*Empty State*), Chargement (*Skeleton*), Erreur, Hors-ligne. | N'utilise aucun CDN externe (Google Fonts, cdnjs, scripts non locaux) pouvant casser le rendu hors-ligne ou l'export PNG. |
-| **Vérification WCAG AA** (contraste >= 4.5:1 texte, 3:1 interface, zones tactiles >= 44px). | Ne tolère aucun texte *Lorem Ipsum* ni image externe distante non déterministe. |
-| **Exécution du workflow `/ux-scan`** et pilotage de l'entonnoir d'audit à 2 étages. | Ne livre jamais d'écran ayant un constat classé `BLOQUANT`. |
+| **Conception visuelle 100 % en code HTML5 sémantique + Tailwind CSS local** (zéro CDN distant, polices locales). | Ne code pas la logique métier, la gestion d'état complexe (Redux, Zustand, Context), ni les hooks React/Expo $\rightarrow$ domaine réservé de [`san_ux_ui_expert`](san_ux_ui_expert.md). |
+| **Spécification stricte des 5 formats de canvas normalisés :** Play Store (`1080×1920`), App Store (`1290×2796`), Desktop (`1440×900`), Tablette (`820×1180`), Feature Graphic (`1024×500`). | Ne modifie jamais les contrôleurs backend, les modèles ORM ni les migrations SQL $\rightarrow$ domaine exclusif de [`san_backend_expert`](san_backend_expert.md). |
+| **Contrôle mathématique du contraste WCAG AA & AAA :** Ratio $\ge 4.5:1$ en usage standard et seuil renforcé $\ge 7:1$ pour le mode plein soleil. | Ne modifie pas la direction artistique de sa propre initiative sans répercussion préalable dans `.agents/rules/BRAND.md`. |
+| **Ergonomie physique du pouce (*Thumb Zone*) :** Cibles tactiles $\ge 44\text{px}$, espacement $\ge 8\text{px}$, actions primaires dans les 40 % inférieurs. | Ne tolère aucun texte *Lorem Ipsum*, nom fictif anglophone générique (*John Doe*) ni prix fantaisiste. |
+| **Orchestration de l'entonnoir d'audit `/ux-scan` :** Étage 1 (statique zéro token LLM) puis Étage 2 (3 auditeurs cognitifs parallèles sous `Model: 'inherit'`). | Ne valide jamais un écran comportant un seul constat classé `BLOQUANT` ou une note globale $< 8.5/10$. |
+| **Export automatisé haute résolution :** Pipeline Playwright `export_png.mjs` avec attente stricte de `networkidle` et `document.fonts.ready`. | Ne réalise pas les tests d'intrusion de sécurité ni les tests E2E fonctionnels applicatifs $\rightarrow$ rôle de [`san_qa_security_expert`](san_qa_security_expert.md). |
 
 ---
 
 ## 3. DÉCLENCHEURS & INVOCATIONS CONCRÈTES
 
-### Commandes directes
+### Commandes Directes en Terminal & CLI
 ```bash
-# Lancer un audit cognitif consolidé en 2 étages sur une maquette
+# Lancer l'audit cognitif exhaustif /ux-scan sur une maquette donnée
 /ux-scan design/mockup/online-shop/mobile/01-accueil.html
 
-# Exporter l'ensemble des maquettes d'un usecase en PNG haute définition
-node scripts/export_png.mjs --target=design/mockup/online-shop/mobile/ --scale=2
+# Exporter une maquette spécifique en PNG haute fidélité (scale 2x ou 3x)
+node scripts/export_png.mjs --file=design/mockup/online-shop/mobile/01-accueil.html --scale=3
+
+# Exporter l'intégralité des visuels de stores pour la soumission Android et iOS
+node scripts/export_png.mjs --target=design/screenshots/play-store/ --scale=1
+node scripts/export_png.mjs --target=design/screenshots/app-store/ --scale=1
+
+# Exporter la bannière obligatoire Google Play Store Feature Graphic (1024x500)
+node scripts/export_png.mjs --file=design/screenshots/play-store/feature-graphic.html --out=design/screenshots/play-store/feature-graphic.png
 ```
 
-### Invocations par prompt
-* *« Conçois les maquettes haute fidélité pour le usecase de commande de taxi-moto (mobile, tablette, desktop) en respectant les tokens de BRAND.md. »*
-* *« Prépare les 5 visuels de capture d'écran pour la soumission Play Store de l'application vendeur selon les dimensions 1080x1920. »*
-* *« Conçois une affiche promotionnelle pour le lancement du service Mobile Money à destination des commerçants de Brazzaville. »*
-* Déclenché automatiquement par [`san_executer`](san_executer.md) dès qu'une tâche de roadmap mentionne une phase de design ou de prototypage d'écran.
+### Invocations par Requête Développeur
+- *« `san_designer` : Conçois le parcours complet d'achat de crédit d'appel et de forfait internet pour mobile (390×844) avec les 5 états obligatoires et le respect strict de BRAND.md. »*
+- *« `san_designer` : Crée les 5 captures d'écran calibrées pour le Play Store (1080×1920) et la Feature Graphic (1024×500) mettant en avant le paiement instantané Mobile Money. »*
+- *« `san_designer` : Exécute `/ux-scan` sur la maquette `03-paiement-momo.html` et vérifie la lisibilité en plein soleil et l'ergonomie du pouce. »*
+- *Déclenché automatiquement par [`san_executer`](san_executer.md)* dès qu'une tâche de roadmap active `/roadmaps/*.md` requiert une validation de design avant intégration.
 
 ---
 
-## 4. STRUCTURE INTERNE DU SKILL
+## 4. STRUCTURE NORMATIVE INTERNE DU SKILL
+
+L'organisation des fichiers de référence, gabarits et outils de capture de `san_designer` répond à l'arborescence standardisée :
 
 ```txt
 skills/san_designer/
-├── SKILL.md                          # Manifeste, gouvernance, procédure et principes directeurs
+├── SKILL.md                          # Manifeste, gouvernance, protocoles et formules mathématiques
 ├── references/
-│   ├── audit_criteria.md             # Grille détaillée de notation /10 des 3 auditeurs cognitifs
-│   ├── device_specs.md               # Résolutions, safe areas, viewports et ratios des supports cibles
-│   └── congo_ux_reality.md           # Réalités ergonomiques locales (3G, plein soleil, cash, repères)
+│   ├── audit_criteria.md             # Grille exhaustive de notation /10 des 3 auditeurs cognitifs
+│   ├── device_canvas_specs.md        # Résolutions, safe areas, viewports et ratios des 5 canvas stricts
+│   ├── contrast_mathematics.md       # Formules de luminance relative et matrices WCAG AA/AAA
+│   └── terrain_reality_guide.md      # Réalités locales : plein soleil, 3G, navigation 1 main, repères urbains
 ├── templates/
-│   ├── device_frames.html            # Composants réutilisables (Dynamic Island, encoches, status bars)
-│   ├── mockup_page_template.html     # Squelette de page HTML autonome avec Tailwind CSS embarqué
-│   └── store_screenshot_template.html # Gabarit pour captures Play Store / App Store avec titrage
+│   ├── mockup_standalone.html        # Squelette de page HTML autonome avec Tailwind CSS embarqué
+│   ├── device_frames.html            # Composants réutilisables (Dynamic Island, encoche, status bars)
+│   ├── store_play_screenshot.html    # Gabarit Play Store portrait 1080×1920 avec titrage et mock
+│   ├── store_app_screenshot.html     # Gabarit App Store portrait 1290×2796 avec frame iPhone Pro Max
+│   └── feature_graphic_template.html # Gabarit Feature Graphic paysage 1024×500 percutant
 └── scripts/
-    └── export_png.mjs                # Pipeline Playwright / Puppeteer pour export PNG déterministe
+    └── export_png.mjs                # Script Playwright complet (attente networkidle & document.fonts.ready)
 ```
 
 ---
 
-## 5. LIVRABLES EXACTS
+## 5. LIVRABLES EXACTS & SPÉCIFICATIONS DES CANVAS
 
-Tous les livrables sont stockés à la racine du projet sous l'arborescence standardisée `/design/` :
+Tous les livrables graphiques et maquettes sont rigoureusement enregistrés à la racine du projet sous l'arborescence `/design/` :
 
 ```txt
 /design/
 ├── mockup/
-│   └── [usecase]/                    # Ex: online-shop, courier-delivery, pos-retail
-│       ├── mobile/                   # 390×844 px (simulation smartphone)
+│   └── [usecase]/                    # Ex: delivery, ecommerce, fintech-momo, pos-caisse
+│       ├── mobile/                   # 390×844 px (Simulation smartphone standard)
 │       │   ├── 01-accueil.html
-│       │   ├── 02-panier.html
-│       │   └── 03-paiement-momo.html
-│       ├── tablet/                   # 820×1180 px (simulation tablette / iPad Air)
+│       │   ├── 02-selection-panier.html
+│       │   └── 03-confirmation-momo.html
+│       ├── tablet/                   # 820×1180 px (Simulation tablette / iPad Air)
 │       │   └── ...
-│       └── desktop/                  # 1440×900 px (simulation écran large)
+│       └── desktop/                  # 1440×900 px (Simulation écran large widescreen)
 │           └── ...
 ├── screenshots/
-│   ├── play-store/                   # 1080×1920 px (ratio 16:9 standard Android)
-│   │   ├── 01-hero-catalogue.html (+ .png généré)
-│   │   ├── 02-momo-paiement.html  (+ .png généré)
-│   │   └── 03-suivi-commande.html (+ .png généré)
-│   └── app-store/                    # 1290×2796 px (iPhone 15/16 Pro Max 6.7")
+│   ├── play-store/                   # Google Play Store
+│   │   ├── feature-graphic.html      # 1024×500 px (Bannière promotionnelle obligatoire)
+│   │   ├── feature-graphic.png
+│   │   ├── 01-hero-catalogue.html    # 1080×1920 px (Format vertical 9:16)
+│   │   ├── 01-hero-catalogue.png
+│   │   ├── 02-momo-paiement.html
+│   │   └── 02-momo-paiement.png
+│   └── app-store/                    # Apple App Store (Écrans 6.7" Super Retina XDR)
+│       ├── 01-hero-catalogue.html    # 1290×2796 px (Format vertical 19.5:9)
+│       ├── 01-hero-catalogue.png
 │       └── ...
 └── poster/
-    └── [campagne]/                   # Affiches, bannières publicitaires, kakemonos
-        ├── a4-flyer.html (+ .png)
-        └── social-story.html (+ .png)
+    └── [campagne]/                   # Affiches A4, kakemonos, flyers promotionnels
+        ├── a4-flyer-commercant.html
+        └── a4-flyer-commercant.png
 ```
 
-### Conventions de nommage strictes
-1. Noms de dossiers et fichiers en minuscules et `kebab-case`.
-2. Numérotation ordonnée séquentielle à deux chiffres (`01-`, `02-`, `03-`) reflétant le parcours utilisateur naturel.
-3. Chaque fichier HTML inclut en commentaire d'en-tête ses dimensions cibles fixes :
-   ```html
-   <!-- CANVAS_SPEC: width=390px height=844px device="iPhone 15" export_scale=3 -->
-   ```
+### Grille Normative des 5 Formats de Canvas Stricts
+
+| Format Cible | Largeur ($W$) | Hauteur ($H$) | Ratio d'Aspect | Safe Area / Marge Critique | Destination & Contraintes |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Play Store Screenshot** | `1080 px` | `1920 px` | 9:16 | Marge top `120px`, bas `160px` | Android Phones, pas d'alpha transparent, titre en tiers supérieur. |
+| **App Store Screenshot** | `1290 px` | `2796 px` | 19.5:9 | Dynamic Island top `180px`, bas `140px` | iPhone 15/16 Pro Max 6.7", cadre matériel haute définition. |
+| **Desktop Canvas** | `1440 px` | `900 px` | 16:10 | Padding latéral `80px`, header `72px` | Web App / Backoffice responsive widescreen standard. |
+| **Tablette Canvas** | `820 px` | `1180 px` | 1:1.44 | Padding latéral `48px`, header `64px` | iPad Air / Tablettes Android en orientation portrait. |
+| **Feature Graphic** | `1024 px` | `500 px` | ~2.05:1 | Marge périphérique de sécurité `60px` | Google Play Store bannière héroïque. Aucun texte critique collé aux bords. |
+| *Prototypage Mobile In-App* | `390 px` | `844 px` | 9:19.5 | Notch/Island `47px`, barre d'accueil `34px` | Canvas de prototypage ergonomique mobile nominal (iPhone standard). |
+
+### Tag Métadonnées Obligatoire en En-tête de Fichier
+Chaque fichier HTML sous `/design/` doit déclarer formellement son format via un commentaire de spécification placé sur la première ligne du `<body>` :
+```html
+<!-- CANVAS_SPEC: width=1080px height=1920px device="Play Store Screenshot" export_scale=1 -->
+```
 
 ---
 
-## 6. PROCÉDURE « ZÉRO NÉGLIGENCE » & ENTONNOIR D'AUDIT EN 2 ÉTAGES
+## 6. MATHÉMATIQUES DU DESIGN, CONSTRASTE WCAG & ERGONOMIE TERRAIN
+
+### 1. Formule Mathématique du Contraste WCAG AA & AAA
+Le contraste entre deux couleurs s'obtient via le calcul de leur **luminance relative** ($L$), normalisée selon l'espace sRGB :
+
+Pour chaque composante $C \in \{R, G, B\}$ normalisée dans $[0, 1]$ :
+$$C_{\text{linear}} = \begin{cases} \dfrac{C_{\text{srgb}}}{12.92} & \text{si } C_{\text{srgb}} \le 0.04045 \\ \left(\dfrac{C_{\text{srgb}} + 0.055}{1.055}\right)^{2.4} & \text{sinon} \end{cases}$$
+
+La luminance relative globale est donnée par :
+$$L = 0.2126 \cdot R_{\text{linear}} + 0.7152 \cdot G_{\text{linear}} + 0.0722 \cdot B_{\text{linear}}$$
+
+Le **Ratio de Contraste ($CR$)** entre la couleur la plus claire ($L_1$) et la plus sombre ($L_2$) s'énonce :
+$$CR = \frac{L_1 + 0.05}{L_2 + 0.05}$$
+
+### 2. Seuils Impératifs d'Acceptation
+- **Texte Standard / Corps de page :** $CR \ge 4.5:1$ (Norme WCAG AA obligatoire).
+- **Texte Large ($\ge 18\text{pt}$ ou $\ge 14\text{pt}$ gras) :** $CR \ge 3.0:1$.
+- **Composants d'Interface Actifs & Icônes critiques :** $CR \ge 3.0:1$.
+- **Règle « Plein Soleil » (Éclairage Extérieur $> 10\,000\text{ lux}$) :**
+  $$CR_{\text{soleil}} \ge 7.0:1 \quad (\text{Niveau WCAG AAA})$$
+  Tout texte explicatif d'un flux financier, tout label d'adresse et tout bouton de confirmation d'opération en extérieur doit respecter ce seuil renforcé. Interdiction totale des gris faibles (`text-gray-400`, `#9ca3af`) sur fond blanc.
+
+### 3. Règle des Zones Tactiles (Loi de Fitts)
+- **Dimension minimale absolue de la cible :**
+  $$\text{Target}_{\text{min}} = 44 \times 44\text{ px} \quad (\text{classes Tailwind : } \texttt{min-h-[44px] min-w-[44px]})$$
+- **Espacement inter-cibles (*Gutters*) :** Au minimum $8\text{px}$ d'espacement franc entre deux cibles interactives adjacentes pour interdire les faux clics involontaires sur petits écrans tactiles.
+
+### 4. Cartographie de la Zone du Pouce (*Thumb Zone*) sur Mobile
+Dans l'ergonomie à une main, la surface d'un écran mobile vertical est subdivisée en trois zones d'effort biomécanique :
 
 ```mermaid
 flowchart TD
-    A["0. Cadrage Amont (Roadmap & BRAND.md)"] --> B["1. Implémentation Atomique (Model: 'flash')"]
-    B --> C["2. Étage 1 : Quality Gate Statique (Zéro Token LLM)"]
-    C -- "Erreur Syntaxe / Token inconnu / CDN externe" --> B
-    C -- "100% Validé" --> D["3. Étage 2 : 3 Auditeurs Cognitifs Parallèles (Model: 'inherit')"]
-    D --> E["4. Consolidation /ux-scan (Score >= 8/10 & 0 BLOQUANT)"]
-    E -- "Échec / Note < 8 / BLOQUANT" --> B
-    E -- "Validé à l'unanimité" --> F["5. Export PNG Haute Résolution & Clôture Fast-Track"]
+    subgraph EcranMobile["Écran Mobile (390×844 ou 1080×1920)"]
+        direction TB
+        TopZone["30% Supérieur : ZONE HORS D'ATTEINTE (Danger)\n- Informations passives uniquement\n- En-tête, statut de connexion, solde en lecture seule\n- AUCUNE action critique de confirmation ici"]
+        MidZone["30% Médian : ZONE D'EFFORT MODÉRÉ (Étendue)\n- Navigation secondaire, cartes consultables, filtres\n- Sélection d'articles, visuels illustratifs"]
+        BottomZone["40% Inférieur : ZONE NATURELLE DU POUCE (Confort Absolu)\n- BOUTONS D'ACTION PRIMAIRES (CTA)\n- Clavier de saisie numérique MoMo / OTP\n- Validation du paiement, sélection du portefeuille"]
+    end
 ```
 
-### Étape 0 : Cadrage Amont & Direction Artistique
-1. Consulter la feuille de route active dans `/roadmaps/*.md` (pilotée par [`san_planner`](san_planner.md)).
-2. Ingestion obligatoire de `.agents/rules/BRAND.md` :
-   * **Direction Artistique & Âme :** Archétype de la marque, textures, intentions émotionnelles, anti-patterns esthétiques interdits.
-   * **Signature Cinétique :** Courbes d'accélération (`cubic-bezier`), durées standard (`fast: 150ms`, `normal: 250ms`, `slow: 400ms`), réactions au contact.
-   * **Design Tokens :** Palette hexadécimale stricte, typographies locales, échelle de rayons (`rounded-*`) et élévations (`shadow-*`).
-3. Vérification des assets : utilisation exclusive du logo validé dans `.agents/rules/LOGO.md`.
+---
 
-### Étape 1 : Implémentation Atomique (Sous-Agent `Model: 'flash'`)
-1. Instancier via `san_subagent_manager` un sous-agent d'exécution atomique propulsé par **`Model: 'flash'`** (`gemini-3.8-flash-high` ou dernier modèle Flash disponible).
-2. Rédiger le code HTML autonome à partir de `templates/mockup_page_template.html` :
-   * Canvas à taille fixe encadré par le device frame adéquat (`templates/device_frames.html`).
-   * Zéro *Lorem Ipsum* : rédaction de micro-copies réalistes, noms congolais authentiques, montants en FCFA (`2 500 FCFA`), numéros d'urgence ou de contact conformes (`+242 06 ... / +242 05 ...`).
-   * Représentation soignée des états UI indispensables (état nominal, badge d'état réseau, bouton avec état `:active`).
+## 7. LE WORKFLOW D'AUDIT CONSOLIDÉ `/ux-scan`
 
-### Étape 2 : Entonnoir d'Audit — Étage 1 (Contrôle Technique Statique & Zéro Token LLM)
-Avant tout appel à un modèle d'audit qualitatif, le script de validation statique vérifie :
-* [ ] **Autonomie absolue :** Présence d'aucun lien vers un CDN externe (`cdn.jsdelivr.net`, `fonts.googleapis.com`, etc.).
-* [ ] **Conformité stricte aux Tokens :** Aucune couleur arbitraire inline (ex: `style="color: #4a12c3"` interdit) ni classe Tailwind non déclarée dans `BRAND.md`.
-* [ ] **Syntaxe et Sémantique :** Balisage HTML5 valide, accessibilité des balises d'images (`alt`), balises de formulaires étiquetées (`aria-label`).
-* [ ] **Canvas dimensionné :** Présence du tag de spécification `<!-- CANVAS_SPEC ... -->`.
-> **Règle d'arrêt strict anti-gaspillage :** Si l'Étage 1 détecte une seule non-conformité, la chaîne s'interrompt immédiatement. L'erreur est corrigée par le sous-agent d'exécution (`Model: 'flash'`). **Aucun token de raisonnement n'est dépensé sur du code techniquement invalide.**
+Le workflow `/ux-scan` est un protocole d'assurance qualité visuelle et cognitive opérant en entonnoir étanche à deux étages :
 
-### Étape 3 : Entonnoir d'Audit — Étage 2 (Audits Spécialisés Cognitifs — `Model: 'inherit'`)
-Une fois l'Étage 1 validé à 100 %, l'orchestrateur déploie simultanément trois sous-agents auditeurs configurés avec **`Model: 'inherit'`** (bénéficiant de la puissance maximale du modèle maître de session Argon ou Pro) :
+```mermaid
+flowchart TD
+    A["1. Code HTML/Tailwind généré par l'exécuteur (Model: 'flash')"] --> B["2. Étage 1 : Quality Gate Statique Déterministe (0 Token LLM)"]
+    B -- "Erreur CDN / Format non conforme / Classe hors BRAND.md" --> C["Rejet immédiat & Correction par sous-agent flash"]
+    C --> B
+    B -- "100% Validé" --> D["3. Étage 2 : Déploiement des 3 Auditeurs Cognitifs (Model: 'inherit')"]
+    
+    subgraph Etage2["Étage 2 : 3 Auditeurs Parallèles Spécialisés"]
+        D1["ux_psychology_auditor\n(Lois de Hick, Fitts, Miller, Jakob)"]
+        D2["ux_context_auditor\n(Plein soleil, 3G, Repères locaux, MoMo)"]
+        D3["ui_design_system_auditor\n(Fidélité BRAND.md, Cinétique, Anti-AI)"]
+    end
 
-#### 1. `ux_psychology_auditor` (Psychologie Cognitive & Ergonomie)
-* **Loi de Hick :** Minimisation du nombre de choix concurrents par écran.
-* **Loi de Fitts :** Dimensionnement des cibles tactiles (`>= 44px`) et positionnement des actions critiques à portée immédiate du pouce.
-* **Loi de Norman & Feedback :** Visibilité claire de l'état du système, affordance des composants cliquables, feedback perceptible immédiat.
-* **Charge mentale :** Hiérarchie visuelle comprise en moins de 3 secondes, moment de succès gratifiant.
+    D --> D1
+    D --> D2
+    D --> D3
+
+    D1 --> E["4. Matrice de Consolidation /ux-scan"]
+    D2 --> E
+    D3 --> E
+
+    E -- "Score < 8.5/10 OU Présence d'un statut BLOQUANT" --> F["Boucle de correction ciblée (Max 5 itérations)"]
+    F --> A
+    E -- "Tous scores >= 8.5/10 ET Zéro BLOQUANT" --> G["5. Feu Vert & Export PNG via Playwright (export_png.mjs)"]
+    G --> H["Fast-Track de clôture & Archivage dans la Roadmap"]
+```
+
+### Étage 1 : Contrôle Technique Statique (Zéro Token LLM)
+Avant d'engager le moindre token d'audit qualitatif, une vérification programmatique immédiate valide :
+- [ ] **Autonomie Totale :** Absence stricte de références distantes (`fonts.googleapis.com`, `cdnjs.cloudflare.com`, `cdn.tailwindcss.com`).
+- [ ] **Polices Locales :** Polices déclarées en local ou fontes système pérennes.
+- [ ] **Présence du tag de canvas :** `<!-- CANVAS_SPEC: ... -->` présent et dimensions cohérentes.
+- [ ] **Conformité des Tokens :** Vérification que les couleurs utilisées correspondent aux hexadécimaux arrêtés dans `.agents/rules/BRAND.md`.
+> **Garde-fou anti-gaspillage :** Si l'Étage 1 relève une anomalie, la chaîne s'interrompt instantanément. Le sous-agent de code (`Model: 'flash'`) corrige. Aucun token de modèle de raisonnement n'est gaspillé sur un fichier syntaxiquement ou structurellement invalide.
+
+### Étage 2 : Déploiement des 3 Auditeurs Parallèles (`Model: 'inherit'`)
+Propulsés par le modèle maître Argon/Pro via **`Model: 'inherit'`**, trois spécialistes indépendants inspectent le mockup sous trois angles distincts :
+
+#### 1. `ux_psychology_auditor` (Psychologie Cognitive & Lois Ergonomiques)
+- **Loi de Hick :** Le temps pour prendre une décision augmente logarithmiquement avec le nombre de choix. L'écran minimise-t-il les choix concurrents ?
+- **Loi de Fitts :** Les cibles tactiles critiques font-elles $\ge 44\text{px}$ et sont-elles situées au plus près de la position naturelle de repos du doigt ?
+- **Loi de Miller :** Les données complexes sont-elles regroupées en morceaux assimilables (*chunks* de 5 à 7 éléments maximum) ?
+- **Effet de Restorff :** L'action d'engagement principale (le CTA) ressort-elle visuellement de manière flagrante par rapport aux actions secondaires ?
+- **Loi de Jakob :** L'interface réutilise-t-elle des conventions ergonomiques universelles (emplacement du panier, croix de fermeture, icône de profil) pour éviter tout apprentissage inutile ?
 
 #### 2. `ux_context_auditor` (Réalité Terrain & Ancrage Local)
-* **Plein soleil :** Contraste renforcé des textes et boutons, interdiction des gris pâles sur fond blanc.
-* **Usage à une main :** Actions principales (validation, sélection MoMo) placées dans le tiers inférieur de l'écran.
-* **Contexte réseau 3G/EDGE & Économie de data :** Absence de médias lourds, composants légers, prévoyance visuelle du mode déconnecté.
-* **Codes locaux familiers :** Formulation en français simple et accessible, adresses formulées par repères familiers (*« Arrêt Total Mikalou, face Pharmacie »* au lieu d'une adresse de rue inexistante), intégration naturelle des réflexes WhatsApp et des paiements Mobile Money (Airtel Money, MTN MoMo).
+- **Lisibilité en Plein Soleil :** Les textes sont-ils contrastés ($CR \ge 7:1$) pour une lecture sous forte lumière tropicale sans plisser les yeux ?
+- **Sobriété Bande Passante (3G/EDGE) :** Le DOM est-il épuré, exempt d'images décoratives lourdes, prêt pour un affichage instantané ?
+- **Ergonomie du Pouce :** Les actions majeures sont-elles situées dans les 40 % inférieurs de l'écran ?
+- **Ancrage Local & Micro-Copies :** Présence de repères réels (ex: *« Face station Total Mikalou, Brazzaville »* au lieu d'une adresse de rue fantaisiste), montants explicites en FCFA (`2 500 FCFA`), intégration des flux familiers Mobile Money (MTN MoMo, Airtel Money).
 
-#### 3. `ui_design_system_auditor` (Conformité Marque & Craft Visuel)
-* **Fidélité au Design System :** Respect scrupuleux des tokens de `.agents/rules/BRAND.md`.
-* **Signature Cinétique :** Présence des micro-interactions, états d'appui `:active` visibles, transitions prêtes pour la capture.
-* **Anti-AI Taste :** Traque et élimination des stéréotypes visuels génériques d'IA (cartes uniformes de 3 colonnes, dégradés violets fluo sur fond sombre, icônes circulaires sans âme).
+#### 3. `ui_design_system_auditor` (Craft Visuel, Identité & Anti-AI Taste)
+- **Respect de BRAND.md :** Rigueur absolue des codes couleurs, typographies, hiérarchie de graisses, rayons de courbure (`rounded-*`) et ombres (`shadow-*`).
+- **Signature Cinétique :** Micro-interactions prévues (classes d'état `:active`, `:hover`, `active:scale-[0.98]`, transitions fluides).
+- **Matrice Anti-AI Taste :** Traque et destruction des stéréotypes IA (cartes uniformes rébarbatives, dégradés violets fluo non contextualisés, icônes sans âme).
 
-### Étape 4 : Consolidation `/ux-scan` & Boucle d'Itération
-* Chaque auditeur consigne sa notation détaillée sur `/10` critère par critère avec constats hiérarchisés :
-  * `BLOQUANT` : Interdiction formelle de livrer (ex: contraste illisible en plein soleil, bouton MoMo hors zone du pouce, couleur hors palette).
-  * `MAJEUR` : À corriger immédiatement sauf dérogation explicite motivée.
-  * `MINEUR` : Recommandation d'optimisation cosmétique.
-* **Seuil d'acceptation :**
-  $$\text{Score de chaque auditeur} \ge 8.0/10 \quad \text{ET} \quad \text{Nombre de BLOQUANT} = 0$$
-* En cas d'échec, le sous-agent d'implémentation (`flash`) corrige les points signalés. Plafond strict de **5 itérations maximales** avant arbitrage formel du développeur.
+### Grille d'Évaluation & Statuts d'Anomalies
 
-### Étape 5 : Export Haute Résolution & Clôture Fast-Track
-1. Exécution du script `scripts/export_png.mjs` via Playwright :
-   ```bash
-   node scripts/export_png.mjs --file=design/mockup/online-shop/mobile/01-accueil.html --out=design/mockup/online-shop/mobile/01-accueil.png
-   ```
-2. **Fast-Track d'hygiène par l'orchestrateur :** Cocher la tâche correspondante `- [x]` dans la roadmap active de [`san_planner`](san_planner.md) et consigner l'avancement dans `CHANGELOG.md`.
+Chaque auditeur remplit la grille normée suivante :
 
----
+```markdown
+### Rapport d'Audit : [Nom de l'auditeur]
+- **Note Globale :** [X.X / 10]
+- **Statut d'approbation :** [APPROUVÉ | REJETÉ]
 
-## 7. PRINCIPES DIRECTEURS & INVARIANTS VISUELS
+| Critère Évalué | Note /10 | Constat & Analyse | Statut Anomalie |
+| :--- | :--- | :--- | :--- |
+| Critère 1 | 9.0/10 | Respect strict des espacements et contrastes. | AUCUNE |
+| Critère 2 | 4.0/10 | Bouton de validation situé en zone haute inaccessible. | BLOQUANT |
+| Critère 3 | 7.5/10 | Ombre portée légèrement trop diffuse. | MINEUR |
+```
 
-### 1. Invariant de l'Âme Visuelle & « Anti-AI Taste »
-Chaque écran doit respirer une identité singulière. L'IA a tendance à reproduire mécaniquement les mêmes canevas :
-* **PROSCRIT :** Le trio monotone de cartes blanches sur fond grisâtre avec icône dans un cercle teinté et texte non différencié.
-* **PROSCRIT :** Les dégradés violets/bleutés artificiels plaqués sur des interfaces sombres.
-* **EXIGÉ :** Une tension visuelle maîtrisée, une échelle typographique assumée (titres expressifs, labels compacts à fort contraste), des bordures fines élégantes, et des éléments d'ancrage visuel reflétant l'univers propre du produit décrit dans `BRAND.md`.
+#### Classification des Statuts
+- **`BLOQUANT` :** Interdiction absolue de livrer. Force une itération immédiate. Exemples : contraste $< 4.5:1$ ou $< 7:1$ en extérieur, zone tactile $< 44\text{px}$, dépendance CDN externe détectée, bouton primaire hors zone du pouce.
+- **`MAJEUR` :** Dysfonctionnement ergonomique important. Doit être corrigé avant la transmission au frontend sauf dérogation formelle du lead tech.
+- **`MINEUR` :** Retouche cosmétique ou ajustement d'alignement non bloquant.
 
-### 2. Invariant de Réalisme et d'Humanité des Données
-* Zéro texte de remplissage : interdiction absolue de toute mention *Lorem Ipsum*, *John Doe*, ou prix fantaisistes en dollars pour des produits locaux.
-* Utilisation de noms, prénoms et toponymes authentiques (ex: *« M. Ngoma »*, *« Marché Total »*, *« Avenue de la Paix, Poto-Poto »*).
-* Produits et services réalistes : sacs de ciment, recharges de crédit d'appel, courses urbaines, pagnes wax, paniers maraîchers.
-
-### 3. Invariant d'Autonomie & Zéro Dépendance Externe
-* Les maquettes HTML doivent s'ouvrir instantanément et fidèlement sans connexion Internet active.
-* Les styles CSS Tailwind sont générés en local ou embarqués dans une balise `<style>` dédiée.
-* Les polices typographiques sont stockées dans le projet (`.woff2`) ou encodées en base64 pour garantir la stabilité pérenne des exports.
-
-### 4. Invariant de Séparation des Pouvoirs (Regard Neuf)
-* Le sous-agent chargé de l'implémentation de l'écran (`Model: 'flash'`) n'est **JAMAIS** celui qui réalise l'audit cognitif Étage 2 (`Model: 'inherit'`). Un œil neuf est indispensable pour déceler les failles ergonomiques et les biais d'implémentation.
+#### Seuil Mathématique d'Acceptation
+$$\text{Livrable Certifié} \iff \begin{cases} \text{Score } (\texttt{ux\_psychology}) \ge 8.5/10 \\ \text{Score } (\texttt{ux\_context}) \ge 8.5/10 \\ \text{Score } (\texttt{ui\_design\_system}) \ge 8.5/10 \\ \sum \texttt{BLOQUANT} = 0 \end{cases}$$
 
 ---
 
-## 8. MATRICE DE BRANCHEMENT & RÉFÉRENCES CROISÉES
+## 8. SCRIPT DÉTERMINISTE COMPLET : `export_png.mjs`
+
+Ce script Node.js ESM autonome exploite Playwright pour réaliser les captures haute résolution des maquettes, en attendant impérativement que le réseau soit inactif et que toutes les polices soient rendues.
+
+```javascript
+#!/usr/bin/env node
+/**
+ * scripts/export_png.mjs
+ * Pipeline Playwright d'export PNG déterministe haute résolution pour Antigravity san_designer.
+ * 
+ * Usage:
+ *   node scripts/export_png.mjs --file=design/mockup/online-shop/mobile/01-accueil.html --scale=3
+ *   node scripts/export_png.mjs --target=design/screenshots/play-store/ --scale=1
+ */
+
+import { chromium } from 'playwright';
+import { readFileSync, readdirSync, statSync, existsSync, mkdirSync } from 'fs';
+import { resolve, dirname, basename, extname, join } from 'path';
+
+// Analyse des arguments en ligne de commande
+const args = process.argv.slice(2).reduce((acc, arg) => {
+  const [key, value] = arg.replace(/^--/, '').split('=');
+  acc[key] = value || true;
+  return acc;
+}, {});
+
+const TARGET_FILE = args.file;
+const TARGET_DIR = args.target;
+const SCALE_FACTOR = parseFloat(args.scale || '2');
+const CUSTOM_OUT = args.out;
+
+if (!TARGET_FILE && !TARGET_DIR) {
+  console.error('\x1b[31m[ERREUR] Vous devez spécifier --file=<chemin.html> ou --target=<dossier/>\x1b[0m');
+  process.exit(1);
+}
+
+// Extraction du tag CANVAS_SPEC
+function parseCanvasSpec(htmlContent) {
+  const specRegex = /<!--\s*CANVAS_SPEC:\s*width=(\d+)px\s*height=(\d+)px(?:\s*device="([^"]*)")?(?:\s*export_scale=(\d+))?\s*-->/i;
+  const match = htmlContent.match(specRegex);
+  if (match) {
+    return {
+      width: parseInt(match[1], 10),
+      height: parseInt(match[2], 10),
+      device: match[3] || 'Standard Canvas',
+      scale: match[4] ? parseFloat(match[4]) : SCALE_FACTOR
+    };
+  }
+  return null;
+}
+
+async function renderHtmlToPng(browser, filePath, outputPath, forcedScale) {
+  const startTs = Date.now();
+  const absoluteHtmlPath = resolve(filePath);
+  const fileContent = readFileSync(absoluteHtmlPath, 'utf-8');
+  const spec = parseCanvasSpec(fileContent);
+
+  const width = spec ? spec.width : 390;
+  const height = spec ? spec.height : 844;
+  const scale = forcedScale || (spec ? spec.scale : SCALE_FACTOR);
+  const deviceName = spec ? spec.device : 'Custom Viewport';
+
+  const context = await browser.newContext({
+    viewport: { width, height },
+    deviceScaleFactor: scale,
+  });
+
+  const page = await context.newPage();
+
+  try {
+    // Navigation vers le fichier HTML local avec attente réseau
+    await page.goto(`file://${absoluteHtmlPath}`, {
+      waitUntil: 'networkidle',
+      timeout: 30000,
+    });
+
+    // Attente impérative de la résolution intégrale des polices
+    await page.evaluate(async () => {
+      if (document.fonts && document.fonts.ready) {
+        await document.fonts.ready;
+      }
+    });
+
+    // Stabilisation cinétique (fin des transitions CSS initiales)
+    await page.waitForTimeout(300);
+
+    const outDir = dirname(outputPath);
+    if (!existsSync(outDir)) {
+      mkdirSync(outDir, { recursive: true });
+    }
+
+    // Capture d'écran fidèle au canvas
+    await page.screenshot({
+      path: outputPath,
+      type: 'png',
+      clip: { x: 0, y: 0, width, height },
+    });
+
+    const elapsed = Date.now() - startTs;
+    const fileSize = (statSync(outputPath).size / 1024).toFixed(1);
+    console.log(`\x1b[32m✔ EXPORT RÉUSSI\x1b[0m : ${basename(filePath)} -> ${basename(outputPath)} [${width}x${height} @${scale}x | ${fileSize} Ko | ${elapsed}ms | ${deviceName}]`);
+  } catch (err) {
+    console.error(`\x1b[31m✖ ÉCHEC EXPORT\x1b[0m sur ${filePath} : ${err.message}`);
+    throw err;
+  } finally {
+    await context.close();
+  }
+}
+
+async function main() {
+  console.log('\x1b[36m=== ANTIGRAVITY SAN_DESIGNER : PIPELINE PLAYWRIGHT EXPORT PNG ===\x1b[0m');
+  const browser = await chromium.launch({ headless: true });
+
+  try {
+    if (TARGET_FILE) {
+      const defaultOut = TARGET_FILE.replace(/\.html$/i, '.png');
+      const out = CUSTOM_OUT || defaultOut;
+      await renderHtmlToPng(browser, TARGET_FILE, out, SCALE_FACTOR);
+    } else if (TARGET_DIR) {
+      const dirPath = resolve(TARGET_DIR);
+      const files = readdirSync(dirPath).filter(f => f.endsWith('.html'));
+      if (files.length === 0) {
+        console.warn(`\x1b[33m[AVERTISSEMENT] Aucun fichier .html trouvé dans ${TARGET_DIR}\x1b[0m`);
+      }
+      for (const file of files) {
+        const fullPath = join(dirPath, file);
+        const outPath = join(dirPath, file.replace(/\.html$/i, '.png'));
+        await renderHtmlToPng(browser, fullPath, outPath, SCALE_FACTOR);
+      }
+    }
+  } finally {
+    await browser.close();
+    console.log('\x1b[36m=== FIN DU TRAITEMENT D\'EXPORT ===\x1b[0m');
+  }
+}
+
+main().catch(err => {
+  console.error(err);
+  process.exit(1);
+});
+```
+
+---
+
+## 9. MODÈLE TYPE DE MAQUETTE HTML / TAILWIND AUTONOME
+
+Ce gabarit démontre l'autonomie totale (CSS Tailwind localisé, balisage sémantique, zéros CDN, données réalistes en FCFA et micro-interactions tactiles) :
+
+```html
+<!DOCTYPE html>
+<html lang="fr" class="h-full bg-slate-900">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=390, height=844, initial-scale=1.0">
+  <title>Mockup — Validation Paiement Mobile Money</title>
+  <!-- Styles Tailwind compilés en local ou encapsulés sans CDN externe -->
+  <link rel="stylesheet" href="../../../../assets/css/tailwind.css">
+  <style>
+    /* Polices locales pérennes */
+    @font-face {
+      font-family: 'Plus Jakarta Sans';
+      font-style: normal;
+      font-weight: 400 800;
+      font-display: swap;
+      src: url('../../../../assets/fonts/PlusJakartaSans-Variable.woff2') format('woff2');
+    }
+    body { font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif; }
+  </style>
+</head>
+<body class="m-0 p-0 h-full w-full flex items-center justify-center bg-slate-950 antialiased select-none">
+  <!-- CANVAS_SPEC: width=390px height=844px device="iPhone 15 Pro" export_scale=3 -->
+  
+  <!-- Cadre Matériel du Device (390x844) -->
+  <div id="canvas" class="relative w-[390px] h-[844px] bg-slate-900 text-slate-100 overflow-hidden flex flex-col justify-between shadow-2xl border border-slate-800">
+    
+    <!-- Zone Haute : Barre d'État & Dynamic Island (Zone Passive) -->
+    <header class="pt-3 px-6 flex justify-between items-center text-xs font-semibold text-slate-300 z-10">
+      <span>09:41</span>
+      <div class="w-24 h-6 bg-black rounded-full flex items-center justify-center">
+        <div class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse mr-2"></div>
+        <span class="text-[10px] text-slate-400">Sécurisé</span>
+      </div>
+      <div class="flex items-center space-x-1.5">
+        <span class="text-[10px]">4G</span>
+        <div class="w-5 h-2.5 border border-slate-400 rounded-sm p-0.5 flex items-center">
+          <div class="h-full w-3.5 bg-slate-200 rounded-2xs"></div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Navigation Supérieure -->
+    <nav class="px-6 py-4 flex items-center justify-between border-b border-slate-800/80">
+      <button class="min-h-[44px] min-w-[44px] flex items-center justify-center text-slate-300 hover:text-white active:scale-95 transition-transform" aria-label="Retour">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+      </button>
+      <h1 class="text-base font-bold tracking-tight text-white">Finaliser la Commande</h1>
+      <div class="w-11"></div> <!-- Équilibreur de flexbox -->
+    </nav>
+
+    <!-- Zone Médiane : Contenu & Détails de la Transaction -->
+    <main class="flex-1 px-6 py-4 overflow-y-auto space-y-5">
+      <!-- Récapitulatif Montant (Contraste Plein Soleil garanti) -->
+      <section class="bg-slate-800/90 rounded-2xl p-5 border border-slate-700/60 shadow-lg text-center">
+        <span class="text-xs font-bold uppercase tracking-wider text-amber-400">Total à régler</span>
+        <div class="mt-2 text-3xl font-extrabold tracking-tight text-white">
+          25 000 <span class="text-lg font-semibold text-amber-400">FCFA</span>
+        </div>
+        <p class="mt-1 text-xs text-slate-300">Livraison : Arrêt Total Mikalou, Brazzaville</p>
+      </section>
+
+      <!-- Sélection du Portefeuille Mobile Money -->
+      <section class="space-y-3">
+        <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400">Mode de paiement instantané</h2>
+        
+        <!-- Option MTN MoMo -->
+        <label class="min-h-[44px] flex items-center justify-between p-3.5 bg-slate-800/60 rounded-xl border-2 border-amber-500 cursor-pointer active:scale-[0.99] transition-all">
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-lg bg-amber-400 flex items-center justify-center font-black text-slate-950 text-xs shadow-sm">
+              MoMo
+            </div>
+            <div>
+              <p class="text-sm font-bold text-white">MTN Mobile Money</p>
+              <p class="text-xs text-slate-300">+242 06 912 34 56</p>
+            </div>
+          </div>
+          <input type="radio" name="payment_method" checked class="w-5 h-5 accent-amber-500 cursor-pointer">
+        </label>
+
+        <!-- Option Airtel Money -->
+        <label class="min-h-[44px] flex items-center justify-between p-3.5 bg-slate-800/40 rounded-xl border border-slate-700 hover:border-slate-600 cursor-pointer active:scale-[0.99] transition-all">
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-lg bg-red-600 flex items-center justify-center font-black text-white text-xs shadow-sm">
+              Airtel
+            </div>
+            <div>
+              <p class="text-sm font-bold text-white">Airtel Money</p>
+              <p class="text-xs text-slate-400">+242 05 511 22 33</p>
+            </div>
+          </div>
+          <input type="radio" name="payment_method" class="w-5 h-5 accent-red-500 cursor-pointer">
+        </label>
+      </section>
+    </main>
+
+    <!-- Zone Basse (40% Inférieur) : Zone Naturelle du Pouce & Action Critique -->
+    <footer class="p-6 bg-slate-900 border-t border-slate-800/90 space-y-3 z-10">
+      <button type="button" class="w-full min-h-[52px] bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 active:scale-[0.98] text-slate-950 font-black text-base rounded-xl shadow-lg shadow-amber-500/20 flex items-center justify-center space-x-2 transition-all cursor-pointer">
+        <span>Confirmer et Payer 25 000 FCFA</span>
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+      </button>
+      <div class="flex items-center justify-center space-x-2 text-[11px] text-slate-400">
+        <svg class="w-3.5 h-3.5 text-emerald-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z" clip-rule="evenodd"/></svg>
+        <span>Paiement chiffré de bout en bout</span>
+      </div>
+      <!-- Barre d'accueil iOS Home Indicator -->
+      <div class="pt-2 flex justify-center">
+        <div class="w-32 h-1 bg-slate-600 rounded-full"></div>
+      </div>
+    </footer>
+  </div>
+</body>
+</html>
+```
+
+---
+
+## 10. MATRICE DE BRANCHEMENT & RÉFÉRENCES CROISÉES
 
 ```mermaid
 graph LR
-    san_init["san_init.md (BRAND.md)"] --> san_designer
-    san_planner["san_planner.md (Roadmap)"] --> san_designer
-    san_designer --> san_ux_ui_expert["san_ux_ui_expert.md (Frontend/Mobile)"]
-    san_designer --> san_growth_expert["san_growth_expert.md (Screenshots ASO)"]
-    san_designer --> san_store_legal_expert["san_store_legal_expert.md (Store Assets)"]
-    san_executer["san_executer.md (Chef d'Orchestre)"] -.->|Pilote| san_designer
-    san_qa_security_expert["san_qa_security_expert.md"] -.->|Audit E2E Global| san_ux_ui_expert
+    san_init["san_init.md\n(BRAND.md & Tokens)"] --> san_designer
+    san_planner["san_planner.md\n(Roadmap & Écrans Cibles)"] --> san_designer
+    san_brainstorming["san_brainstorming.md\n(Concepts & Parcours Clés)"] --> san_designer
+    san_designer --> san_ux_ui_expert["san_ux_ui_expert.md\n(Intégration Frontend/Mobile)"]
+    san_designer --> san_growth_expert["san_growth_expert.md\n(Screenshots ASO & Marketing)"]
+    san_designer --> san_store_legal_expert["san_store_legal_expert.md\n(Assets de Soumission Stores)"]
+    san_executer["san_executer.md\n(Supervision & Fast-Track)"] -.->|Pilote| san_designer
+    san_qa_security_expert["san_qa_security_expert.md\n(Audit E2E Global)"] -.->|Consolide| san_ux_ui_expert
 ```
 
 ### Amont (Ce qui alimente `san_designer`)
-* [`san_init.md`](san_init.md) : Fournit la source unique de vérité esthétique `.agents/rules/BRAND.md` et le logo validé `.agents/rules/LOGO.md`.
-* [`san_planner.md`](san_planner.md) : Définit les écrans prioritaires à prototyper au sein de la roadmap active `/roadmaps/*.md`.
-* [`san_brainstorming.md`](san_brainstorming.md) : Clarifie le concept produit et les parcours clés avant tout dessin.
+- [`san_init.md`](san_init.md) : Fournit le manifeste de marque `.agents/rules/BRAND.md` (tokens, signatures cinétiques, anti-patterns) et le logo vectoriel validé `.agents/rules/LOGO.md`.
+- [`san_planner.md`](san_planner.md) : Détermine les écrans prioritaires à prototyper dans la feuille de route active `/roadmaps/*.md`.
+- [`san_brainstorming.md`](san_brainstorming.md) : Valide la proposition de valeur et les parcours utilisateurs avant le démarrage du design.
 
 ### Aval (Ce qui consomme les livrables de `san_designer`)
-* [`san_ux_ui_expert.md`](san_ux_ui_expert.md) : Reçoit les fichiers HTML et les tokens Tailwind pour les convertir en composants de production React.js et React Native / Expo.
-* [`san_growth_expert.md`](san_growth_expert.md) : Exploite les captures générées (`/design/screenshots/*`) pour habiller les fiches Play Store et App Store (ASO) et optimiser les taux de conversion.
-* [`san_store_legal_expert.md`](san_store_legal_expert.md) : Utilise les captures d'écran certifiées pour constituer le dossier de soumission officiel des stores.
+- [`san_ux_ui_expert.md`](san_ux_ui_expert.md) : Reçoit le code HTML, les classes Tailwind et les assets graphiques pour les traduire fidèlement en composants React.js et React Native / Expo.
+- [`san_growth_expert.md`](san_growth_expert.md) : Exploite les captures d'écran et la Feature Graphic pour habiller les fiches des stores et optimiser les métriques de conversion (ASO).
+- [`san_store_legal_expert.md`](san_store_legal_expert.md) : Intègre les captures d'écran certifiées dans les dossiers de soumission officiels Play Store et App Store.
 
-### Pilotage Transversal
-* [`san_executer.md`](san_executer.md) : Déclenche `san_designer` lors des phases visuelles, vérifie la complétion des scores `/ux-scan` et coordonne la transition vers l'implémentation logicielle.
-* [`san_qa_security_expert.md`](san_qa_security_expert.md) : Intervient plus tard dans la chaîne pour l'audit E2E fonctionnel et de sécurité des applications dynamiques finales.
+### Supervision & Clôture
+- [`san_executer.md`](san_executer.md) : Pilote l'exécution séquentielle, s'assure du franchissement de l'audit `/ux-scan` et réalise le Fast-Track de mise à jour du journal `CHANGELOG.md`.
+- [`san_qa_security_expert.md`](san_qa_security_expert.md) : Intervient en bout de chaîne applicative pour certifier l'expérience finale sur de vrais navigateurs et devices physiques.

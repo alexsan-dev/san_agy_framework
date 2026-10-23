@@ -13,8 +13,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Planned
 - Universal CLI installer implementation (`npx @alexsan/agy-framework init`).
-- Packaging executable skill modules in `/src/skills/` (with native `SKILL.md`, executable scripts, and templates).
-- End-to-end deployment tests on mock client codebases (React, Laravel, Expo).
+- Packaging Phase 4 (Transversal execution sub-skills into `src/skills/`).
+- Packaging Phase 5 (Visual design & Full-Stack core into `src/skills/`).
+- Packaging Phase 6 (Quality, DevOps, legal & growth into `src/skills/`).
+
+---
+
+## [0.2.0] - 2026-10-23
+
+### Added
+- **Phase 3 Validated — Packaging of Onboarding & Scoping Core into `src/skills/`:**
+  - **`src/skills/san_init/`:**
+    - `SKILL.md`: Comprehensive operational manual with official Antigravity YAML frontmatter, 7-phase init protocol, and deterministic detection across 10 software stacks.
+    - `scripts/git_ai_hygiene.sh`: Standalone bash script (`chmod +x`), legacy agent config purge (`CLAUDE.md`, `.cursorrules`, etc.), Git index un-tracking (`git rm --cached`), and airtight dual locking (`.gitignore` & `.git/info/exclude`).
+    - `scripts/svg_to_png.mjs`: Multi-resolution vector asset processing with Sharp engine and graceful fallback.
+    - Rules templates: `BRAND_TEMPLATE.md`, `PRODUCT_TEMPLATE.md`, `PROJECT_TEMPLATE.md`, `API_TEMPLATE.md`, `LOGO_TEMPLATE.md`, `rules_json_template.json`, and master index `GEMINI_INDEX_TEMPLATE.md`.
+  - **`src/skills/san_brainstorming/`:**
+    - `SKILL.md`: Socratic 5-question investigation process, arbitration thresholds, and activation protocols.
+    - `references/ideation_scoring_matrix.md`: Quantitative 40-pt scoring grid (Business Impact, Technical Feasibility, Africa Field Reality, Risk Management) with knockout criteria.
+    - `references/congo_market_signals.md`: Emerging market field intelligence (3G data costs, Mobile Money webhooks, WhatsApp OS, low-end Android hardware constraints).
+    - `scripts/score_idea.py`: Deterministic scoring CLI engine and JSON exporter.
+    - `templates/IDEA_TEMPLATE.md`: Normalized template for `/roadmaps/ideas/*.md` with direct handoff payload to `san_planner`.
+  - **`src/skills/san_planner/`:**
+    - `SKILL.md`: 6 sequential impermeable engineering phases (CPM), Proof-by-Code rule, mandatory testing matrix per stack, and orchestrator Fast-Track.
+    - `templates/ROADMAP_TEMPLATE.md`: Canonical roadmap skeleton with mandatory automated test gates.
+    - `templates/CHANGELOG_TEMPLATE.md`: Keep a Changelog compliant template.
+    - `scripts/archive_roadmap.sh`: Standalone bash script verifying 100% checked items (`- [x]`) before moving to `/roadmaps/archives/`.
+- **Phase 3 Automated Test Suite (`tests/phase3/`):**
+  - `test_git_ai_hygiene.sh`: Full integration test on isolated dirty Git repository (100% passing).
+  - `test_archive_roadmap.sh`: Unit tests validating rejection of incomplete/empty roadmaps and successful deterministic archiving (100% passing).
+- **Comprehensive Elevation of All Specifications (`skills/` & `sub-skills/`):**
+  - Full rewrite of all 11 primary skills and 6 sub-skills with production code, TypeScript schemas, mathematical formulas, and zero placeholders.
 
 ---
 

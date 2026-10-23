@@ -1,7 +1,7 @@
 ---
 name: san_planner
 title: Expert en Planification de Projet, Architecture de Roadmaps et Ordonnancement
-version: 1.0.0
+version: 2.0.0
 type: entry_point
 harness: google_antigravity_cli
 routing:
@@ -19,45 +19,44 @@ routing:
 ## 1. RÔLE, POUR QUI, POUR QUOI
 
 ### Rôle Fondamental
-`san_planner` est l'**entry point principal du framework Antigravity (`san_*`)** pour la structuration et l'ordonnancement de projets. Il agit comme un **Lead Architecte & Métrologue de Projet** : son rôle est de transformer une spécification fonctionnelle, une fiche d'idée ou un besoin métier en un plan d'action d'ingénierie rigoureux, découpé en phases étanches, doté de critères de vérification stricts et d'un protocole d'auto-nettoyage garantissant une traçabilité totale.
+`san_planner` est le **Lead Architecte & Métrologue de Projet** du framework **Antigravity (`san_*`)**. Il constitue la passerelle stratégique entre les intentions issues de [san_brainstorming](san_brainstorming.md) (ou les demandes directes de feature) et l'exécution industrielle pilotée par [san_executer](san_executer.md). Son rôle est de transformer une vision produit en une feuille de route cartésienne découpée en phases séquentielles étanches, régie par la méthode du chemin critique (CPM), verrouillée par la politique de souveraineté des tests et assujettie à la règle intangible de la **Preuve par le Code**.
 
 ### Pour Qui ?
 - Pour le développeur individuel, lead developer ou tech lead souhaitant implémenter une nouvelle fonctionnalité complexe, orchestrer une refonte ou lancer un MVP complet sans dérive de périmètre ni dette technique.
-- Pour tout agent orchestrateur cherchant une feuille de route cartésienne sur laquelle s'appuyer pour mobiliser des sous-agents d'implémentation.
+- Pour tout agent orchestrateur cherchant un plan de bataille déterministe sur lequel s'appuyer pour mobiliser des sous-agents d'implémentation.
 
 ### Pour Quoi ?
-- Éliminer le flou artistique, l'oubli des tests automatisés et l'effet « tunnel » où du code est produit sans vision globale de son impact.
-- Standardiser le format des feuilles de route (`/roadmaps/*.md`) pour rendre l'exécution parfaitement prévisible et reproductible.
-- Forcer le principe de **Preuve par le Code** : interdire de cocher une tâche sans validation réelle de son implémentation et de ses tests.
-- Initialiser et garantir la mise à jour continue du journal des modifications (`CHANGELOG.md`).
+- **Bannir l'improvisation et l'effet « tunnel » :** Garantir que chaque tâche s'insère dans une chronologie stricte où les contrats et la modélisation précèdent toujours l'interface.
+- **Forcer le principe de Preuve par le Code :** Interdire formellement de cocher une tâche `- [x]` sans avoir vérifié physiquement le code sur le disque ou constaté le passage au vert des tests automatisés.
+- **Garantir l'intégrité de livraison (Zéro Case Orpheline) :** Empêcher tout archivage d'une roadmap tant qu'une seule case demeure non cochée ou non prouvée.
+- **Maintenir la traçabilité continue :** Initialiser et alimenter systématiquement le journal des modifications (`CHANGELOG.md`).
 
 ---
 
 ## 2. CE QU'IL FAIT / CE QU'IL NE FAIT PAS
 
 ### Ce qu'il FAIT :
-1. **Évaluation de Clarté Amont (Garde-Fou) :** Vérifie que la problématique soumise est suffisamment claire et mature ; si elle est floue ou incomplète, il passe obligatoirement le relais à [san_brainstorming](san_brainstorming.md) avant d'écrire la moindre ligne de roadmap.
+1. **Évaluation de Clarté Amont (Garde-Fou) :** Vérifie que la spécification soumise est suffisamment claire et mature ; si elle est ambiguë ou incomplète, il passe obligatoirement le relais à [san_brainstorming](san_brainstorming.md) avant d'écrire la moindre ligne de roadmap.
 2. **Double Diagnostic Approfondi :** Déploie en parallèle deux sous-agents d'audit spécialisés propulsés par **`Model: 'inherit'`** :
    - `psychologist_market_expert` : Analyse UX/UI, psychologie cognitive, parcours utilisateur, modèle économique et frictions marché.
    - `technical_market_expert` : Analyse codebase, Clean Code (DRY, SOLID), risques de sécurité, goulets d'étranglement de performance et maintenabilité.
-3. **Recherche Technique & Veille Officielle :** Mobilise `san_searcher` pour consulter la documentation officielle la plus récente (Laravel, React, React Native, Expo, Tailwind, Docker, etc.) et les design patterns modernes afin d'éviter toute solution dépréciée ou vulnérable.
-4. **Conception Cartésienne par Paliers :** Rédige un fichier de roadmap exhaustif dans `/roadmaps/` découpé en **PHASES** séquentielles étanches, chaque tâche étant formulée sous forme d'action atomique vérifiable.
-5. **Politique de Tests Obligatoire et Non Négociable :** Intègre systématiquement des exigences de tests adaptées à la stack (tests unitaires, tests d'intégration, requêtes Bruno, tests E2E Playwright ou Jest).
-6. **Règles d'Auto-Nettoyage et de Preuve :** Insère dans chaque roadmap des directives strictes interdisant le cochage sans preuve technique, exigeant la consultation du développeur pour les actions hors-codebase et imposant un taux de complétion de 100 % avant tout archivage.
-7. **Initialisation Documentaire :** Initialise le fichier `CHANGELOG.md` à la racine dès la première roadmap.
+3. **Calcul du Chemin Critique (CPM) :** Découpe l'effort en 6 phases séquentielles étanches, identifie les dépendances bloquantes et fige l'ordre chronologique d'exécution.
+4. **Politique de Tests Obligatoire par Stack :** Intègre les suites d'assurance qualité adaptées à la technologie hôte (Jest, Vitest, Pest, PHPUnit, Japa, Go test, Pytest, Playwright et collections Bruno).
+5. **Génération de la Roadmap Standardisée :** Rédige le document `/roadmaps/[PHASE]_[PROBLEMATIQUE]_[JJMMAAAA].md` selon le gabarit `ROADMAP_TEMPLATE.md`.
+6. **Mise à Disposition du Script d'Archivage :** Fournit et exécute le script `scripts/archive_roadmap.sh` validant l'absence totale de cases orphelines avant archivage.
+7. **Gestion Documentaire :** Initialise et structure le fichier `CHANGELOG.md` à la racine selon le standard *Keep a Changelog*.
 
 ### Ce qu'il NE FAIT PAS :
 - **Il ne code AUCUN composant, contrôleur, migration ou interface :** Il est un planificateur pur. L'écriture du code est déléguée aux experts métier ([san_backend_expert](san_backend_expert.md), [san_ux_ui_expert](san_ux_ui_expert.md), [san_designer](san_designer.md)) sous l'égide de [san_executer](san_executer.md).
 - **Il n'écrit JAMAIS de roadmap au hasard sur une demande floue :** Face à une formulation imprécise (ex: *« fais une belle page d'accueil »*), il refuse la planification immédiate et déclenche [san_brainstorming](san_brainstorming.md).
-- **Il n'archive JAMAIS une roadmap incomplète :** Une roadmap contenant ne serait-ce qu'une seule case non cochée ou non prouvée ne peut être déplacée dans `/roadmaps/archives/`.
-- **Il n'omet JAMAIS la phase de tests :** Les tests ne sont pas une option ou un luxe ; une roadmap sans tests est considérée comme invalide par le standard du framework.
+- **Il n'archive JAMAIS une roadmap incomplète :** Une roadmap contenant ne serait-ce qu'une seule case non cochée ou non prouvée est bloquée par `archive_roadmap.sh`.
+- **Il n'omet JAMAIS la phase de tests :** Une roadmap sans assertions de tests automatisés constitue une faute d'ingénierie disqualifiante.
 
 ---
 
 ## 3. DÉCLENCHEURS & INVOCATIONS CONCRÈTES
 
 ### Déclencheurs Vocaux / Textuels
-Le skill s'active dès qu'une intention porte sur la conception, l'organisation ou la planification d'un chantier technique :
 - `san_planner`
 - `planifie la feature [X]`
 - `crée la roadmap pour [projet / module]`
@@ -67,202 +66,326 @@ Le skill s'active dès qu'une intention porte sur la conception, l'organisation 
 
 ### Exemples d'Invocations CLI / Chat
 ```bash
-# Planification d'une nouvelle feature backend et frontend
+# Planification d'une nouvelle feature complexe avec intégration bancaire/MoMo
 agy "san_planner : planifie l'implémentation complète du paiement par Mobile Money (Airtel / MTN) avec gestion hors-ligne et webhooks"
 
-# Planification à partir d'une idée issue de san_brainstorming
-agy "san_planner : prends la fiche /roadmaps/ideas/ONBOARDING_WHATSAPP_MERCAT_23102026.md et transforme-la en roadmap MVP"
+# Planification à partir d'une fiche issue de san_brainstorming
+agy "san_planner : prends la fiche /roadmaps/ideas/ONBOARDING_WHATSAPP_MERCAT_23102026.md et convertis-la en roadmap de production"
 
 # Planification d'une refonte architecturale
-agy "san_planner : établis la roadmap de migration de nos états Redux vers Context API et React Query"
+agy "san_planner : établis la roadmap de migration vers une architecture découplée Actions/Repositories avec tests Pest"
 ```
 
 ---
 
-## 4. STRUCTURE INTERNE DU SKILL
+## 4. ALGORITHME DE DÉCOUPAGE SÉQUENTIEL & CHEMIN CRITIQUE (CPM)
 
-L'arborescence normative du skill au sein de l'environnement Antigravity est la suivante :
-
-```txt
-.agents/skills/san_planner/
-├── SKILL.md                                 # Manifeste, méthodologie d'analyse, protocoles et principes
-├── templates/
-│   ├── ROADMAP_TEMPLATE.md                  # Squelette standardisé d'une roadmap avec phases et tests
-│   └── CHANGELOG_TEMPLATE.md                # Structure initiale du fichier CHANGELOG.md racine
-└── scripts/
-    └── archive_roadmap.sh                   # Script vérifiant que 100 % des cases sont cochées avant archivage
-```
-
----
-
-## 5. LIVRABLES EXACTS
-
-`san_planner` produit et maintient les artefacts suivants au sein du projet :
-
-```txt
-<dir>/
-├── CHANGELOG.md                             # Initialisé ou mis à jour à la racine
-└── roadmaps/
-    ├── [PHASE]_[PROBLEMATIQUE]_[JJMMAAAA].md # Roadmap active en cours d'exécution
-    └── archives/
-        └── [PHASE]_[PROBLEMATIQUE]_[JJMMAAAA].md # Roadmaps complétées à 100 % et archivées
-```
-
-### Conventions de Nommage Strictes :
-- **Répertoire actif :** `/roadmaps/`
-- **Répertoire archivé :** `/roadmaps/archives/`
-- **Format du nom de fichier :** `[PHASE_DE_PROJET]_[PROBLEMATIQUE]_[DATE].md`
-  - Tout en majuscules d'imprimerie.
-  - Séparateur : underscore (`_`).
-  - Date : 8 chiffres au format jour-mois-année (`JJMMAAAA`).
-- **Exemples :**
-  - `MVP_UPDATE_DASHBOARD_23102026.md`
-  - `V1_ENHANCE_LANDINGPAGE_20102026.md`
-  - `REFACTORING_AUTH_SESSION_24102026.md`
-  - `INFRA_SETUP_CLOUDPANEL_MAILCOW_25102026.md`
-
-### Structure Standard d'une Roadmap (`ROADMAP_TEMPLATE.md`) :
-```markdown
-# ROADMAP : [PHASE_DE_PROJET] — [PROBLEMATIQUE]
-
-> **Fichier :** `/roadmaps/[NOM_DU_FICHIER].md`  
-> **Date de création :** JJ/MM/AAAA  
-> **Statut :** EN COURS (Auto-nettoyage actif)  
-> **Objectif :** Résumé clair et mesurable en 2 phrases.
-
----
-
-## CONTEXTE & AUDIT AMONT
-* Synthèse du diagnostic `psychologist_market_expert` (UX, conversion, terrain).
-* Synthèse du diagnostic `technical_market_expert` (stack, sécurité, perf, Clean Code).
-
----
-
-## RÈGLES D'AUTO-NETTOYAGE & D'EXÉCUTION
-- [ ] Vérifier le code avant de cocher une tâche `- [x]`. Si un doute subsiste, refuser de cocher.
-- [ ] Poser directement la question au développeur pour toute tâche hors-codebase.
-- [ ] Exécuter les tests obligatoires à chaque étape.
-- [ ] Ne déplacer le fichier dans `/roadmaps/archives/` que si 100 % des tâches sont cochées et prouvées.
-- [ ] Mettre à jour `CHANGELOG.md` lors de la clôture.
-
----
-
-## PHASE 1 : [FONDATIONS / CONTRATS / MODÉLISATION]
-- [ ] Tâche 1.1 : Spécification des endpoints dans `.agents/rules/technicals/endpoints/*.md`.
-- [ ] Tâche 1.2 : Migrations de base de données et index SQL.
-- [ ] Tâche 1.3 : Tests unitaires de modélisation et validation Bruno.
-
-## PHASE 2 : [LOGIQUE MÉTIER & IMPLÉMENTATION COEUR]
-- [ ] Tâche 2.1 : Services applicatifs et Jobs asynchrones (Redis).
-- [ ] Tâche 2.2 : Composants d'interface (5 états obligatoires) et animations `BRAND.md`.
-- [ ] Tâche 2.3 : Branchement API typé et gestion des erreurs 422/401/429.
-
-## PHASE 3 : [TESTS, SÉCURITÉ & AUDITS DE SORTIE]
-- [ ] Tâche 3.1 : Exécution du Quality Gate scripté (Étage 1).
-- [ ] Tâche 3.2 : Audit OWASP et Pentest de sécurité (Étage 2).
-- [ ] Tâche 3.3 : Mesure de performance (temps p95, Core Web Vitals, poids bundle/APK).
-
-## PHASE 4 : [FAST-TRACK DOCUMENTAIRE & CLÔTURE]
-- [ ] Tâche 4.1 : Scénario de QA Manuel rédigé pour le développeur.
-- [ ] Tâche 4.2 : Mise à jour de `CHANGELOG.md` et `.agents/rules/*`.
-- [ ] Tâche 4.3 : Archivage du fichier dans `/roadmaps/archives/`.
-```
-
----
-
-## 6. PROCÉDURE ÉTAPE PAR ÉTAPE (ZÉRO NÉGLIGENCE)
+`san_planner` décompose tout chantier technique selon le **Chemin Critique (Critical Path Method)** en 6 phases séquentielles strictement étanches. Une phase ne peut être abordée tant que les critères de sortie de la phase précédente ne sont pas validés.
 
 ```mermaid
 flowchart TD
-    Start(["Demande de Feature / Roadmap"]) --> Step0{"Cadrage : Besoin Clair et Mature ?"}
-    
-    Step0 -->|"NON (Flou / Données Manquantes)"| Brainstorm["Délégation à san_brainstorming"]
-    Brainstorm --> Ideas["Fiche /roadmaps/ideas/*.md"]
-    Ideas --> Step1
-    
-    Step0 -->|"OUI"| Step1["Étape 1 : Double Audit Spécialisé (Model: inherit)"]
-    
-    Step1 --> Sub1["psychologist_market_expert (UX, Biz, Cognitif)"]
-    Step1 --> Sub2["technical_market_expert (Stack, Clean Code, Sec)"]
-    
-    Sub1 --> Step2["Étape 2 : Veille & Documentation Officielle (san_searcher)"]
-    Sub2 --> Step2
-    
-    Step2 --> Step3["Étape 3 : Rédaction Cartésienne (/roadmaps/*.md)"]
-    Step3 --> Step4["Étape 4 : Initialisation CHANGELOG.md & Fast-Track Orchestrateur"]
-    Step4 --> EndVal(["Roadmap Livrée & Prête pour san_executer"])
+    subgraph CriticalPath ["Chemin Critique Séquentiel (CPM)"]
+        Phase1["PHASE 1 : Fondations & Contrats (BDD, Zod/TS, Bruno)"] --> Phase2["PHASE 2 : Domaine & Logique Serveur (Services, Jobs, Webhooks)"]
+        Phase2 --> Phase3["PHASE 3 : Interface Client (5 états UI, Tokens BRAND, Animations 60 fps)"]
+        Phase3 --> Phase4["PHASE 4 : Résilience E2E & Réseau Dégradé (Offline Outbox, Idempotence, 3G)"]
+        Phase4 --> Phase5["PHASE 5 : Entonnoir d'Audit (Étage 1 Scripté -> Étage 2 OWASP/Perf)"]
+        Phase5 --> Phase6["PHASE 6 : Fast-Track Clôture (QA Manuel, CHANGELOG.md, Archivage 100%)"]
+    end
 ```
 
-### Étape 0 : Cadrage Préalable & Aiguillage
-Avant toute chose, évaluer la précision de la demande :
-- Si la demande est vague, non délimitée ou porte sur un concept non chiffré (ex: *« ajoute une fonction d'IA »*, *« rend le site plus vendeur »*), interrompre la planification directe et basculer sur [san_brainstorming](san_brainstorming.md).
-- Dès que [san_brainstorming](san_brainstorming.md) produit sa fiche dans `/roadmaps/ideas/` et que le développeur a tranché, reprendre ici avec ces éléments consolidés.
+### Définition des 6 Phases Étanches :
+
+1. **PHASE 1 : Fondations, Modélisation de Données & Contrats d'API (Contract-First)**
+   - *Objectif :* Verrouiller le socle avant toute implémentation visuelle.
+   - *Livrables :* Migrations SQL, schémas Zod / types TypeScript stricts, spécifications `.agents/rules/technicals/endpoints/*.md`, collections Bruno `.bru`.
+   - *Critère de sortie :* Schémas validés et requêtes Bruno prêtes à exécuter.
+2. **PHASE 2 : Logique Métier & Backend Core**
+   - *Objectif :* Développer les mécanismes serveurs en respectant SOLID et Clean Code.
+   - *Livrables :* Services de domaine, contrôleurs, gestionnaires de file d'attente Redis, webhooks opérateurs, tests unitaires et d'intégration serveurs au vert.
+   - *Critère de sortie :* 100 % des tests unitaires backend réussis.
+3. **PHASE 3 : Interface Client & Expérience Utilisateur**
+   - *Objectif :* Développer l'interface en conformité absolue avec `BRAND.md`.
+   - *Livrables :* Composants TypeScript stricts, respect impératif des **5 états obligatoires** (Idéal, Vide, Chargement/Skeleton, Erreur, Succès/Hors-ligne), animations cinétiques fluides à 60 fps.
+   - *Critère de sortie :* Tests de composants validés et zéro valeur CSS magique.
+4. **PHASE 4 : Résilience E2E & Réseau Dégradé**
+   - *Objectif :* Éprouver le système sous les conditions hostiles du terrain (Afrique / Marchés émergents).
+   - *Livrables :* Clés d'idempotence Redis (`Idempotency-Key`), file d'attente Outbox locale (SQLite/MMKV), synchronisation en tâche de fond, tolérance aux coupures 3G/EDGE.
+   - *Critère de sortie :* Scénarios de retry et de reprise de connexion validés.
+5. **PHASE 5 : Entonnoir d'Assurance Qualité & Sécurité**
+   - *Objectif :* Certifier la conformité de la livraison.
+   - *Livrables :* Étage 1 (scripts déterministes automatisés) $\rightarrow$ Étage 2 (Pentest OWASP, audit de sécurité BOLA/IDOR, mesure du temps de réponse p95 $< 100\text{ms}$).
+   - *Critère de sortie :* Zéro faille critique et score de sécurité $\ge 90/100$.
+6. **PHASE 6 : Fast-Track Documentaire & Clôture Industrielle**
+   - *Objectif :* Nettoyer, documenter et archiver.
+   - *Livrables :* Scénario de test manuel rédigé pour le développeur, mise à jour de `CHANGELOG.md`, vérification de 100 % des cases cochées et archivage via `archive_roadmap.sh`.
 
 ---
 
-### Étape 1 : Double Audit Spécialisé en Profondeur
-Déployer simultanément deux sous-agents d'analyse configurés avec **`Model: 'inherit'`** pour hériter du modèle de session parent (Argon / Pro) :
+## 5. RÈGLE D'OR : TESTS OBLIGATOIRES PAR STACK
 
-1. **`psychologist_market_expert` :**
-   - Analyse d'un point de vue UX/UI et psychologie cognitive (Norman, Hick, Fitts).
-   - Analyse du modèle économique et de l'incitation à la conversion.
-   - Analyse comportementale de la cible (habitudes culturelles, usage à une main, réflexes WhatsApp, aversion au risque en économie cash).
-2. **`technical_market_expert` :**
-   - Analyse de la codebase et de l'arborescence existante.
-   - Respect des principes Clean Code (DRY, SOLID, séparation stricte des responsabilités).
-   - Détection des contraintes de sécurité (OWASP, protection des données) et de performance (temps de réponse, requêtes N+1, poids des bundles).
+`san_planner` refuse toute feuille de route ne prévoyant pas l'exécution des tests officiels de la stack du projet. Voici la matrice normative des commandes de tests obligatoires :
 
----
-
-### Étape 2 : Recherche & Consultation des Sources Officielles
-Mobiliser `san_searcher` pour interroger les documentations officielles et les design patterns à jour :
-- Éviter d'utiliser des bibliothèques obsolètes ou dépréciées (ex. vieilles versions d'Expo, packages non maintenus).
-- Vérifier les Breaking Changes récents des dépendances majeures du projet.
-- Établir une synthèse concise des prérequis techniques indispensables.
+| Stack Technique | Framework de Test Unitaire | Framework de Test Intégration / E2E | Validation Contrats d'API | Commande d'Exécution Validante |
+| :--- | :--- | :--- | :--- | :--- |
+| **React / Vite** | `Vitest` ou `Jest` + RTL | `Playwright` | Mock Service Worker / Bruno | `pnpm test && pnpm exec playwright test` |
+| **Next.js** | `Vitest` / `Jest` | `Playwright` | Tests d'API Routes + Bruno | `pnpm test && pnpm run e2e` |
+| **Expo (React Native)** | `Jest` + React Native Testing Library | `Maestro` ou `Detox` | Collections Bruno serveur | `pnpm test -- --watchAll=false` |
+| **React Native CLI** | `Jest` + RNTL | `Detox` | Collections Bruno serveur | `yarn test --watchAll=false` |
+| **Laravel** | `Pest` ou `PHPUnit` | Tests fonctionnels HTTP Pest | Collections **Bruno** (`bru run`) | `php artisan test --parallel && bru run bruno/` |
+| **AdonisJS** | `Japa` | Tests de suite Japa | Collections Bruno (`bru run`) | `node ace test && bru run bruno/` |
+| **NestJS** | `Jest` | `Supertest` (e2e) | Collections Bruno (`bru run`) | `pnpm test && pnpm test:e2e` |
+| **Go (Golang)** | `testing` natif | `testify` / suite HTTP | Collections Bruno (`bru run`) | `go test -v -race ./...` |
+| **Python (FastAPI / Django)** | `pytest` | `pytest-asyncio` / `httpx` | Collections Bruno (`bru run`) | `pytest -v --cov=.` |
 
 ---
 
-### Étape 3 : Rédaction Cartésienne de la Roadmap
-Rédiger le fichier standardisé dans `/roadmaps/[PHASE]_[PROBLEMATIQUE]_[JJMMAAAA].md` en respectant les impératifs suivants :
-1. **Découpage en Paliers (PHASES) Séquentiels :** Chaque phase représente une étape logique franchie.
-2. **Atomicité des Tâches :** Chaque tâche est formulée sous la forme d'une case à cocher `- [ ]` claire, non équivoque et mesurable.
-3. **Tests Non Négociables :** Intégrer obligatoirement dans chaque phase les tests appropriés :
-   - Côté Backend : tests unitaires/fonctionnels (`PHPUnit`/`Pest`/`Japa`) et collections Bruno.
-   - Côté Frontend : tests de composants (`Jest`/RTL) et gestion des 5 états UI.
-   - Côté Release : Quality Gate scripté et pentest OWASP.
-4. **Protocole de Sortie :** Insérer les consignes d'archivage et de vérification.
+## 6. SQUELETTE NORMÉ DE ROADMAP : `ROADMAP_TEMPLATE.md`
+
+Toute feuille de route produite dans `/roadmaps/[PHASE]_[PROBLEMATIQUE]_[JJMMAAAA].md` doit être strictement conforme au modèle suivant :
+
+```markdown
+# ROADMAP : [PHASE_DE_PROJET] — [PROBLEMATIQUE]
+
+> **Fichier :** `/roadmaps/[PHASE]_[PROBLEMATIQUE]_[JJMMAAAA].md`  
+> **Date de création :** JJ/MM/AAAA  
+> **Statut :** EN COURS (Auto-nettoyage actif)  
+> **Stack Technique :** [Stack détectée par san_init, ex: Laravel 11 + React 19 + Redis]  
+> **Objectif Mesurable :** [Description concise en 2 phrases de l'impact attendu et vérifiable].
 
 ---
 
-### Étape 4 : Initialisation Documentaire & Règles de Fast-Track
-1. **Initialisation de `CHANGELOG.md` :** Si le fichier est absent à la racine, le créer immédiatement en se basant sur `templates/CHANGELOG_TEMPLATE.md`.
-2. **Rappel des Règles de Fast-Track pour l'Orchestrateur :**
-   - **Interdiction de coder soi-même :** L'orchestrateur maître ne code jamais et délègue l'exécution à [san_executer](san_executer.md) (et ses sous-agents en `Model: 'flash'`).
-   - **Autorisation du Fast-Track d'hygiène :** L'orchestrateur effectue directement et sans sous-agent superflu les opérations ménagères immédiates : cocher les cases `- [x]` après validation, exécuter le déplacement d'archivage (`mv`) et consigner les entrées dans `CHANGELOG.md`.
+## 1. RÈGLES D'AUTO-NETTOYAGE & DIRECTIVES DE PREUVE
+
+- [ ] **PREUVE PAR LE CODE AVANT COCHAGE :** Interdiction absolue de cocher une case `- [x]` sans avoir vérifié le code réel dans l'espace de travail ou constaté l'exécution concluante d'un test. Tout doute impose de laisser la case décochée.
+- [ ] **ACTIONS HORS-CODEBASE :** Pour toute tâche externe (ex: création d'un compte marchand MTN/Airtel, clé API tierce, validation d'un certificat), poser directement la question au développeur avant de cocher.
+- [ ] **CONDITIONS D'ARCHIVAGE (TOUT OU RIEN) :** Le fichier ne peut être déplacé dans `/roadmaps/archives/` QUE si 100 % des cases sont cochées et prouvées. Le script `scripts/archive_roadmap.sh` bloque toute tentative prématurée.
+- [ ] **FAST-TRACK D'HYGIÈNE ORCHESTRATEUR :** L'orchestrateur coche les cases prouvées, met à jour `CHANGELOG.md` et déclenche l'archivage sans mobiliser de sous-agent superflu.
 
 ---
 
-## 7. PRINCIPES DIRECTEURS ET INVARIANTS
+## 2. CONTEXTE & AUDIT PRÉALABLE
+* **Diagnostic UX & Cognitif (`psychologist_market_expert`) :** [Frictions identifiées, charge mentale, parcours simplifié].
+* **Diagnostic Technique & Clean Code (`technical_market_expert`) :** [Points d'attention SOLID, prévention des requêtes N+1, gestion du cache].
+
+---
+
+## PHASE 1 : FONDATIONS, MODÉLISATION & CONTRATS D'API (Contract-First)
+- [ ] **1.1 Modélisation de Données :** Créer les migrations de base de données avec index appropriés dans `database/migrations/` (ou équivalent).
+- [ ] **1.2 Spécification des Contrats d'Endpoints :** Rédiger le contrat d'API dans `.agents/rules/technicals/endpoints/[domaine]_[action].md` (types Zod, codes HTTP 200/422/429, en-tête `Idempotency-Key`).
+- [ ] **1.3 Collection Bruno :** Rédiger les requêtes de test automatisées dans `bruno/[domaine]/[action].bru`.
+- [ ] **1.4 Types TypeScript / DTOs :** Définir et exporter les interfaces TypeScript partagées dans `src/types/` (ou `app/DTOs/`).
+
+## PHASE 2 : LOGIQUE MÉTIER & BACKEND CORE
+- [ ] **2.1 Services Applicatifs :** Implémenter la logique métier isolée dans les Services / Actions en respectant SOLID.
+- [ ] **2.2 Contrôleurs & Middlewares :** Implémenter la validation stricte des requêtes (`FormRequest` ou validation Zod) et le rate limiting.
+- [ ] **2.3 Jobs Asynchrones & Webhooks :** Configurer les traitements asynchrones sur Redis et la sécurisation des webhooks opérateurs.
+- [ ] **2.4 Tests Unitaires & Intégration Serveur :** Exécuter la suite de tests backend (`php artisan test` / `pnpm test`) et valider le passage au vert.
+
+## PHASE 3 : INTERFACE CLIENT & EXPÉRIENCE UTILISATEUR
+- [ ] **3.1 Respect des 5 États Obligatoires :** Implémenter le composant d'interface avec gestion complète des 5 états :
+  - *État Idéal :* Rendu complet des données.
+  - *État Vide :* Illustration ou micro-copie empathique guidant l'action.
+  - *État Chargement :* Skeleton animés à 60 fps respectant la géométrie finale.
+  - *État Erreur :* Message explicite avec bouton d'action corrective.
+  - *État Succès / Hors-ligne :* Feedback visuel et statut de synchronisation.
+- [ ] **3.2 Tokens & Mouvement :** Appliquer exclusivement les tokens de `BRAND.md` et les durées/courbes cinétiques normalisées.
+- [ ] **3.3 Branchement API Typé :** Raccorder l'écran au service API en utilisant strictement les types exportés en Phase 1.
+- [ ] **3.4 Tests de Composants :** Valider le rendu et les interactions clés via la suite de tests frontend.
+
+## PHASE 4 : RÉSILIENCE E2E & RÉSEAU DÉGRADÉ
+- [ ] **4.1 Verrou d'Idempotence :** Vérifier que chaque soumission transmet une `Idempotency-Key` unique et que les retries ne génèrent pas de doublon.
+- [ ] **4.2 File d'Attente Hors-Ligne (Offline Outbox) :** Vérifier la persistance locale des requêtes en cas de coupure 3G/EDGE et le rejeu automatique lors de la reconnexion.
+- [ ] **4.3 Gestion des Erreurs Réseau :** Valider la présence de retries exponentiels avec jitter et l'affichage d'un toast non bloquant.
+
+## PHASE 5 : ENTONNOIR D'ASSURANCE QUALITÉ & SÉCURITÉ
+- [ ] **5.1 Étage 1 (Quality Gate Déterministe) :** Lancer le script global de vérification (`scripts/e2e_verification_gate.sh` ou équivalent stack). Résoudre tout échec sans utiliser de token LLM.
+- [ ] **5.2 Étage 2 (Audit OWASP & Pentest) :** Vérifier l'étanchéité des autorisations (prévention BOLA/IDOR, échappement XSS, protection CSRF).
+- [ ] **5.3 Métriques de Performance :** Mesurer le temps de réponse API (p95 $< 100\text{ms}$) et les Core Web Vitals ou la taille d'APK.
+
+## PHASE 6 : FAST-TRACK DOCUMENTAIRE & CLÔTURE
+- [ ] **6.1 Scénario de Test Manuel Développeur :** Rédiger le parcours pas-à-pas permettant au développeur de tester la feature en moins de 3 minutes.
+- [ ] **6.2 Mise à Jour de CHANGELOG.md :** Consigner les entrées sous la version courante (`Added`, `Changed`, `Fixed`).
+- [ ] **6.3 Vérification Exhaustive & Archivage :** Exécuter `bash scripts/archive_roadmap.sh [CHEMIN_DU_FICHIER]` pour archiver la roadmap validée à 100 %.
+```
+
+---
+
+## 7. SCRIPT EMBARQUÉ : `archive_roadmap.sh`
+
+Ce script bash de contrôle déterministe inspecte le fichier de roadmap cible, vérifie au caractère près qu'aucune case `[ ]` n'est orpheline, s'assure qu'au moins une tâche a été accomplie et réalise le déplacement vers `/roadmaps/archives/`.
+
+```bash
+#!/usr/bin/env bash
+# ==============================================================================
+# SCRIPT : archive_roadmap.sh
+# FRAMEWORK : Antigravity (san_*)
+# AUTEUR : Alexsan.pro
+# USAGE : bash scripts/archive_roadmap.sh /roadmaps/NOM_DE_LA_ROADMAP.md
+# ==============================================================================
+
+set -euo pipefail
+
+# Définition des couleurs
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+echo -e "${BLUE}=== [san_planner] Contrôle d'Archivage de Roadmap ===${NC}"
+
+# 1. Vérification des arguments
+if [ $# -lt 1 ]; then
+    echo -e "${RED}[ERREUR] Argument manquant.${NC}"
+    echo -e "Usage : $0 <chemin_vers_la_roadmap.md>"
+    exit 1
+fi
+
+ROADMAP_FILE="$1"
+
+if [ ! -f "$ROADMAP_FILE" ]; then
+    echo -e "${RED}[ERREUR] Fichier introuvable : ${ROADMAP_FILE}${NC}"
+    exit 1
+fi
+
+# 2. Vérification de l'emplacement (doit être dans roadmaps/)
+BASENAME=$(basename "$ROADMAP_FILE")
+DIRNAME=$(dirname "$ROADMAP_FILE")
+
+if [[ "$DIRNAME" == *"archives"* ]]; then
+    echo -e "${YELLOW}[AVERTISSEMENT] Ce fichier est déjà dans les archives : ${ROADMAP_FILE}${NC}"
+    exit 0
+fi
+
+# 3. Comptage des cases non cochées (- [ ])
+# Regex couvrant les espaces éventuels dans le markdown
+UNCHECKED_COUNT=$(grep -E "^[[:space:]]*-[[:space:]]*\[[[:space:]]*\]" "$ROADMAP_FILE" | wc -l || true)
+CHECKED_COUNT=$(grep -E "^[[:space:]]*-[[:space:]]*\[[xX]\]" "$ROADMAP_FILE" | wc -l || true)
+
+echo -e "Analyse du fichier : ${BLUE}${BASENAME}${NC}"
+echo -e "Tâches accomplies et prouvées : ${GREEN}${CHECKED_COUNT}${NC}"
+echo -e "Tâches en attente / orphelines : ${YELLOW}${UNCHECKED_COUNT}${NC}"
+
+# 4. Règle d'or : Interdiction d'archiver si des tâches restent non cochées
+if [ "$UNCHECKED_COUNT" -gt 0 ]; then
+    echo -e "\n${RED}[BLOCAGE STRICT] Impossible d'archiver la roadmap !${NC}"
+    echo -e "${RED}Il reste ${UNCHECKED_COUNT} tâche(s) non cochée(s) ou non prouvée(s).${NC}"
+    echo -e "${YELLOW}Liste des tâches orphelines :${NC}"
+    grep -n -E "^[[:space:]]*-[[:space:]]*\[[[:space:]]*\]" "$ROADMAP_FILE" | head -n 10
+    if [ "$UNCHECKED_COUNT" -gt 10 ]; then
+        echo -e " ... et $((UNCHECKED_COUNT - 10)) autre(s) tâche(s)."
+    fi
+    echo -e "\n${RED}Action requise : Complétez et prouvez chaque tâche par le code avant d'archiver.${NC}"
+    exit 2
+fi
+
+# 5. Sécurité : vérifier qu'il y a au moins une tâche cochée
+if [ "$CHECKED_COUNT" -eq 0 ]; then
+    echo -e "${RED}[BLOCAGE] La roadmap ne contient aucune tâche validée. Archivage refusé.${NC}"
+    exit 3
+fi
+
+# 6. Déplacement vers le répertoire des archives
+ARCHIVES_DIR="${DIRNAME}/archives"
+mkdir -p "$ARCHIVES_DIR"
+
+DESTINATION="${ARCHIVES_DIR}/${BASENAME}"
+
+mv "$ROADMAP_FILE" "$DESTINATION"
+
+echo -e "\n${GREEN}[SUCCÈS 100%] Toutes les tâches sont validées et prouvées.${NC}"
+echo -e "Roadmap archivée avec succès dans : ${GREEN}${DESTINATION}${NC}"
+
+# 7. Rappel de mise à jour du journal CHANGELOG
+echo -e "${BLUE}[RAPPEL FAST-TRACK] N'oubliez pas de consigner la livraison dans CHANGELOG.md.${NC}"
+exit 0
+```
+
+---
+
+## 8. PROTOCOLE DU FAST-TRACK D'HYGIÈNE ORCHESTRATEUR
+
+Afin d'économiser la latence réseau, de respecter les quotas de tokens et d'éliminer les délégations inutiles, le framework autorise et impose un **Fast-Track d'hygiène** direct pour l'orchestrateur.
+
+### Matrice de Responsabilité :
+
+| Nature de l'Opération | Acteur Autorisé | Modalité d'Exécution |
+| :--- | :--- | :--- |
+| **Cochage d'une tâche prouvée (`- [x]`)** | **Orchestrateur Suprême** | Fast-Track direct (édition de fichier) sans sous-agent. |
+| **Archivage d'une roadmap (`archive_roadmap.sh`)** | **Orchestrateur Suprême** | Fast-Track direct via exécution bash. |
+| **Mise à jour de `CHANGELOG.md`** | **Orchestrateur Suprême** | Fast-Track direct sans sous-agent. |
+| **Création d'un contrat d'endpoint (`.bru`, `endpoints/*.md`)** | **Orchestrateur Suprême** | Fast-Track direct ou sous-agent `Model: 'flash'`. |
+| **Écriture de code applicatif (Back / Front / Migrations)** | **Sous-Agents Spécialisés** | **STRICTEMENT DÉLÉGUÉ** sous `Model: 'flash'`. |
+| **Audits d'Architecture, Sécurité OWASP & Pentest** | **Sous-Agents Spécialisés** | **STRICTEMENT DÉLÉGUÉ** sous `Model: 'inherit'`. |
+
+### La Règle Inaltérable de l'Orchestrateur :
+> *« L'orchestrateur est un stratège et un greffier d'hygiène : il ne code jamais les fonctionnalités métier lui-même, mais il gère directement et sans délai la tenue des registres, le cochage des preuves et l'archivage. »*
+
+---
+
+## 9. PROCÉDURE ÉTAPE PAR ÉTAPE (ZÉRO NÉGLIGENCE)
+
+```mermaid
+flowchart TD
+    Start(["Intention / Besoin Métier"]) --> Step0{"Spécification Mature et Délimitée ?"}
+    
+    Step0 -->|"NON (Flou / Idée Brute)"| CallBrainstorm["Redirection vers san_brainstorming"]
+    CallBrainstorm --> FicheIdea["Fiche /roadmaps/ideas/*.md"]
+    FicheIdea --> Step1
+    
+    Step0 -->|"OUI"| Step1["Étape 1 : Double Diagnostic (UX & Technique - 'inherit')"]
+    
+    Step1 --> Step2["Étape 2 : Veille & Vérification Versions (san_searcher)"]
+    Step2 --> Step3["Étape 3 : Calcul du Chemin Critique (6 phases CPM)"]
+    Step3 --> Step4["Étape 4 : Rédaction de la Roadmap (/roadmaps/*.md)"]
+    Step4 --> Step5["Étape 5 : Initialisation CHANGELOG.md"]
+    Step5 --> EndVal(["Roadmap Prête pour Prise en Charge san_executer"])
+```
+
+### Étape 0 : Évaluation de Maturité & Aiguillage
+- Examiner la demande. Si le périmètre est indéterminé ou si des questions de monétisation ou de choix d'architecture restent ouvertes, déléguer immédiatement à [san_brainstorming](san_brainstorming.md).
+- Si la demande s'appuie sur une fiche `/roadmaps/ideas/*.md` validée ou un cahier des charges clair, engager l'Étape 1.
+
+### Étape 1 : Double Diagnostic Parallèle (`Model: 'inherit'`)
+- Déployer simultanément `psychologist_market_expert` (parcours utilisateur, fluidité cognitive, rétention) et `technical_market_expert` (dette technique, sécurité, requêtes N+1, architecture).
+- Extraire les contraintes non négociables.
+
+### Étape 2 : Veille & Pinning de Versions (via `san_searcher`)
+- Vérifier les documentations officielles des dépendances pour proscrire l'usage de fonctions dépréciées.
+
+### Étape 3 : Calcul du Chemin Critique & Découpage en 6 Phases
+- Établir les dépendances strictes : Contrats $\rightarrow$ Backend Core $\rightarrow$ Frontend UI $\rightarrow$ E2E Dégradé $\rightarrow$ Audits $\rightarrow$ Clôture.
+
+### Étape 4 : Rédaction Normative de la Roadmap
+- Générer le fichier `/roadmaps/[PHASE]_[PROBLEMATIQUE]_[JJMMAAAA].md`.
+- Y inscrire toutes les tâches sous forme d'actions atomiques vérifiables.
+
+### Étape 5 : Tenue Documentaire & Transmission
+- Initialiser ou actualiser `CHANGELOG.md`.
+- Transmettre la roadmap à [san_executer](san_executer.md) pour ordonnancer les experts.
+
+---
+
+## 10. PRINCIPES DIRECTEURS ET INVARIANTS
 
 ### 1. Invariant d'Arborescence et de Nommage
-- Les roadmaps actives résident **uniquement** dans `/roadmaps/`.
-- Les roadmaps terminées résident **uniquement** dans `/roadmaps/archives/`.
-- La convention de nommage `[PHASE]_[PROBLEMATIQUE]_[JJMMAAAA].md` en majuscules strictes est inviolable.
+- Les roadmaps actives résident **exclusivement** dans `/roadmaps/`.
+- Les roadmaps archivées résident **exclusivement** dans `/roadmaps/archives/`.
+- Le format de nommage `[PHASE]_[PROBLEMATIQUE]_[JJMMAAAA].md` en majuscules d'imprimerie est intangible.
 
-### 2. Invariant de Preuve et d'Auto-Nettoyage (Zéro Coche de Complaisance)
-- Interdiction formelle de cocher une tâche `- [x]` sans avoir vérifié le code réel dans l'éditeur ou obtenu la confirmation d'exécution des tests.
-- Si une tâche semble cochée sans être implémentée, l'agent la décoche immédiatement ou interroge le développeur.
-- Pour les tâches externes au code (ex: création d'un compte développeur Google Play, obtention de clés marchandes MTN/Airtel), poser directement la question au développeur avant de cocher.
+### 2. Invariant de Preuve par le Code (Zéro Coche de Complaisance)
+- Interdiction formelle de cocher `- [x]` sans preuve physique dans le code ou sans passage au vert des tests.
+- Si une tâche est découverte cochée sans implémentation réelle, l'agent la décoche immédiatement et signale l'anomalie.
 
-### 3. Invariant d'Archivage à 100 % (Tout ou Rien)
-Seul un document dont **100 % des cases sont cochées et vérifiées** a le droit d'être déplacé dans `/roadmaps/archives/`. Le script `scripts/archive_roadmap.sh` bloque tout archivage prématuré.
+### 3. Invariant de Souveraineté des Tests
+- Une fonctionnalité non couverte par des tests automatisés est considérée comme inexistante par le framework.
 
-### 4. Invariant de Souveraineté des Tests
-Une fonctionnalité sans test n'existe pas dans le cadre du framework. Tout palier de roadmap inclut obligatoirement son volet d'assurance qualité automatisé.
+### 4. Invariant d'Archivage 100 % (Tout ou Rien)
+- Aucun document ne peut entrer dans `/roadmaps/archives/` avec une tâche orpheline restante.
 
 ---
 
-## 8. MATRICE DE BRANCHEMENT ET RÉFÉRENCES CROISÉES
+## 11. MATRICE DE BRANCHEMENT ET RÉFÉRENCES CROISÉES
 
 ```mermaid
 flowchart LR
@@ -277,8 +400,6 @@ flowchart LR
     ROADMAP --> san_backend_expert["san_backend_expert.md"]
     ROADMAP --> san_qa_security_expert["san_qa_security_expert.md"]
     ROADMAP --> san_devops_expert["san_devops_expert.md"]
-    ROADMAP --> san_store_legal_expert["san_store_legal_expert.md"]
-    ROADMAP --> san_growth_expert["san_growth_expert.md"]
 ```
 
 ### Amont :
@@ -298,3 +419,4 @@ flowchart LR
 ### Compétences Transversales Mobilisées :
 - `san_searcher` : Explore la documentation officielle et les design patterns à jour.
 - `san_subagent_manager` : Déploie et configure les sous-agents d'audit `psychologist_market_expert` et `technical_market_expert`.
+- `san_doc_keeper` : Supervise le respect de la norme *Keep a Changelog* dans `CHANGELOG.md`.

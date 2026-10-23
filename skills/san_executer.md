@@ -1,7 +1,7 @@
 ---
 name: san_executer
 title: Chef d'Orchestre d'Implémentation Full-Stack et Moteur d'Exécution Principal
-version: 1.0.0
+version: 2.0.0
 type: entry_point
 alias: san_execute
 harness: google_antigravity_cli
@@ -20,40 +20,43 @@ routing:
 ## 1. RÔLE, POUR QUI, POUR QUOI
 
 ### Rôle Fondamental
-`san_executer` (alias `san_execute`) est le **moteur d'exécution opérationnel et le chef d'orchestre Full-Stack autonome** du framework **Antigravity (`san_*`)**. Il agit comme un **Tech Lead & Release Manager virtuel de haut vol** : son rôle est d'épargner au développeur la rédaction de consignes fragmentées et répétitives en prenant en charge de manière globale une roadmap issue de [san_planner](san_planner.md) (ou une demande de feature directe), et en coordonnant automatiquement l'ensemble des experts techniques spécialisés ([san_backend_expert](san_backend_expert.md), [san_ux_ui_expert](san_ux_ui_expert.md), [san_designer](san_designer.md), [san_qa_security_expert](san_qa_security_expert.md)) dans le bon ordre chronologique et architectural.
+`san_executer` (alias `san_execute`) est le **moteur d'exécution opérationnel et le chef d'orchestre Full-Stack autonome** du framework **Antigravity (`san_*`)**. Il agit comme un **Tech Lead & Release Manager virtuel de haut niveau** : son rôle est d'épargner au développeur la rédaction de consignes fragmentées et répétitives en prenant en charge de manière globale une roadmap active issue de [san_planner](san_planner.md) (ou une demande de feature directe), et en coordonnant automatiquement l'ensemble des experts techniques spécialisés ([san_backend_expert](san_backend_expert.md), [san_ux_ui_expert](san_ux_ui_expert.md), [san_designer](san_designer.md), [san_qa_security_expert](san_qa_security_expert.md)) dans le respect absolu du protocole **Contract-First**, de l'entonnoir d'audit en 2 étages et de la résilience réseau en conditions dégradées.
 
 ### Pour Qui ?
 - Pour le développeur Full-Stack, solopreneur ou lead architecte qui souhaite déléguer la mise en œuvre intégrale d'une fonctionnalité complexe sans avoir à piloter manuellement chaque composant, migration, contrat d'API ou test unitaire.
-- Pour tout utilisateur du framework voulant une garantie formelle que le frontend et le backend s'emboîtent au millimètre près sans désynchronisation.
+- Pour tout utilisateur du framework voulant une garantie formelle que le frontend et le backend s'emboîtent au millimètre près sans la moindre désynchronisation de données.
 
 ### Pour Quoi ?
-- Supprimer la friction des prompts à rallonge (*Zero-Prompt-Friction*) : une invocation unique suffit pour exécuter une roadmap entière.
-- Éliminer les désalignements d'API (*No-Mismatch*) grâce au verrouillage strict du protocole **Contract-First**.
-- Garantir la **Solidarité Transactionnelle de la livraison (Tout ou Rien)** : une feature n'est livrée que si le serveur, le client, la base de données, les tests et la sécurité sont tous validés à 100 %.
-- Assurer l'auto-nettoyage rigoureux : vérification du code réel avant de cocher une tâche, mise à jour instantanée de `CHANGELOG.md` et archivage automatique.
+- **Supprimer la friction des consignes fragmentées (*Zero-Prompt-Friction*) :** Une invocation unique suffit pour exécuter une roadmap entière de bout en bout.
+- **Éliminer les désalignements d'API (*No-Mismatch*) :** Verrouiller obligatoirement les schémas Zod, types TypeScript et requêtes Bruno avant d'autoriser la moindre ligne de code d'interface.
+- **Garantir la résilience terrain :** Intégrer nativement la gestion des conditions réseau hostiles (connexions 3G/EDGE instables, retries exponentiels avec jitter, Outbox offline locale et clés d'idempotence Redis pour les flux Mobile Money).
+- **Assurer la Solidarité Transactionnelle (Tout ou Rien) :** Une feature n'est déclarée livrée que si le serveur, le client, les tests, la sécurité et la documentation sont validés à 100 %.
 
 ---
 
 ## 2. CE QU'IL FAIT / CE QU'IL NE FAIT PAS
 
 ### Ce qu'il FAIT :
-1. **Triage Architectural Automatisé :** Analyse chaque phase de la roadmap active `/roadmaps/*.md` et classifie chaque tâche selon 3 profils distincts :
-   - **Profil A (`BACK_ONLY`) :** Traité exclusivement par [san_backend_expert](san_backend_expert.md).
-   - **Profil B (`FRONT_ONLY`) :** Traité par [san_ux_ui_expert](san_ux_ui_expert.md) (avec intervention préalable de [san_designer](san_designer.md) si une maquette HTML est requise).
-   - **Profil C (`FULL_STACK`) :** Orchestration synchronisée combinant les deux experts sous protocole *Contract-First*.
-2. **Verrouillage Préalable « Contract-First » :** Interdit tout codage d'interface avant que l'API ne soit figée sous forme de contrat dans `.agents/rules/technicals/endpoints/*.md` et dans la collection **Bruno** du projet (payloads, codes HTTP, types TypeScript partagés, clés d'idempotence).
-3. **Pilotage Séquentiel par Paliers (PHASES) :** Exécute la roadmap palier par palier. Interdiction stricte de passer à la Phase $N+1$ tant que la Phase $N$ n'est pas validée à 100 % (tests verts, zéro régression).
-4. **Délégation Stricte et Routage des Modèles :**
-   - Délègue tout le code à des sous-agents propulsés par **`Model: 'flash'`** pour une vélocité maximale et une sobriété en tokens.
-   - Délègue les audits, la QA et l'intégration croisée à des sous-agents propulsés par **`Model: 'inherit'`** (bénéficiant du modèle Argon ou Pro de session).
-5. **Vérification d'Intégration E2E :** Déploie un sous-agent indépendant (`e2e_integration_auditor`) pour éprouver la soudure entre l'interface utilisateur et le serveur (erreurs 422, coupure réseau 3G, idempotence, flux WebSockets).
+1. **Triage Architectural Automatisé :** Analyse chaque tâche de la roadmap active `/roadmaps/*.md` et la classe selon 3 profils distincts :
+   - **Profil A (`BACK_ONLY`) :** Délégué exclusivement à [san_backend_expert](san_backend_expert.md).
+   - **Profil B (`FRONT_ONLY`) :** Délégué à [san_ux_ui_expert](san_ux_ui_expert.md) (avec intervention préalable de [san_designer](san_designer.md) si une maquette HTML est requise).
+   - **Profil C (`FULL_STACK`) :** Orchestration synchronisée sous protocole *Contract-First*.
+2. **Verrouillage Absolu « Contract-First » :** Interdit formellement tout codage d'interface avant que le contrat d'endpoint (`.agents/rules/technicals/endpoints/*.md`), les schémas Zod / interfaces TypeScript et la collection **Bruno** ne soient committés et testés au vert.
+3. **Pilotage Séquentiel par Paliers (PHASES) :** Exécute la roadmap phase par phase. Interdiction stricte d'entamer la Phase $N+1$ tant que la Phase $N$ n'est pas validée à 100 %.
+4. **Gestion des Conditions Dégradées & Résilience :**
+   - Verrouillage atomique des requêtes via `Idempotency-Key` sur Redis (TTL 24h).
+   - Retry exponentiel avec jitter aléatoire pour les appels réseaux dégradés.
+   - File d'attente Outbox locale (SQLite / MMKV / IndexedDB) pour l'écriture hors-ligne avec synchronisation transparente.
+5. **Délégation Stricte et Routage des Modèles :**
+   - Délègue tout le code à des sous-agents propulsés par **`Model: 'flash'`** pour une vélocité maximale.
+   - Délègue les audits, la QA et l'intégration croisée à des sous-agents propulsés par **`Model: 'inherit'`**.
 6. **Entonnoir d'Audit Consolidé en 2 Étages :**
-   - **Étage 1 (Scripté Déterministe) :** Lancement du script global `scripts/e2e_verification_gate.sh` (builds, linters, tests unitaires et intégration Front + Back). Arrêt immédiat sans LLM si un seul test échoue.
-   - **Étage 2 (Qualitatif & Pentest) :** Consolidation des rapports de sécurité et de performance via [san_qa_security_expert](san_qa_security_expert.md).
-7. **Fast-Track d'Hygiène Orchestrateur :** Coche les tâches prouvées dans la roadmap, met à jour `CHANGELOG.md`, actualise les règles de contexte `.agents/rules/*` et déplace la roadmap achevée vers `/roadmaps/archives/`.
+   - **Étage 1 (Scripté Déterministe) :** Lancement du script `scripts/e2e_verification_gate.sh` (builds, linters, tests unitaires et intégration Front + Back). Arrêt immédiat sans LLM si un test échoue.
+   - **Étage 2 (Qualitatif LLM & Pentest) :** Consolidation des rapports de sécurité OWASP et de performance via [san_qa_security_expert](san_qa_security_expert.md).
+7. **Fast-Track d'Hygiène Orchestrateur :** Vérifie le code réel avant de cocher les cases `- [x]`, met à jour `CHANGELOG.md` et exécute `scripts/archive_roadmap.sh`.
 
 ### Ce qu'il NE FAIT PAS :
-- **Il ne code JAMAIS lui-même :** En tant que chef d'orchestre, il planifie, délègue, vérifie et valide. Il n'écrit aucune ligne de code métier dans ses propres tours d'action.
+- **Il ne code JAMAIS lui-même :** En tant que chef d'orchestre, il planifie, délègue, vérifie et valide. Il n'écrit aucune ligne de code applicatif dans ses propres tours d'action.
 - **Il ne lance JAMAIS le front sans contrat backend :** Rejet catégorique des interfaces basées sur des données inventées ou mockées sans spécification serveur formelle.
 - **Il n'avance JAMAIS à l'aveugle :** Si la Phase 1 rencontre un problème bloquant, il refuse de démarrer la Phase 2.
 - **Il ne boucle JAMAIS indéfiniment :** Si une phase échoue plus de 5 fois consécutives aux tests ou audits, il s'interrompt et sollicite immédiatement l'arbitrage du développeur avec un diagnostic précis.
@@ -64,7 +67,6 @@ routing:
 ## 3. DÉCLENCHEURS & INVOCATIONS CONCRÈTES
 
 ### Déclencheurs Vocaux / Textuels
-Le skill s'active pour lancer l'exécution complète d'un plan ou d'une feature :
 - `san_executer`
 - `san_execute`
 - `utilise san_executer sur la roadmap [nom_du_fichier]`
@@ -77,201 +79,381 @@ Le skill s'active pour lancer l'exécution complète d'un plan ou d'une feature 
 # Exécution complète d'une roadmap existante
 agy "san_executer : prends la roadmap /roadmaps/MVP_UPDATE_DASHBOARD_23102026.md et exécute-la de bout en bout"
 
-# Implémentation directe d'une feature (san_executer appelle san_planner si la roadmap n'existe pas)
+# Implémentation directe d'une feature (san_executer appelle san_planner si la roadmap est absente)
 agy "san_execute : implémente la synchronisation hors-ligne des commandes avec paiement Mobile Money STK Push"
 
-# Reprise d'exécution sur une phase précise
-agy "san_executer : reprends l'exécution de la PHASE 2 de la roadmap active"
+# Reprise d'exécution sur une phase précise après correction
+agy "san_executer : reprends l'exécution à partir de la PHASE 3 de la roadmap active"
 ```
 
 ---
 
-## 4. STRUCTURE INTERNE DU SKILL
+## 4. PROTOCOLE « CONTRACT-FIRST » ABSOLU
 
-L'arborescence normative du skill au sein de l'environnement Antigravity est la suivante :
+Le principe cardinal de `san_executer` est : **Zéro code client sans contrat d'API figeant les types, les validations et les tests Bruno.**
 
-```txt
-.agents/skills/san_executer/
-├── SKILL.md                                 # Manifeste de gouvernance, rôles et pipeline en 6 étapes
-├── references/
-│   ├── orchestration_matrix.md              # Matrice de décision et triage (Back / Front / Full-Stack)
-│   └── contract_first_protocol.md           # Protocole de synchronisation API / Front via endpoints et Bruno
-└── scripts/
-    └── e2e_verification_gate.sh             # Script global validant tests Back + Front + rapports d'audit
+```mermaid
+flowchart LR
+    subgraph ContractFirstProtocol ["Protocole Contract-First Obligatoire"]
+        Req["Spécification Endpoint (.agents/.../endpoints/*.md)"] --> TS["Types TS & Schémas Zod Partagés"]
+        TS --> Bruno["Requêtes & Assertions Bruno (.bru)"]
+        Bruno --> Gate["Validation Test Bruno Vert"]
+        Gate --> Front["Déblocage Implémentation Client (san_ux_ui_expert)"]
+    end
+```
+
+### 1. Spécification de l'Endpoint (`.agents/rules/technicals/endpoints/[domaine]_[action].md`)
+Chaque contrat d'endpoint consigne :
+* **Méthode & URI :** Ex. `POST /api/v1/payments/momo/charge`
+* **En-têtes Obligatoires :** `Content-Type: application/json`, `Accept: application/json`, `Idempotency-Key: <UUIDv4>`
+* **Authentification :** `Bearer <Token>` (si requis)
+* **Schéma du Payload JSON d'Entrée (Validation Zod / FormRequest) :**
+  ```typescript
+  import { z } from "zod";
+
+  export const MomoChargePayloadSchema = z.object({
+    phone: z.string().regex(/^\+?242\d{9}$/, "Numéro Congo (+242) invalide"),
+    operator: z.enum(["AIRTEL_MONEY", "MTN_MOMO"]),
+    amount: z.number().int().positive().min(500, "Montant minimum 500 FCFA"),
+    currency: z.literal("XAF").default("XAF"),
+    reference: z.string().min(3).max(64)
+  });
+
+  export type MomoChargePayload = z.infer<typeof MomoChargePayloadSchema>;
+  ```
+* **Schémas des Réponses :**
+  - `201 Created` : Transaction initiée avec succès (payload normalisé).
+  - `409 Conflict` : `OPERATION_IN_PROGRESS` (clé d'idempotence déjà en cours).
+  - `422 Unprocessable Content` : Erreurs de validation de champs.
+  - `429 Too Many Requests` : Dépassement de quota de requêtes.
+
+### 2. Requête Bruno Exécutable (`bruno/[domaine]/[action].bru`)
+```bru
+meta {
+  name: Initier Paiement Mobile Money
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/v1/payments/momo/charge
+  body: json
+  auth: bearer
+}
+
+headers {
+  Idempotency-Key: {{testIdempotencyKey}}
+  Content-Type: application/json
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+body:json {
+  {
+    "phone": "+242061234567",
+    "operator": "AIRTEL_MONEY",
+    "amount": 2500,
+    "currency": "XAF",
+    "reference": "CMD-2026-1023-01"
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.success: eq true
+  res.body.data.transaction_id: isDefined
+  res.body.data.status: eq "PENDING_CUSTOMER_APPROVAL"
+}
 ```
 
 ---
 
-## 5. LIVRABLES EXACTS
+## 5. GESTION DES CONDITIONS DÉGRADÉES & RÉSILIENCE
 
-À l'issue de l'exécution complète par `san_executer`, le projet dispose d'une livraison intégrale **End-to-End** vérifiée :
+Dans les marchés émergents et sur les réseaux 3G/EDGE instables, les pertes de paquets et les abandons de requêtes sont monnaie courante. `san_executer` exige la mise en œuvre de 3 mécanismes défensifs :
 
-```txt
-<dir>/
-├── CHANGELOG.md                             # Consigné avec toutes les entrées datées livrées
-├── .agents/rules/
-│   ├── technicals/endpoints/*.md            # Contrats d'API figés et synchronisés
-│   └── PROJECT.md                           # Règles mises à jour (nouvelles commandes, migrations)
-├── roadmaps/
-│   └── archives/
-│       └── [PHASE]_[PROBLEMATIQUE]_[JJMMAAAA].md # Roadmap 100 % cochée et archivée
-├── roadmaps/audits/
-│   └── SECURITY_E2E_[CIBLE]_[JJMMAAAA].md   # Rapport de sécurité consolidé (score >= 90/100)
-└── docs/
-    └── QA_REPORT.md                         # Rapport consolidé des tests fonctionnels et E2E
+### 1. Verrou d'Idempotence Redis (`Idempotency-Key`)
+Chaque requête de paiement ou de mutation critique doit comporter un en-tête `Idempotency-Key`. Le backend applique le pattern de verrouillage distribué :
+
+```php
+// Exemple de flux déterministe dans le middleware Backend (Laravel/PHP)
+$key = $request->header('Idempotency-Key');
+if (!$key) {
+    return response()->json(['error' => 'En-tête Idempotency-Key requis.'], 400);
+}
+
+$lockKey = "idempotency_lock:{$key}";
+$responseKey = "idempotency_resp:{$key}";
+
+// Vérifier si une réponse est déjà mise en cache
+if ($cached = Redis::get($responseKey)) {
+    return response()->json(json_decode($cached, true), 200, ['X-Cache-Replay' => 'true']);
+}
+
+// Acquisition d'un verrou atomique (SET NX EX 120 secondes)
+$acquired = Redis::set($lockKey, 'LOCKED', 'EX', 120, 'NX');
+if (!$acquired) {
+    return response()->json([
+        'success' => false,
+        'error' => ['code' => 'OPERATION_IN_PROGRESS', 'message' => 'Opération déjà en cours de traitement.']
+    ], 409);
+}
+
+try {
+    // Exécution de l'action métier
+    $result = $action->execute($request->validated());
+    
+    // Mise en cache de la réponse finale pour 24 heures (86400s)
+    Redis::setex($responseKey, 86400, json_encode($result));
+    Redis::del($lockKey);
+
+    return response()->json($result, 201);
+} catch (\Throwable $e) {
+    Redis::del($lockKey);
+    throw $e;
+}
 ```
 
-### Conventions de Clôture :
-- **Zéro case orpheline :** 100 % des cases `- [x]` de la roadmap sont cochées après vérification formelle dans la codebase.
-- **Rapports d'audit conformes :** Aucun constat `BLOQUANT` ou `CRITIQUE`, et un score de sécurité $\ge 90/100$.
-- **Archivage propre :** Déplacement direct du fichier `.md` de `/roadmaps/` vers `/roadmaps/archives/`.
+### 2. Algorithme de Retry Exponentiel avec Jitter
+Côté client, en cas d'erreur réseau temporaire (code `503`, timeout ou absence de connexion), les retries ne doivent jamais matraquer le serveur. L'algorithme applique une pause avec dispersion aléatoire :
+
+$$t = \min\left(\text{max\_delay}, \; \text{base} \times 2^{\text{attempt}} + \text{random}(0, \text{jitter})\right)$$
+
+```typescript
+// Implémentation standard client
+export async function fetchWithRetry<T>(
+  fn: () => Promise<T>,
+  maxAttempts = 4,
+  baseMs = 800,
+  maxDelayMs = 10000
+): Promise<T> {
+  let attempt = 0;
+  while (attempt < maxAttempts) {
+    try {
+      return await fn();
+    } catch (err: any) {
+      attempt++;
+      if (attempt >= maxAttempts || (err.status && err.status < 500 && err.status !== 429)) {
+        throw err;
+      }
+      const jitter = Math.random() * 400;
+      const delay = Math.min(maxDelayMs, baseMs * Math.pow(2, attempt) + jitter);
+      await new Promise((resolve) => setTimeout(resolve, delay));
+    }
+  }
+  throw new Error("Nombre maximal de retries dépassé.");
+}
+```
+
+### 3. File d'Attente Hors-Ligne (Offline Outbox Queue)
+Sur mobile ou Web PWA :
+- Toute mutation déclenchée hors réseau est immédiatement stockée dans une table SQLite locale (ou MMKV / IndexedDB) avec le statut `PENDING`.
+- L'interface utilisateur affiche l'état de manière optimiste avec un indicateur visuel de synchronisation en attente.
+- Un worker d'écoute réseau rejoue les mutations empilées de manière strictement ordonnée dès le retour de la connexion.
 
 ---
 
-## 6. PROCÉDURE ÉTAPE PAR ÉTAPE (PIPELINE FULL-STACK EN 6 ÉTAPES)
+## 6. LE PIPELINE EN 6 ÉTAPES DÉTAILLÉ
 
 ```mermaid
 flowchart TD
-    Start(["Lancement san_executer"]) --> Step1["Étape 1 : Ingestion & Triage Architectural"]
-    Step1 --> CheckRoadmap{"Roadmap Active Présente ?"}
+    Start(["Invocation san_executer"]) --> Step1["Étape 1 : Ingestion & Triage Architectural"]
     
-    CheckRoadmap -->|"NON"| CallPlanner["Appel automatique à san_planner"]
+    Step1 --> CheckRoadmap{"Roadmap Active ?"}
+    CheckRoadmap -->|"NON"| CallPlanner["Invoquer san_planner"]
     CallPlanner --> Step1
     
-    CheckRoadmap -->|"OUI"| Triage["Triage par Tâche : BACK_ONLY / FRONT_ONLY / FULL_STACK"]
+    CheckRoadmap -->|"OUI"| TriageProfile{"Classification de la Tâche"}
+    TriageProfile -->|"Profil A (BACK_ONLY)"| SubBackOnly["san_backend_expert ('flash')"]
+    TriageProfile -->|"Profil B (FRONT_ONLY)"| SubFrontOnly["san_ux_ui_expert ('flash')"]
+    TriageProfile -->|"Profil C (FULL_STACK)"| Step2["Étape 2 : Verrouillage Contract-First"]
     
-    Triage --> Step2["Étape 2 : Verrouillage Contract-First (.agents/.../endpoints/*.md)"]
-    
-    Step2 --> Step3["Étape 3 : Orchestration Implémentation (Model: flash)"]
-    Step3 --> SubBack["san_backend_expert (Migrations, Services, API, Bruno)"]
-    Step3 --> SubFront["san_ux_ui_expert (5 états UI, Reanimated, API Sync)"]
-    
-    SubBack --> Step4["Étape 4 : Pont d'Intégration & Check Croisé E2E (Model: inherit)"]
-    SubFront --> Step4
+    Step2 --> Step3["Étape 3 : Implémentation Séquentielle ('flash')"]
+    Step3 --> Step4["Étape 4 : Pont d'Intégration & E2E Cross-Check ('inherit')"]
+    SubBackOnly --> Step4
+    SubFrontOnly --> Step4
     
     Step4 --> Step5{"Étape 5 : Entonnoir d'Audit en 2 Étages"}
-    Step5 -->|"Étage 1 Scripté KO"| FixFlash["Correction par sous-agent (flash)"]
-    FixFlash --> Step5
-    Step5 -->|"Étage 1 Vert"| AuditE2["Étage 2 : Audits QA, Sécurité, Perf"]
+    Step5 -->|"Étage 1 Scripté Échoue"| FixCode["Correction ciblée sous 'flash'"]
+    FixCode --> Step5
+    Step5 -->|"Étage 1 Vert"| AuditE2["Étage 2 : Audit OWASP & Perf ('inherit')"]
     
-    AuditE2 -->|"Scores >= 90/100 & 0 Bloquant"| Step6["Étape 6 : Clôture Fast-Track, Auto-Nettoyage & Archivage"]
-    Step6 --> EndVal(["Feature Livrée & Roadmap Archivée"])
+    AuditE2 -->|"Scores >= 90/100 & 0 Bloquant"| Step6["Étape 6 : Fast-Track Clôture & Archivage"]
+    Step6 --> Done(["Livraison Validée"])
 ```
 
-### Étape 1 : Ingestion & Triage Architectural (Cerveau Maître)
-1. **Lecture du Contexte Global :**
-   - Lire `<dir>/.agents/GEMINI.md`, les règles `.agents/rules/*` (`PROJECT.md`, `PRODUCT.md`, `BRAND.md`, `API.md`) et la roadmap active dans `/roadmaps/*.md`.
-2. **Garde-Fou de Planification :**
-   - Si aucune roadmap active n'existe pour la demande, invoquer immédiatement [san_planner](san_planner.md) pour la produire.
-3. **Classification des Tâches du Palier Actuel :**
-   - **Profil A (`BACK_ONLY`) :** Tâches serveurs pures (ex: refactor de modèle, migration de base de données, script de maintenance). $\rightarrow$ Délégué à [san_backend_expert](san_backend_expert.md).
-   - **Profil B (`FRONT_ONLY`) :** Tâches purement visuelles ou statiques (ex: page d'atterrissage, mentions légales, refonte responsive). $\rightarrow$ Délégué à [san_ux_ui_expert](san_ux_ui_expert.md) (et [san_designer](san_designer.md)).
-   - **Profil C (`FULL_STACK`) :** Tâches communicantes (ex: flux d'authentification, panier de commande, paiement Mobile Money, tableau de bord temps réel). $\rightarrow$ Activation immédiate de l'Étape 2.
+### Étape 1 : Ingestion & Triage Architectural
+1. **Lecture du Contexte Maître :**
+   - Lire `<dir>/.agents/GEMINI.md`, `PROJECT.md`, `rules.json` et la roadmap `/roadmaps/*.md`.
+2. **Garde-Fou :** Si aucune roadmap n'existe, déclencher immédiatement [san_planner](san_planner.md).
+3. **Classification de la Tâche :**
+   - **Profil A (`BACK_ONLY`) :** Migrations, refactoring de base de données, script cron, job Redis.
+   - **Profil B (`FRONT_ONLY`) :** Intégration de maquette statique, mentions légales, page d'atterrissage.
+   - **Profil C (`FULL_STACK`) :** Nouvelle API couplée à un composant écran interactif.
 
----
+### Étape 2 : Verrouillage Contract-First (Profil C)
+- Commissionner [san_backend_expert](san_backend_expert.md) pour écrire le contrat d'endpoint dans `.agents/rules/technicals/endpoints/*.md`.
+- Exporter les types TypeScript / schémas Zod.
+- Créer la requête Bruno correspondante et valider les assertions de retour HTTP.
 
-### Étape 2 : Verrouillage du Contrat (*Contract-First Protocol*)
-*Appliqué obligatoirement dès qu'une tâche est de Profil C (`FULL_STACK`).*
-1. **Ordre Impératif au Backend :**
-   - Avant toute écriture de composant React / React Native, commissionner [san_backend_expert](san_backend_expert.md) pour figer la spécification exacte de l'endpoint dans `.agents/rules/technicals/endpoints/[domaine]_[action].md`.
-2. **Contenu Obligatoire du Contrat :**
-   - Méthode HTTP et URI exacte (ex: `POST /api/v1/payments/momo-charge`).
-   - Schéma du payload JSON attendu avec types stricts et validations.
-   - Définition des types TypeScript exportables (ou schémas Zod).
-   - Réponses types (succès `200`/`201`, erreurs de validation `422`, non authentifié `401`, interdit `403`, rate limit `429`).
-   - Gestion de l'`Idempotency-Key` et timeouts.
-3. **Mise à Jour de la Collection Bruno :**
-   - Requête Bruno versionnée dans le dépôt, prête à être exécutée avec variables d'environnement.
-4. **Diffusion :** Le contrat est verrouillé et transmis à [san_ux_ui_expert](san_ux_ui_expert.md) comme source de vérité intangible.
+### Étape 3 : Orchestration de l'Implémentation (`Model: 'flash'`)
+- Les sous-agents de code en `Model: 'flash'` implémentent :
+  - Côté serveur : contrôleurs, form requests, services métier, tests unitaires.
+  - Côté client : composants avec gestion stricte des **5 états obligatoires** (Idéal, Vide, Chargement, Erreur, Succès/Hors-ligne), animations 60 fps conformes à `BRAND.md`.
 
----
+### Étape 4 : Pont d'Intégration & Contrôle Croisé E2E (`Model: 'inherit'`)
+- Déployer le sous-agent `e2e_integration_auditor` en `Model: 'inherit'` :
+  - Vérifier l'adéquation au bit près des payloads transmis par le client.
+  - Éprouver le comportement sous réseau dégradé (simulation coupure 3G et rejeu Outbox).
+  - Contrôler l'unicité de l'`Idempotency-Key`.
 
-### Étape 3 : Orchestration de l'Implémentation Séquentielle
-Mobiliser les experts d'implémentation via des sous-agents en **`Model: 'flash'`** :
-1. **Branche Serveur ([san_backend_expert](san_backend_expert.md)) :**
-   - Écriture des migrations de schéma et indexation SQL.
-   - Implémentation des classes de domaine, services métier et repositories (SOLID).
-   - Création des `FormRequests`, contrôleurs et middlewares d'authentification.
-   - Configuration des jobs asynchrones Redis, webhooks et flux temps réel.
-   - Écriture des tests unitaires et fonctionnels (`PHPUnit`/`Pest`/`Japa`).
-2. **Branche Client ([san_ux_ui_expert](san_ux_ui_expert.md)) :**
-   - Consultation des maquettes haute fidélité fournies par [san_designer](san_designer.md) le cas échéant.
-   - Implémentation des composants et écrans en TypeScript strict, animés à 60 fps selon `BRAND.md`.
-   - Respect impératif des **5 états obligatoires de l'interface** (Idéal, Vide, Chargement/Skeleton, Erreur, Succès/Hors-ligne).
-   - Branchement typé sur l'API à partir du contrat verrouillé (sans invention de payload).
-   - Persistance locale et synchronisation hors-ligne (SQLite / MMKV / actions différées).
-   - Écriture des tests unitaires de composants (`Jest`/RTL).
-
----
-
-### Étape 4 : Pont d'Intégration & Check Croisé E2E
-Déployer un sous-agent vérificateur indépendant (`e2e_integration_auditor`) propulsé par **`Model: 'inherit'`** :
-1. **Contrôle d'Interfaçage :**
-   - Vérifier au caractère près la conformité des données envoyées par l'interface avec la validation backend.
-2. **Gestion de la Résilience Terrain :**
-   - Tester le comportement client sous simulation de réseau dégradé (coupure 3G/EDGE) : l'UI affiche-t-elle l'état Optimiste et empile-t-elle la requête ?
-   - Vérifier le renvoi de l'`Idempotency-Key` en cas de retry.
-3. **Flux Asynchrones :**
-   - Vérifier que la confirmation d'un webhook Mobile Money ou d'une notification FCM répercute instantanément le changement d'état sur l'écran actif sans forcer un rechargement complet.
-
----
-
-### Étape 5 : Consolidation des Audits & Entonnoir d'Intégration
-1. **Étage 1 : Quality Gate Scripté (Zéro Token LLM) :**
-   - Exécution immédiate du script `scripts/e2e_verification_gate.sh`.
-   - Contrôle du typage strict (`tsc --noEmit`), des analyses statiques backend (`phpstan`), du passage à 100 % des suites de tests unitaires et d'intégration.
-   - **Règle d'arrêt strict :** Si un seul test est rouge ou si le build échoue, arrêt immédiat de la chaîne. Réinjection de l'erreur au sous-agent de code (`Model: 'flash'`). Zéro auditeur LLM sollicité.
-2. **Étage 2 : Audits Spécialisés Consolidés (via [san_qa_security_expert](san_qa_security_expert.md)) :**
-   - Réalisation de l'audit OWASP complet (injections, BOLA/IDOR, fuites de secrets, stockage mobile).
-   - Mesure des Core Web Vitals ou de la taille d'APK/AAB et de l'empreinte mémoire RAM.
-   - **Seuils de Validation :**
-     - Zéro faille `CRITIQUE` ou `BLOQUANTE` ;
+### Étape 5 : Entonnoir d'Audit en 2 Étages
+1. **Étage 1 (Scripté Déterministe - Zéro Token LLM) :**
+   - Exécution de `scripts/e2e_verification_gate.sh`.
+   - Si une erreur survient (compilation TypeScript, linter, test rouge), interruption immédiate. L'erreur brute est renvoyée au sous-agent de code (`flash`). Zéro sollicitation LLM d'audit.
+2. **Étage 2 (Qualitatif & Pentest) :**
+   - Sollicitation de [san_qa_security_expert](san_qa_security_expert.md) (`Model: 'inherit'`).
+   - Seuils impératifs :
      - Score de sécurité $\ge 90/100$ ;
-     - Temps de réponse API p95 $< 100\text{ms}$ ;
-     - Core Web Vitals au vert.
-   - Si un seuil n'est pas atteint, relance ciblée de l'expert concerné (limite stricte de 5 itérations).
+     - Zéro faille `CRITIQUE` ou `BLOQUANTE` ;
+     - Temps de réponse p95 $< 100\text{ms}$.
+   - Limite de boucle : 5 itérations maximum avant escalade humaine.
+
+### Étape 6 : Fast-Track de Clôture, Auto-Nettoyage & Archivage
+1. **Vérification Réelle du Code :** L'orchestrateur contrôle la présence des fichiers et le résultat vert des tests.
+2. **Cochage Fast-Track :** L'orchestrateur coche les cases `- [x]` dans la roadmap.
+3. **Mise à Jour Documentaire :** Consigner les entrées dans `CHANGELOG.md` et actualiser les règles de contexte.
+4. **Archivage :** Exécuter `bash scripts/archive_roadmap.sh [CHEMIN_ROADMAP]` pour archiver le fichier dans `/roadmaps/archives/`.
 
 ---
 
-### Étape 6 : Clôture Fast-Track, Auto-Nettoyage et Archivage
-Dès que la phase (ou la roadmap entière) est 100 % conforme :
-1. **Vérification Réelle du Code :** L'orchestrateur inspecte le code réel dans l'espace de travail pour prouver la résolution de chaque case `- [ ]` de la roadmap.
-2. **Cochage Fast-Track :** L'orchestrateur coche lui-même les cases `- [x]` directement sans mobiliser de sous-agent.
-3. **Tenue Documentaire :**
-   - Ajout de l'entrée structurée dans `CHANGELOG.md` (`Added`, `Changed`, `Fixed`, `Security`, `Performance`).
-   - Mise à jour de `.agents/rules/PROJECT.md`, `API.md` et `<dir>/README.md`.
-4. **Archivage Automatique :**
-   - Si toutes les phases de la roadmap sont terminées, déplacer le fichier de `/roadmaps/` vers `/roadmaps/archives/` :
-     ```bash
-     mv /roadmaps/MVP_UPDATE_DASHBOARD_23102026.md /roadmaps/archives/
-     ```
-5. **Restitution Synthétique :** Confirmer au développeur la livraison complète avec la liste des livrables et les preuves de tests.
+## 7. SCRIPT EMBARQUÉ : `e2e_verification_gate.sh`
+
+Ce script bash déterministe orchestre l'Étage 1 de l'entonnoir d'audit. Il détecte la stack du projet, lance les linters, contrôles de types et suites de tests unitaires et d'intégration, et stoppe impitoyablement la chaîne au moindre échec.
+
+```bash
+#!/usr/bin/env bash
+# ==============================================================================
+# SCRIPT : e2e_verification_gate.sh
+# FRAMEWORK : Antigravity (san_*)
+# AUTEUR : Alexsan.pro
+# DESCRIPTION : Contrôle de qualité automatisé Étage 1 (Zéro token LLM).
+# ==============================================================================
+
+set -euo pipefail
+
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m'
+
+echo -e "${BLUE}=== [san_executer] Lancement du Quality Gate Étage 1 (Déterministe) ===${NC}"
+
+FAILED=0
+
+# 1. Vérification TypeScript si applicable
+if [ -f "tsconfig.json" ]; then
+    echo -e "\n${BLUE}[1/4] Contrôle de typage strict TypeScript (tsc --noEmit)...${NC}"
+    if command -v pnpm >/dev/null 2>&1 && [ -f "pnpm-lock.yaml" ]; then
+        pnpm exec tsc --noEmit || FAILED=1
+    elif command -v npm >/dev/null 2>&1; then
+        npx tsc --noEmit || FAILED=1
+    fi
+    if [ $FAILED -eq 1 ]; then
+        echo -e "${RED}[ÉCHEC] Erreurs de typage TypeScript détectées.${NC}"
+        exit 10
+    fi
+    echo -e "${GREEN}[✓] Typage TypeScript 100 % valide.${NC}"
+fi
+
+# 2. Vérification Linter Frontend / Backend
+echo -e "\n${BLUE}[2/4] Contrôle de syntaxe et Linters...${NC}"
+if [ -f "package.json" ] && grep -q '"lint"' package.json; then
+    (pnpm run lint || npm run lint) || FAILED=1
+    if [ $FAILED -eq 1 ]; then
+        echo -e "${RED}[ÉCHEC] Erreurs de linting détectées.${NC}"
+        exit 11
+    fi
+    echo -e "${GREEN}[✓] Linters JavaScript / TypeScript au vert.${NC}"
+fi
+
+# 3. Exécution des Tests Backend
+echo -e "\n${BLUE}[3/4] Exécution de la suite de tests Backend...${NC}"
+if [ -f "artisan" ]; then
+    echo -e " -> Détection Laravel : exécution de Pest / PHPUnit..."
+    php artisan test --parallel || FAILED=1
+elif [ -f "adonisrc.ts" ] || [ -f "adonisrc.json" ]; then
+    echo -e " -> Détection AdonisJS : exécution de Japa..."
+    node ace test || FAILED=1
+elif [ -f "nest-cli.json" ]; then
+    echo -e " -> Détection NestJS : exécution de Jest..."
+    pnpm test || npm test || FAILED=1
+elif [ -f "go.mod" ]; then
+    echo -e " -> Détection Go : exécution de go test..."
+    go test -v -race ./... || FAILED=1
+elif [ -f "pyproject.toml" ] || [ -f "requirements.txt" ]; then
+    echo -e " -> Détection Python : exécution de Pytest..."
+    pytest -v || FAILED=1
+fi
+
+if [ $FAILED -eq 1 ]; then
+    echo -e "${RED}[ÉCHEC] Des tests Backend ont échoué. Arrêt immédiat de la chaîne.${NC}"
+    exit 12
+fi
+echo -e "${GREEN}[✓] Tests Backend 100 % validés.${NC}"
+
+# 4. Exécution des Tests Frontend / E2E
+echo -e "\n${BLUE}[4/4] Exécution des tests Frontend & Collections Bruno...${NC}"
+if [ -f "package.json" ] && grep -q '"test"' package.json && [ ! -f "artisan" ]; then
+    (pnpm test -- --watchAll=false || npm test -- --watchAll=false) || FAILED=1
+fi
+
+# Validation Bruno si CLI disponible et dossier présent
+if command -v bru >/dev/null 2>&1 && [ -d "bruno" ]; then
+    echo -e " -> Exécution des assertions de collections Bruno..."
+    bru run bruno/ || FAILED=1
+fi
+
+if [ $FAILED -eq 1 ]; then
+    echo -e "${RED}[ÉCHEC] Des tests Frontend ou des collections Bruno ont échoué.${NC}"
+    exit 13
+fi
+echo -e "${GREEN}[✓] Tests Frontend et assertions Bruno 100 % validés.${NC}"
+
+echo -e "\n${GREEN}================================================================${NC}"
+echo -e "${GREEN}[SUCCÈS TOTAL] Étage 1 validé. Autorisation de passage à l'Étage 2.${NC}"
+echo -e "${GREEN}================================================================${NC}"
+exit 0
+```
 
 ---
 
-## 7. PRINCIPES DIRECTEURS ET INVARIANTS
+## 8. PRINCIPES DIRECTEURS ET INVARIANTS
 
 ### 1. Invariant « Zero-Prompt-Friction »
-L'invocation de `san_executer` suffit à piloter l'intégralité du cycle de vie de la feature. Le développeur ne doit jamais avoir à rappeler les consignes de chaque expert ou à enchaîner manuellement les sous-agents.
+L'invocation de `san_executer` suffit à piloter l'intégralité du cycle de vie d'une fonctionnalité. Le développeur n'a jamais à répéter les consignes des experts techniques ni à enchaîner manuellement les sous-agents.
 
 ### 2. Invariant « Contract-First, No-Mismatch »
-Aucune implémentation d'interface ne peut débuter sans contrat d'API formellement écrit et validé. Le code client est esclave du contrat, qui est lui-même validé par les tests de requêtes Bruno du serveur.
+Aucune implémentation de composant ou d'écran ne peut débuter sans un contrat d'API formellement écrit et validé. Le code client est esclave du contrat, qui est lui-même validé par les assertions de requêtes Bruno du serveur.
 
 ### 3. Invariant de Délégation et de Routage des Modèles
 - L'orchestrateur est un stratège : il ne code jamais directement.
-- L'écriture de code est réservée à des sous-agents en **`Model: 'flash'`**.
-- L'évaluation d'architecture, la QA, la sécurité et l'intégration croisée sont réservées à des sous-agents en **`Model: 'inherit'`**.
-- Le Fast-Track d'hygiène (cochage de cases, déplacement d'archive, mise à jour changelog) est exécuté directement par l'orchestrateur pour économiser la latence et les tokens.
+- L'écriture de code est réservée à des sous-agents propulsés par **`Model: 'flash'`**.
+- L'évaluation d'architecture, la QA, la sécurité et l'intégration croisée sont réservées à des sous-agents sous **`Model: 'inherit'`**.
+- Le Fast-Track d'hygiène (cochage de cases prouvées, déplacement d'archive, mise à jour changelog) est exécuté directement par l'orchestrateur.
 
 ### 4. Invariant de Solidarité Transactionnelle (Tout ou Rien)
-Une livraison n'est jamais partielle. Backend, Frontend, Sécurité, Tests et Documentation forment un ensemble inséparable. Tout manquement bloque la livraison globale.
+Une livraison n'est jamais partielle. Backend, Frontend, Résilience Réseau, Tests, Sécurité et Documentation forment un bloc indissociable.
 
 ### 5. Invariant d'Exécution Séquentielle par Paliers
 L'avancement dans une roadmap est strictement séquentiel. La Phase $N+1$ ne commence que lorsque la Phase $N$ est 100 % verte et validée.
 
 ---
 
-## 8. MATRICE DE BRANCHEMENT ET RÉFÉRENCES CROISÉES
+## 9. MATRICE DE BRANCHEMENT ET RÉFÉRENCES CROISÉES
 
 ```mermaid
 flowchart TD
@@ -300,19 +482,20 @@ flowchart TD
 ```
 
 ### Amont :
-- [san_planner](san_planner.md) : Fournit le plan de bataille opérationnel sous forme de roadmap `/roadmaps/*.md`. Si aucune roadmap n'existe, `san_executer` l'appelle automatiquement.
-- [san_init](san_init.md) : Fournit la constitution technique (`PROJECT.md`) et les design tokens (`BRAND.md`).
-- [san_brainstorming](san_brainstorming.md) : Résout les ambiguïtés amont avant que la planification n'ait lieu.
+- [san_planner](san_planner.md) : Fournit le plan d'action sous forme de roadmap `/roadmaps/*.md`. Si aucune roadmap n'existe, `san_executer` l'appelle automatiquement.
+- [san_init](san_init.md) : Fournit la constitution technique (`PROJECT.md`), les design tokens (`BRAND.md`) et le manifeste `rules.json`.
+- [san_brainstorming](san_brainstorming.md) : Résout les ambiguïtés amont avant la planification.
 
 ### Sous-Systèmes Orchestrés par `san_executer` :
 - [san_backend_expert](san_backend_expert.md) : Exécute l'infrastructure serveur, la couche de données, les règles métier, la résilience hors-ligne et les collections Bruno.
 - [san_ux_ui_expert](san_ux_ui_expert.md) : Exécute l'implémentation client Web & Mobile, l'intégration des 5 états UI, la synchronisation API et la fluidité cinétique.
-- [san_designer](san_designer.md) : Conçoit ou adapte les maquettes HTML haute fidélité (`/design/*`) avant l'intégration frontend.
+- [san_designer](san_designer.md) : Conçoit les maquettes HTML haute fidélité (`/design/*`) avant l'intégration frontend.
 - [san_qa_security_expert](san_qa_security_expert.md) : Réalise les pentests OWASP, les tests de non-régression E2E et certifie le verdict `LIVRABLE` ou `NON LIVRABLE`.
-- [san_devops_expert](san_devops_expert.md) : Appelé pour déployer les configurations d'infrastructure, de CI/CD et de serveurs nécessaires à la feature.
-- [san_store_legal_expert](san_store_legal_expert.md) : Mobilisé si la feature touche aux conditions générales, politiques de confidentialité ou permissions mobiles stores.
-- [san_growth_expert](san_growth_expert.md) : Mobilisé pour tagger les nouveaux événements business dans le plan de tracking et optimiser le SEO/ASO.
+- [san_devops_expert](san_devops_expert.md) : Déploie les configurations d'infrastructure, de CI/CD et de serveurs nécessaires à la feature.
+- [san_store_legal_expert](san_store_legal_expert.md) : Mobilisé pour la conformité légale et les permissions stores.
+- [san_growth_expert](san_growth_expert.md) : Mobilisé pour tagger les événements dans le plan de tracking et optimiser le SEO/ASO.
 
 ### Compétences Transversales Mobilisées :
 - `san_subagent_manager` : Configure et instancie tous les sous-agents d'exécution (`flash`) et d'audit (`inherit`).
-- `san_searcher` : Déployé en cas de blocage d'intégration pour consulter les documentations officielles les plus récentes.
+- `san_searcher` : Déployé en cas de blocage d'intégration pour consulter les documentations officielles récentes.
+- `san_doc_keeper` : Maintient le standard de documentation et la synchronisation de `CHANGELOG.md`.

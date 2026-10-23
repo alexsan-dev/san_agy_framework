@@ -1,0 +1,83 @@
+{
+  "$schema": "https://antigravity.alexsan.pro/schemas/v2/rules.schema.json",
+  "version": "2.0.0",
+  "name": "project_governance_matrix",
+  "description": "Contournement du scan plat Antigravity par routage contextuel conditionnel",
+  "global_rules": [
+    {
+      "path": ".agents/rules/PROJECT.md",
+      "priority": 100,
+      "description": "Loi technique suprême, politique de tests et cascades de modèles",
+      "always_loaded": true
+    },
+    {
+      "path": ".agents/rules/PRODUCT.md",
+      "priority": 90,
+      "description": "Cadrage produit, personas et contraintes marchés émergents",
+      "always_loaded": true
+    }
+  ],
+  "contextual_rules": [
+    {
+      "name": "design_and_visuals",
+      "path": ".agents/rules/BRAND.md",
+      "priority": 85,
+      "globs": [
+        "src/components/**",
+        "src/screens/**",
+        "src/views/**",
+        "resources/views/**",
+        "resources/css/**",
+        "src/styles/**",
+        "tailwind.config.*",
+        "app/**/page.*",
+        "app/**/layout.*"
+      ]
+    },
+    {
+      "name": "brand_logo_usage",
+      "path": ".agents/rules/LOGO.md",
+      "priority": 80,
+      "globs": [
+        "public/**/logo*",
+        "assets/**/logo*",
+        "resources/assets/**",
+        "src/assets/**",
+        "logos/**"
+      ]
+    },
+    {
+      "name": "api_and_contracts",
+      "path": ".agents/rules/API.md",
+      "priority": 85,
+      "globs": [
+        "app/Http/Controllers/**",
+        "src/controllers/**",
+        "src/routes/**",
+        "routes/**",
+        "bruno/**",
+        ".agents/rules/technicals/endpoints/**"
+      ]
+    },
+    {
+      "name": "granular_endpoints",
+      "directory": ".agents/rules/technicals/endpoints",
+      "priority": 75,
+      "globs": [
+        "app/Http/**",
+        "src/api/**",
+        "src/services/**",
+        "bruno/**"
+      ]
+    }
+  ],
+  "orchestrator_overrides": {
+    "entry_points": [
+      "san_init",
+      "san_brainstorming",
+      "san_planner",
+      "san_executer"
+    ],
+    "master_routing_file": ".agents/GEMINI.md"
+  }
+}

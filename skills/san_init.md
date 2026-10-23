@@ -1,7 +1,7 @@
 ---
 name: san_init
 title: Expert d'Initialisation, d'Isolation Git et d'Onboarding de Dépôt
-version: 1.0.0
+version: 2.0.0
 type: entry_point
 harness: google_antigravity_cli
 routing:
@@ -19,29 +19,31 @@ routing:
 ## 1. RÔLE, POUR QUI, POUR QUOI
 
 ### Rôle Fondamental
-`san_init` est l'expert d'initialisation, d'assainissement Git et d'onboarding architectural du framework **Antigravity (`san_*`)**. Il constitue la clé de voûte initiale de tout projet : son rôle est d'établir le pont fondamental entre le développeur et l'IA en dotant l'environnement de l'intégralité du contexte technique, produit, émotionnel, cinétique et méthodologique nécessaire, tout en érigeant une barrière étanche et inviolable entre la configuration locale de l'IA et l'arbre de versioning Git.
+`san_init` est l'expert d'initialisation, d'assainissement Git, de détection de stack et d'onboarding architectural du framework **Antigravity (`san_*`)**. Il constitue la clé de voûte initiale de tout projet logiciel : son rôle est d'établir le pont fondamental entre le développeur et l'IA en dotant l'environnement de l'intégralité du contexte technique, produit, émotionnel, cinétique et méthodologique nécessaire, tout en érigeant une barrière étanche et inviolable entre la configuration locale de l'IA et l'arbre de versioning Git.
 
 ### Pour Qui ?
-- Pour le développeur individuel, lead developer ou tech lead démarrant un nouveau projet sur un starter (Laravel, React, Next.js, Monorepo vierge).
+- Pour le développeur individuel, lead developer ou tech lead démarrant un nouveau projet sur un starter (Laravel, React, Next.js, Expo, React Native CLI, AdonisJS, NestJS, Go, Python ou Monorepo vierge).
 - Pour le développeur intégrant une codebase existante, legacy ou collective où d'autres développeurs ont pu introduire des configurations d'agents disparates, contradictoires ou polluantes.
 
 ### Pour Quoi ?
-- Éliminer le syndrome de la « répétition perpétuelle » : ne plus jamais avoir à réexpliquer à l'IA la palette graphique, l'esprit de la marque, les conventions d'architecture, la politique de tests ou la gestion des roadmaps.
-- Bannir définitivement la fuite de métadonnées IA ou la pollution des dépôts partagés (`.agents/` commité par mégarde, conflits de merge sur des fichiers d'agents tiers).
-- Convertir le savoir éparpillé (anciens `.cursorrules`, `CLAUDE.md`, `.opencode`, `AGENTS.md`) vers un standard unique et cohérent Antigravity.
+- **Éliminer le syndrome de la « répétition perpétuelle » :** Ne plus jamais avoir à réexpliquer à l'IA la palette graphique, l'esprit de la marque, les conventions d'architecture, la politique de tests ou la gestion des roadmaps.
+- **Bannir définitivement la fuite de métadonnées IA :** Proscrire les commits intempestifs de `.agents/` sur les dépôts distants partagés et éliminer les conflits de merge sur des fichiers d'agents tiers.
+- **Contourner le scan plat d'Antigravity :** Configurer un fichier de gouvernance `rules.json` pour contraindre le moteur Antigravity à respecter les hiérarchies et contextes spécifiques sans halluciner.
+- **Convertir le savoir éparpillé :** Unifier les anciens résidus (`.cursorrules`, `CLAUDE.md`, `.opencode`, `AGENTS.md`) vers un standard unique, cartésien et pérenne.
 
 ---
 
 ## 2. CE QU'IL FAIT / CE QU'IL NE FAIT PAS
 
 ### Ce qu'il FAIT :
-1. **Hygiène Git & Isolation Stricte :** Détecte, désindexe (`git rm -r --cached`) et verrouille de manière imperméable le dossier `.agents/` et tous les fichiers de contexte IA dans `.gitignore` et `.git/info/exclude`.
-2. **Purge des Pollutions Tierces :** Analyse, extrait le savoir utile (règles de code, conventions), puis détruit impitoyablement toute trace de configurations d'agents tiers (`CLAUDE.md`, `.claude/`, `.opencode/`, `.poolside/`, `.cursor/`, `.cursorrules`, `AGENTS.md`, `GEMINI.md` anarchiques).
-3. **Écrasement des `.agents/` Tiers :** Si un `.agents/` hérité d'un autre dev est présent dans un clone distant, il est purgé et remplacé par l'architecture propre du framework.
-4. **Onboarding Cas 1 (Dépôt Frais) :** Conduit un entretien structuré avec le développeur pour définir l'âme et le motion design (`BRAND.md`), le logo (`LOGO.md` avec 3 propositions SVG), le cadrage produit (`PRODUCT.md`) et les lois techniques (`PROJECT.md`).
-5. **Onboarding Cas 2 (Codebase Existante / Monorepo) :** Déploie des sous-agents d'inspection autonome (`Model: 'inherit'`) en lecture seule pour extraire le style, les tokens CSS/Tailwind, les logos, la stack, les schémas de BDD et les conventions de code, sans poser de questions superflues.
-6. **Création du Hub de Gouvernance :** Génère `<dir>/.agents/GEMINI.md` agissant comme table de routage exclusive vers `.agents/rules/*.md`.
-7. **Assainissement Documentaire :** Révise le `README.md` racine pour éliminer les liens morts vers d'anciennes règles supprimées et documenter la stack réelle.
+1. **Détection Exhaustive de la Stack :** Identifie avec précision la technologie hôte parmi 10 stacks majeures (React, Vite, Next.js, Expo, React Native CLI, Laravel, AdonisJS, NestJS, Go, Python), ses gestionnaires de paquets, fichiers de configuration et conventions de ports.
+2. **Hygiène Git & Isolation Stricte :** Déploie et exécute le script `git_ai_hygiene.sh` pour désindexer (`git rm -r --cached`), verrouiller `.gitignore` et `.git/info/exclude`, et marquer les fichiers critiques avec `git update-index --skip-worktree`.
+3. **Configuration de `rules.json` :** Génère la spécification JSON stricte pour contourner le scan plat d'Antigravity CLI et mapper les règles contextuelles par globs.
+4. **Purge des Pollutions Tierces :** Analyse, extrait le savoir utile (linters, commandes custom, variables), puis détruit toute trace de configurations concurrentes (`CLAUDE.md`, `.claude/`, `.opencode/`, `.poolside/`, `.cursor/`, `.cursorrules`, `AGENTS.md`, `GEMINI.md` anarchiques).
+5. **Génération des Templates de Règles Normatives :** Installe les versions complètes de `BRAND_TEMPLATE.md`, `PRODUCT_TEMPLATE.md`, `PROJECT_TEMPLATE.md`, `API_TEMPLATE.md` et `GEMINI_INDEX_TEMPLATE.md`.
+6. **Onboarding Cas 1 (Dépôt Frais) :** Pilote un entretien structuré en 4 volets pour capturer l'âme de marque (`BRAND.md`), le logo (`LOGO.md`), le cadrage produit (`PRODUCT.md`) et les invariants techniques (`PROJECT.md`).
+7. **Onboarding Cas 2 (Codebase Existante / Monorepo) :** Déploie des sous-agents d'inspection autonome (`Model: 'inherit'`) en lecture seule pour extraire styles, tokens, schémas SQL et conventions sans interroger inutilement le développeur.
+8. **Pipeline Vectoriel de Logos :** Déploie et exécute le script `svg_to_png.mjs` basé sur Sharp pour dériver les déclinaisons PNG obligatoires (favicons, icônes Apple, Android/PWA, splash screens mobiles).
 
 ### Ce qu'il NE FAIT PAS :
 - **Il ne commite JAMAIS de configuration IA :** Aucun fichier de `.agents/` ne doit être poussé sur le remote Git.
@@ -55,13 +57,13 @@ routing:
 ## 3. DÉCLENCHEURS & INVOCATIONS CONCRÈTES
 
 ### Déclencheurs Vocaux / Textuels
-Le skill s'active dès que l'intention porte sur l'initialisation, le nettoyage ou l'onboarding d'un dépôt :
 - `san_init`
 - `san_init:setup`
 - `initialise le projet avec san_init`
 - `configure et nettoie antigravity sur ce repo`
 - `onboarde cette codebase existante`
 - `purge les fichiers d'agents et isole git`
+- `détecte la stack et configure les rules`
 
 ### Exemples d'Invocations CLI / Chat
 ```bash
@@ -71,203 +73,700 @@ agy "san_init"
 # Lancement explicite avec ciblage d'un monorepo existant
 agy "san_init : scanne cette codebase existante, purge les anciens fichiers de rules et initialise .agents"
 
-# Lancement d'urgence pour sécuriser Git
-agy "san_init : retire .agents du tracking Git et configure l'hygiène"
+# Lancement d'urgence pour sécuriser Git et purger les caches distants
+agy "san_init : retire .agents du tracking Git, applique git_ai_hygiene.sh et configure l'isolation"
 ```
 
 ---
 
-## 4. STRUCTURE INTERNE DU SKILL
+## 4. DÉTECTION EXHAUSTIVE DES STACKS TECHNIQUES
 
-L'arborescence normative du skill au sein de l'environnement Antigravity est la suivante :
+`san_init` applique une grille déterministe d'inspection pour classifier le projet cible, déterminer le framework sous-jacent et adapter les templates de règles :
 
-```txt
-.agents/skills/san_init/
-├── SKILL.md                                 # Manifeste, rôles, procédure et principes directeurs
-├── templates/
-│   ├── GEMINI_INDEX_TEMPLATE.md             # Squelette de l'index maître .agents/GEMINI.md
-│   └── rules/
-│       ├── BRAND_TEMPLATE.md                # Modèle âme, cinétique et design tokens
-│       ├── LOGO_TEMPLATE.md                 # Modèle de gouvernance du logo et déclinaisons
-│       ├── PRODUCT_TEMPLATE.md              # Modèle de stratégie produit et marché
-│       ├── PROJECT_TEMPLATE.md              # Modèle des règles d'ingénierie et gouvernance
-│       └── API_TEMPLATE.md                  # Modèle des conventions REST/WebSocket/Bruno
-└── scripts/
-    ├── git_ai_hygiene.sh                    # Script de désindexation Git et verrouillage exclude
-    └── svg_to_png.mjs                       # Script de génération haute résolution SVG -> PNG
+| Stack Cible | Fichiers Indicateurs Majeurs | Fichiers de Configuration | Gestionnaire de Paquets | Ports Standards | Fichier d'Environnement |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **1. React (Vite / CRA)** | `vite.config.ts`, `vite.config.js`, `index.html` à la racine | `tsconfig.json`, `package.json` (`dependencies.react`) | `pnpm` > `bun` > `npm` > `yarn` | `5173` (Vite), `3000` (CRA) | `.env.example`, `.env.local` |
+| **2. Vite (Vanilla / Vue / Svelte)** | `vite.config.*`, absence de React dans `package.json` | `package.json`, `vite.config.ts` | `pnpm` > `bun` > `npm` | `5173` | `.env.example` |
+| **3. Next.js (Pages / App Router)** | `next.config.js`, `next.config.mjs`, `next.config.ts`, dossier `app/` ou `pages/` | `tsconfig.json`, `next-env.d.ts` | `pnpm` > `bun` > `npm` > `yarn` | `3000` | `.env.example`, `.env.local` |
+| **4. Expo (Managed / Bare)** | `app.json`, `app.config.ts`, `app.config.js`, présence de `"expo"` | `babel.config.js`, `metro.config.js`, `tsconfig.json` | `npx expo`, `pnpm`, `npm` | `8081` (Metro) | `.env.example`, `app.config.ts` |
+| **5. React Native CLI (Bare)** | `android/` + `ios/`, `react-native.config.js`, absence d'Expo | `metro.config.js`, `Gemfile`, `Podfile` | `yarn`, `npm`, `npx react-native` | `8081` | `.env.example` |
+| **6. Laravel** | `artisan`, `composer.json` (`laravel/framework`) | `config/app.php`, `phpunit.xml`, `pest.php` | `composer` + `npm`/`pnpm` (Vite) | `8000` (artisan serve), `5173` (Vite) | `.env.example` |
+| **7. AdonisJS** | `ace`, `adonisrc.ts`, `adonisrc.json` | `tsconfig.json`, `package.json` (`@adonisjs/core`) | `pnpm` > `npm` | `3333` | `.env.example` |
+| **8. NestJS** | `nest-cli.json`, `src/main.ts` avec `@nestjs/core` | `tsconfig.build.json`, `package.json` | `pnpm` > `npm` | `3000` | `.env.example` |
+| **9. Go (Golang)** | `go.mod`, `go.sum`, `main.go` | `Makefile`, `Dockerfile` | `go mod` | `8080`, `3000` | `.env.example`, `config.yaml` |
+| **10. Python (FastAPI / Django)** | `pyproject.toml`, `requirements.txt`, `manage.py`, `main.py` | `poetry.lock`, `Pipfile`, `setup.cfg` | `uv` > `poetry` > `pip` | `8000` (Uvicorn / Django) | `.env.example` |
+
+### Algorithme Déterministe de Détection
+```bash
+# Séquence de détection exécutée par san_init
+if [ -f "artisan" ] && [ -f "composer.json" ]; then
+    STACK="LARAVEL"
+elif [ -f "adonisrc.ts" ] || [ -f "adonisrc.json" ]; then
+    STACK="ADONISJS"
+elif [ -f "next.config.js" ] || [ -f "next.config.mjs" ] || [ -f "next.config.ts" ]; then
+    STACK="NEXTJS"
+elif [ -f "app.json" ] && grep -q '"expo"' package.json 2>/dev/null; then
+    STACK="EXPO"
+elif [ -d "android" ] && [ -d "ios" ] && [ -f "react-native.config.js" ]; then
+    STACK="REACT_NATIVE_CLI"
+elif [ -f "nest-cli.json" ]; then
+    STACK="NESTJS"
+elif [ -f "vite.config.ts" ] || [ -f "vite.config.js" ]; then
+    STACK="VITE_REACT"
+elif [ -f "go.mod" ]; then
+    STACK="GOLANG"
+elif [ -f "pyproject.toml" ] || [ -f "requirements.txt" ] || [ -f "manage.py" ]; then
+    STACK="PYTHON"
+else
+    STACK="GENERIC_WEB"
+fi
 ```
 
 ---
 
-## 5. LIVRABLES EXACTS
+## 5. SPÉCIFICATION STRICTE DE `rules.json` (CONTOURNEMENT DU SCAN PLAT)
 
-À l'issue de l'exécution de `san_init`, l'arborescence à la racine du projet (`<dir>`) est strictement conforme au standard :
+Par défaut, Antigravity applique un scan linéaire et plat des fichiers d'instructions situés dans `.agents/rules/`. Pour empêcher la dilution du contexte, la surcharge de la fenêtre de contexte et les conflits d'instructions entre la logique serveur et l'interface utilisateur, `san_init` installe et verrouille le manifeste `<dir>/.agents/rules.json`.
 
-```txt
-<dir>/
-├── .gitignore                               # Mis à jour : ignore strictement /.agents/ et les configs IA
-├── .git/info/exclude                        # Verrouillé : double isolation locale
-├── .agents/                                 # STRICTEMENT NON VERSIONNÉ (100 % local)
-│   ├── GEMINI.md                            # Table de routage et index des règles / skills locaux
-│   └── rules/
-│       ├── BRAND.md                         # Âme/ressenti, DA, motion design et tokens statiques
-│       ├── LOGO.md                          # Guide d'usage du logo retenu, variantes et animations
-│       ├── PRODUCT.md                       # Contexte business, personas, proposition de valeur
-│       ├── PROJECT.md                       # Loi technique : stack, tests, CHANGELOG, cascade modèles
-│       ├── API.md                           # (Optionnel) Conventions d'API et règles d'interfaçage
-│       └── technicals/                      # (Optionnel) Sous-dossier des endpoints granulaires
-│           └── endpoints/*.md
-└── README.md                                # Purifié des références obsolètes et mis à jour
+Ce fichier force le moteur Antigravity CLI à indexer les règles selon une logique conditionnelle par masques de fichiers (`globs`), événements d'exécution et niveaux de priorité.
+
+### Schéma Normatif `rules.json` :
+```json
+{
+  "$schema": "https://antigravity.alexsan.pro/schemas/v2/rules.schema.json",
+  "version": "2.0.0",
+  "name": "project_governance_matrix",
+  "description": "Contournement du scan plat Antigravity par routage contextuel conditionnel",
+  "global_rules": [
+    {
+      "path": ".agents/rules/PROJECT.md",
+      "priority": 100,
+      "description": "Loi technique suprême, politique de tests et cascades de modèles",
+      "always_loaded": true
+    },
+    {
+      "path": ".agents/rules/PRODUCT.md",
+      "priority": 90,
+      "description": "Cadrage produit, personas et contraintes marchés émergents",
+      "always_loaded": true
+    }
+  ],
+  "contextual_rules": [
+    {
+      "name": "design_and_visuals",
+      "path": ".agents/rules/BRAND.md",
+      "priority": 85,
+      "globs": [
+        "src/components/**",
+        "src/screens/**",
+        "src/views/**",
+        "resources/views/**",
+        "resources/css/**",
+        "src/styles/**",
+        "tailwind.config.*",
+        "app/**/page.*",
+        "app/**/layout.*"
+      ]
+    },
+    {
+      "name": "brand_logo_usage",
+      "path": ".agents/rules/LOGO.md",
+      "priority": 80,
+      "globs": [
+        "public/**/logo*",
+        "assets/**/logo*",
+        "resources/assets/**",
+        "src/assets/**"
+      ]
+    },
+    {
+      "name": "api_and_contracts",
+      "path": ".agents/rules/API.md",
+      "priority": 85,
+      "globs": [
+        "app/Http/Controllers/**",
+        "src/controllers/**",
+        "src/routes/**",
+        "routes/**",
+        "bruno/**",
+        ".agents/rules/technicals/endpoints/**"
+      ]
+    },
+    {
+      "name": "granular_endpoints",
+      "directory": ".agents/rules/technicals/endpoints",
+      "priority": 75,
+      "globs": [
+        "app/Http/**",
+        "src/api/**",
+        "src/services/**",
+        "bruno/**"
+      ]
+    }
+  ],
+  "orchestrator_overrides": {
+    "entry_points": [
+      "san_init",
+      "san_brainstorming",
+      "san_planner",
+      "san_executer"
+    ],
+    "master_routing_file": ".agents/GEMINI.md"
+  }
+}
 ```
-
-### Conventions de Fichiers :
-- **`GEMINI.md` :** Ne liste **que** les fichiers présents dans `.agents/rules/` et les skills customs développés spécifiquement pour le projet. Les skills globaux du harness Antigravity n'y sont pas listés.
-- **`BRAND.md` :** Contient la triple définition : Manifeste Sensoriel (Âme) + Système Cinétique (Motion) + Tokens Statiques (Hex, fonts, rem).
-- **`LOGO.md` :** Consigne le SVG maître validé. Les fichiers temporaires rejetés sont supprimés.
 
 ---
 
-## 6. PROCÉDURE ÉTAPE PAR ÉTAPE (ZÉRO NÉGLIGENCE)
+## 6. SCRIPT EMBARQUÉ : `git_ai_hygiene.sh`
+
+Ce script bash de qualité industrielle garantit l'isolation hermétique de la bulle d'orchestration locale. Il gère les dépôts mono-répertoires, désindexe le cache Git distant, verrouille les exclusions locales et force l'ignorance via `skip-worktree` si des fichiers ont déjà été pollués sur la branche distante.
+
+```bash
+#!/usr/bin/env bash
+# ==============================================================================
+# SCRIPT : git_ai_hygiene.sh
+# FRAMEWORK : Antigravity (san_*)
+# AUTEUR : Alexsan.pro
+# DESCRIPTION : Désindexation Git, verrouillage double étage (.gitignore & exclude),
+#               gestion monorepo et protection skip-worktree.
+# ==============================================================================
+
+set -euo pipefail
+
+# Couleurs de statut
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+echo -e "${BLUE}=== [san_init] Lancement de l'Hygiène et de l'Isolation Git ===${NC}"
+
+# 1. Résolution de la racine Git et gestion Monorepo
+if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    echo -e "${RED}[ERREUR] Le répertoire actuel n'est pas un dépôt Git actif.${NC}"
+    exit 1
+fi
+
+GIT_ROOT=$(git rev-parse --show-toplevel)
+CURRENT_DIR=$(pwd)
+
+echo -e "${GREEN}[OK] Racine Git identifiée : ${GIT_ROOT}${NC}"
+
+if [ "$CURRENT_DIR" != "$GIT_ROOT" ]; then
+    echo -e "${YELLOW}[ATTENTION] Monorepo détecté ! san_init applique l'hygiène à la racine du dépôt : ${GIT_ROOT}${NC}"
+fi
+
+cd "$GIT_ROOT"
+
+# 2. Fichiers et répertoires d'agents IA cibles
+AI_TARGETS=(
+    ".agents"
+    ".agents/"
+    "AGENTS.md"
+    "GEMINI.md"
+    ".claude"
+    ".claude/"
+    "CLAUDE.md"
+    ".opencode"
+    ".opencode/"
+    ".poolside"
+    ".poolside/"
+    ".cursor"
+    ".cursor/"
+    ".cursorrules"
+)
+
+# 3. Désindexation forcée du cache Git (git rm -r --cached)
+echo -e "${BLUE}[1/4] Désindexation des résidus IA dans le cache Git...${NC}"
+for target in "${AI_TARGETS[@]}"; do
+    if git ls-files --error-unmatch "$target" >/dev/null 2>&1; then
+        echo -e "${YELLOW} -> Désindexation de l'élément commité par mégarde : ${target}${NC}"
+        git rm -r --cached "$target" >/dev/null 2>&1 || git rm --cached "$target" >/dev/null 2>&1 || true
+    fi
+done
+
+# 4. Protection active skip-worktree pour les fichiers récalcitrants
+echo -e "${BLUE}[2/4] Verrouillage skip-worktree sur les fichiers suivis upstream...${NC}"
+for target in "${AI_TARGETS[@]}"; do
+    if [ -f "$target" ] && git ls-files --error-unmatch "$target" >/dev/null 2>&1; then
+        git update-index --skip-worktree "$target" 2>/dev/null || true
+        echo -e " -> Verrou skip-worktree appliqué sur : ${target}"
+    fi
+done
+
+# 5. Injection étanche dans .gitignore
+echo -e "${BLUE}[3/4] Mise à jour du fichier .gitignore racine...${NC}"
+GITIGNORE_PATH="${GIT_ROOT}/.gitignore"
+touch "$GITIGNORE_PATH"
+
+GITIGNORE_MARKER="# --- ANTIGRAVITY AI ISOLATION (san_*) ---"
+
+if ! grep -q "$GITIGNORE_MARKER" "$GITIGNORE_PATH"; then
+    cat << 'EOF' >> "$GITIGNORE_PATH"
+
+# --- ANTIGRAVITY AI ISOLATION (san_*) ---
+/.agents/
+/AGENTS.md
+/GEMINI.md
+/.claude/
+/CLAUDE.md
+/.opencode/
+/.poolside/
+/.cursor/
+/.cursorrules/
+# ----------------------------------------
+EOF
+    echo -e "${GREEN}[OK] Règles d'isolation insérées dans .gitignore${NC}"
+else
+    echo -e "${GREEN}[OK] .gitignore contient déjà le marqueur d'isolation Antigravity.${NC}"
+fi
+
+# 6. Injection étanche dans .git/info/exclude (Double verrou local)
+echo -e "${BLUE}[4/4] Verrouillage dans .git/info/exclude...${NC}"
+EXCLUDE_PATH="${GIT_ROOT}/.git/info/exclude"
+if [ -d "${GIT_ROOT}/.git" ] && [ -f "$EXCLUDE_PATH" ]; then
+    if ! grep -q "$GITIGNORE_MARKER" "$EXCLUDE_PATH"; then
+        cat << 'EOF' >> "$EXCLUDE_PATH"
+
+# --- ANTIGRAVITY AI ISOLATION (san_*) ---
+/.agents/
+/AGENTS.md
+/GEMINI.md
+/.claude/
+/CLAUDE.md
+/.opencode/
+/.poolside/
+/.cursor/
+/.cursorrules/
+# ----------------------------------------
+EOF
+        echo -e "${GREEN}[OK] Règles d'isolation insérées dans .git/info/exclude${NC}"
+    else
+        echo -e "${GREEN}[OK] .git/info/exclude déjà configuré.${NC}"
+    fi
+fi
+
+echo -e "${GREEN}=== Isolation Git complétée avec succès. Zéro fuite IA possible. ===${NC}"
+exit 0
+```
+
+---
+
+## 7. SCRIPT EMBARQUÉ : `svg_to_png.mjs`
+
+Ce script de traitement graphique utilise **Sharp** pour compiler un logo vectoriel SVG unique en une suite complète d'assets matriciels de haute qualité nécessaires aux applications Web, PWA et mobiles.
+
+```javascript
+#!/usr/bin/env node
+// ==============================================================================
+// SCRIPT : svg_to_png.mjs
+// FRAMEWORK : Antigravity (san_*)
+// AUTEUR : Alexsan.pro
+// DEPENDANCE : sharp (npm install --save-dev sharp / pnpm add -D sharp)
+// USAGE : node svg_to_png.mjs <input.svg> <output_dir>
+// ==============================================================================
+
+import fs from 'node:fs';
+import path from 'node:path';
+
+// Vérification de la présence de sharp
+let sharp;
+try {
+  const sharpModule = await import('sharp');
+  sharp = sharpModule.default;
+} catch (e) {
+  console.error('\x1b[31m[ERREUR] La bibliothèque "sharp" est requise.\x1b[0m');
+  console.error('Installez-la via : npm install -D sharp  OU  pnpm add -D sharp');
+  process.exit(1);
+}
+
+const args = process.argv.slice(2);
+const inputSvg = args[0] || 'logos/san_framework_icon.svg';
+const outputDir = args[1] || 'public/assets/branding';
+
+if (!fs.existsSync(inputSvg)) {
+  console.error(`\x1b[31m[ERREUR] Fichier SVG introuvable : ${inputSvg}\x1b[0m`);
+  process.exit(1);
+}
+
+fs.mkdirSync(outputDir, { recursive: true });
+
+// Matrice complète des formats cibles
+const TARGET_ASSETS = [
+  // Favicons Web
+  { name: 'favicon-16x16.png', width: 16, height: 16, fit: 'contain' },
+  { name: 'favicon-32x32.png', width: 32, height: 32, fit: 'contain' },
+  { name: 'favicon-48x48.png', width: 48, height: 48, fit: 'contain' },
+  
+  // Apple Touch Icons
+  { name: 'apple-touch-icon.png', width: 180, height: 180, fit: 'contain' },
+  
+  // PWA & Android Icons
+  { name: 'pwa-192x192.png', width: 192, height: 192, fit: 'contain' },
+  { name: 'pwa-512x512.png', width: 512, height: 512, fit: 'contain' },
+  { name: 'maskable-icon-512x512.png', width: 512, height: 512, fit: 'contain', background: { r: 15, g: 23, b: 42, alpha: 1 } },
+  
+  // Header / High-Res Branding
+  { name: 'logo-brand-512x128.png', width: 512, height: 128, fit: 'contain' },
+  { name: 'logo-brand-1024x256.png', width: 1024, height: 256, fit: 'contain' },
+  
+  // Mobile Splash Screens
+  { name: 'splash-mobile-portrait-1242x2688.png', width: 1242, height: 2688, fit: 'contain', background: { r: 10, g: 15, b: 30, alpha: 1 } },
+  { name: 'splash-square-2048x2048.png', width: 2048, height: 2048, fit: 'contain', background: { r: 10, g: 15, b: 30, alpha: 1 } }
+];
+
+console.log(`\x1b[34m=== Génération des assets PNG à partir de : ${inputSvg} ===\x1b[0m`);
+console.log(`Dossier de sortie : ${outputDir}\n`);
+
+async function generateAssets() {
+  const svgBuffer = fs.readFileSync(inputSvg);
+  let successCount = 0;
+
+  for (const asset of TARGET_ASSETS) {
+    const destPath = path.join(outputDir, asset.name);
+    try {
+      let pipeline = sharp(svgBuffer, { density: 300 })
+        .resize(asset.width, asset.height, {
+          fit: asset.fit || 'contain',
+          background: asset.background || { r: 0, g: 0, b: 0, alpha: 0 }
+        })
+        .png({ compressionLevel: 9, adaptiveFiltering: true });
+
+      await pipeline.toFile(destPath);
+      console.log(`\x1b[32m[✓]\x1b[0m ${asset.name} (${asset.width}x${asset.height})`);
+      successCount++;
+    } catch (err) {
+      console.error(`\x1b[31m[✗] Échec pour ${asset.name} :\x1b[0m`, err.message);
+    }
+  }
+
+  console.log(`\n\x1b[32m[SUCCÈS] ${successCount}/${TARGET_ASSETS.length} assets générés avec succès.\x1b[0m`);
+}
+
+generateAssets().catch((err) => {
+  console.error('\x1b[31m[CRASH]\x1b[0m', err);
+  process.exit(1);
+});
+```
+
+---
+
+## 8. TEMPLATES INTÉGRAUX DE RÈGLES (`.agents/rules/*.md`)
+
+### Template 1 : `BRAND_TEMPLATE.md` (`.agents/rules/BRAND.md`)
+```markdown
+# CHARTE DE MARQUE, DIRECTION ARTISTIQUE & MOTION (`BRAND.md`)
+
+> **Règle absolue :** Zéro composant générique « AI template ». L'interface doit posséder une âme, une tension graphique assumée et un système cinétique maîtrisé à 60 fps.
+
+---
+
+## 1. MANIFESTE SENSORIEL & ÂME DU PRODUIT
+* **Émotion Brute :** [Ex: Confiance bancaire inébranlable, précision chirurgicale d'ingénierie, sobriété statutaire].
+* **Archétype Visuel :** [Ex: Néo-brutalisme fonctionnel / Minimalisme High-Tech / FinTech feutrée].
+* **Liste Noire Visuelle (Anti-AI Patterns interdits) :**
+  - INTERDICTION des dégradés violets / indigo / magenta génériques.
+  - INTERDICTION des bordures luminescentes « glow » omniprésentes sans justification contextuelle.
+  - INTERDICTION des illustrations 3D molles ou avatars en pâte à modeler stéréotypés.
+  - INTERDICTION du faux texte « Lorem Ipsum » à tous les stades de maquettage.
+
+---
+
+## 2. SYSTÈME CINÉTIQUE & MOTION DESIGN
+Le mouvement traduit la réactivité et la rigueur du système. Zéro animation décorative lente ou superflue.
+
+* **Tempérament du mouvement :** [Claquant / Organique / Spring amorti].
+* **Courbes Bézier Normalisées :**
+  - Accélération Standard (Ease-In) : `cubic-bezier(0.4, 0.0, 1, 1)`
+  - Décélération Douce (Ease-Out) : `cubic-bezier(0.0, 0.0, 0.2, 1)`
+  - Transition Maîtresse (Ease-In-Out) : `cubic-bezier(0.16, 1, 0.3, 1)`
+* **Échelle des Durées :**
+  - Micro-interactions (hover, active, toggle) : `100ms - 150ms`
+  - Déploiement d'éléments (modale, drawer, toast) : `200ms - 250ms`
+  - Transitions de vue / scènes : `300ms max`
+* **Exigence 60 FPS :**
+  - Animation exclusive de `transform` et `opacity`.
+  - Proscription absolue d'animer `width`, `height`, `margin`, `top`, `left` déclenchant des recalculs de Layout.
+
+---
+
+## 3. DESIGN TOKENS STATIQUES
+
+### Palette Chromatique Hexadécimale
+* **Neutres Fondateurs :**
+  - Fond Principal (Background) : `#0B0F19` (Sombre) / `#F8FAFC` (Clair)
+  - Surface Conteneur (Card / Surface) : `#111827` / `#FFFFFF`
+  - Bordures Subtiles (Border) : `#1F2937` / `#E2E8F0`
+* **Couleurs Primaires & Accents :**
+  - Marque Primaire : `#[HEX_PRIMAIRE]`
+  - Accent / CTA : `#[HEX_ACCENT]`
+* **États Fonctionnels Sémantiques :**
+  - Succès : `#10B981` (Emerald)
+  - Avertissement : `#F59E0B` (Amber)
+  - Erreur / Danger : `#EF4444` (Rose-Red)
+  - Info / Neutre : `#3B82F6` (Blue)
+
+### Typographie & Échelle de Rythme
+* **Police de Titrage (Display) :** `[Nom de Police de caractère]` (Inter / Clash Display / Sora / Cabinet Grotesk).
+* **Police de Labeur (Body / UI) :** `Inter`, `-apple-system`, `sans-serif`.
+* **Police Mono (Code & Chiffres) :** `JetBrains Mono`, `ui-monospace`.
+* **Règle Tabulaire :** Tout affichage de prix, devise FCFA/XAF/USD ou compteur doit utiliser `font-variant-numeric: tabular-nums;`.
+```
+
+---
+
+### Template 2 : `PRODUCT_TEMPLATE.md` (`.agents/rules/PRODUCT.md`)
+```markdown
+# CADRAGE PRODUIT, STRATÉGIE & MARCHÉ (`PRODUCT.md`)
+
+## 1. PROPOSITION DE VALEUR FONDAMENTALE
+* **Nom du Produit :** [Nom du Produit]
+* **Le Problème Douloureux :** [Description concise de la friction insupportable résolue].
+* **La Solution Déterminante :** [Comment notre produit pulvérise cette friction en 3 clics].
+* **Proposition de Valeur Unique (UVP) :** [Phrase d'impact en 12 mots maximum].
+
+---
+
+## 2. PERSONAS CIBLES & CONTEXTE D'USAGE
+* **Persona Primaire :** [Rôle, profil, âge, équipement mobile principal].
+* **Appareils Cibles :** Smartphones Android d'entrée/milieu de gamme (2 Go à 4 Go RAM), écrans 360x640 à 393x852, Web desktop moderne.
+* **Habitudes Comportementales :**
+  - Primauté absolue de WhatsApp pour la communication et le partage.
+  - Aversion pour les formulaires longs à champs multiples.
+  - Préférence pour l'onboarding par numéro de téléphone OTP plutôt que par e-mail/mot de passe.
+
+---
+
+## 3. RÉALITÉS TERRAIN SPÉCIFIQUES (AFRIQUE / MARCHÉS ÉMERGENTS)
+* **Connectivité Dégradée (3G / EDGE / Hors-ligne) :**
+  - L'application doit démarrer instantanément et afficher les dernières données mises en cache locale.
+  - Toutes les actions créatrices doivent être acceptées de manière optimiste et empilées dans une file d'attente Outbox locale.
+* **Transactions & Mobile Money :**
+  - Prise en charge native des flux USSD / STK Push (Airtel Money, MTN MoMo).
+  - Gestion stricte de l'attente asynchrone des webhooks de paiement avec polling de réconciliation sans blocage de l'écran.
+* **Repérage Géographique :**
+  - Ne jamais forcer d'adresse postale occidentale (code postal / numéro de rue).
+  - Utiliser des repères urbains locaux, carrefours connus, quartiers et partages de position GPS.
+
+---
+
+## 4. INDICATEURS CLÉS DE PERFORMANCE (KPIS)
+* **Taux de complétion de l'onboarding :** $> 85\%$
+* **Délai d'exécution de l'action clé :** $< 30\text{ secondes}$
+* **Taux d'échec de paiement réconcilié :** $< 2\%$
+```
+
+---
+
+### Template 3 : `PROJECT_TEMPLATE.md` (`.agents/rules/PROJECT.md`)
+```markdown
+# CONSTITUTION TECHNIQUE & RÈGLES D'INGÉNIERIE (`PROJECT.md`)
+
+## 1. STACK OFFICIELLE DU PROJET
+* **Environnement Hôte :** [Ex: Laravel 11 + React 19 + TypeScript + Tailwind CSS]
+* **Base de Données & Cache :** PostgreSQL 16 (`JSONB`, GIN) + Redis 7 (files d'attente et verrous d'idempotence).
+* **Outil de Contrats d'API :** Collections Bruno (`.bru`) versionnées dans `bruno/`.
+
+---
+
+## 2. ROUTAGE STRICT DES MODÈLES IA (`invoke_subagent`)
+* **Session Principale (Orchestrateur Suprême) :** `argon-latest-max` (ou `gemini-3.1-pro-high`). Raisonnement, architecture, découpage des phases.
+* **Sous-Agents de Code & Scripts :** Invoqués exclusivement sous **`Model: 'flash'`** (`gemini-3.8-flash-high`) pour vélocité et sobriété en tokens.
+* **Sous-Agents d'Audit, Sécurité & QA :** Invoqués avec **`Model: 'inherit'`** pour hériter de la capacité de jugement du modèle parent.
+
+---
+
+## 3. INVARIANTS D'ORCHESTRATION & FAST-TRACK
+* **Délégation d'Implémentation Stricte :** L'orchestrateur maître ne rédige aucune ligne de code applicatif. Il délègue l'écriture aux experts spécialisés.
+* **Fast-Track d'Hygiène Orchestrateur Immédiat :** L'orchestrateur est expressément autorisé à effectuer directement (sans sous-agent superflu) :
+  - Le cochage formel des cases `- [x]` dans `/roadmaps/*.md` après vérification réelle du code et des tests.
+  - Le déplacement d'une roadmap achevée vers `/roadmaps/archives/`.
+  - La mise à jour du journal `CHANGELOG.md` et des règles `.agents/rules/*`.
+
+---
+
+## 4. POLITIQUE DE TESTS OBLIGATOIRE (SOUVERAINETÉ DE LA QUALITÉ)
+Aucune tâche ne peut être considérée comme achevée sans son volet de tests automatisés verts :
+* **Tests Unitaires & Métier :** Couverture stricte des services, classes de calcul et règles d'autorisation.
+* **Tests d'Intégration API & Bruno :** Chaque endpoint dispose d'un fichier `.bru` exécutable vérifiant les retours `200/201` et les rejets de validation `422`.
+* **Tests de Composants UI :** Validation des 5 états obligatoires de l'interface (Idéal, Vide, Chargement, Erreur, Succès/Hors-ligne).
+
+---
+
+## 5. ENTONNOIR D'AUDIT EN 2 ÉTAGES
+1. **Étage 1 (Scripté Déterministe - Zéro Token LLM) :** Lancement des linters (`tsc --noEmit`, linters backend, tests unitaires). Arrêt immédiat et réinjection brute au sous-agent de code si une seule erreur survient.
+2. **Étage 2 (Audit Cognitif LLM) :** Déploiement des audits QA, OWASP et performance uniquement lorsque l'Étage 1 est 100 % vert.
+```
+
+---
+
+### Template 4 : `API_TEMPLATE.md` (`.agents/rules/API.md`)
+```markdown
+# CONVENTIONS D'API REST & PROTOCOLE CLIENT-SERVEUR (`API.md`)
+
+## 1. FORMAT NORMALISÉ DES RÉPONSES JSON
+Toutes les réponses de l'API respectent une enveloppe immuable :
+
+### Réponse de Succès (`200 OK`, `201 Created`) :
+```json
+{
+  "success": true,
+  "data": {},
+  "meta": {
+    "timestamp": "2026-10-23T12:00:00Z",
+    "version": "v1"
+  }
+}
+```
+
+### Réponse d'Erreur (`400`, `401`, `403`, `404`, `422`, `429`, `500`) :
+```json
+{
+  "success": false,
+  "error": {
+    "code": "VALIDATION_FAILED",
+    "message": "Les données fournies sont invalides.",
+    "details": {
+      "phone": ["Le numéro de téléphone Mobile Money est requis."]
+    }
+  },
+  "meta": {
+    "timestamp": "2026-10-23T12:00:00Z"
+  }
+}
+```
+
+---
+
+## 2. GESTION DES CLÉS D'IDEMPOTENCE (`Idempotency-Key`)
+* Tout endpoint à effet de bord financier, paiement Mobile Money ou création de commande exige l'en-tête HTTP :
+  `Idempotency-Key: <UUIDv4>`
+* Le backend verrouille la clé sur Redis pour une durée de 24 heures. Si une requête identique survient avec la même clé :
+  - Si l'opération initiale est en cours de traitement : HTTP `409 Conflict` avec code `OPERATION_IN_PROGRESS`.
+  - Si l'opération est déjà complétée : réémission immédiate de la réponse mise en cache sans réexécuter l'action métier.
+
+---
+
+## 3. SUITE DE TESTS BRUNO
+* Chaque route doit obligatoirement avoir son fichier de test `.bru` dans le dossier `bruno/`.
+* Zéro endpoint déployé sans validation de ses payloads nominaux et d'erreurs aux limites.
+```
+
+---
+
+### Template 5 : `GEMINI_INDEX_TEMPLATE.md` (`.agents/GEMINI.md`)
+```markdown
+# TABLE DE ROUTAGE PRINCIPALE ANTIGRAVITY (`GEMINI.md`)
+
+> **Index Souverain Local :** Ce fichier constitue la table de routage exclusive lue par le harness Antigravity CLI lors de l'initialisation de session. Il référence les règles locales et les skills opérationnels du projet.
+
+---
+
+## 1. RÈGLES DE GOUVERNANCE DU PROJET (`.agents/rules/`)
+* [PROJECT.md](.agents/rules/PROJECT.md) : Constitution technique, politique de tests, routage des modèles et Fast-Track.
+* [PRODUCT.md](.agents/rules/PRODUCT.md) : Cadrage business, personas, proposition de valeur et contraintes marchés émergents.
+* [BRAND.md](.agents/rules/BRAND.md) : Manifeste sensoriel, système cinétique 60 fps et design tokens chromatiques.
+* [LOGO.md](.agents/rules/LOGO.md) : Guide d'utilisation du logo maître et déclinaisons d'assets.
+* [API.md](.agents/rules/API.md) : Spécifications des contrats REST, formats JSON et gestion de l'idempotence.
+
+---
+
+## 2. CONTRATS D'ENDPOINTS GRANULAIRES (`.agents/rules/technicals/endpoints/`)
+* Les spécifications détaillées de chaque route communicante se situent dans `.agents/rules/technicals/endpoints/*.md`.
+
+---
+
+## 3. SKILLS LOCAUX SPÉCIFIQUES AU PROJET
+* Les éventuels skills personnalisés créés pour ce projet sont répertoriés ici.
+```
+
+---
+
+## 9. PROCÉDURE ÉTAPE PAR ÉTAPE (ZÉRO NÉGLIGENCE)
 
 ```mermaid
 flowchart TD
-    Start(["Lancement san_init"]) --> Step0["Étape 0 : Hygiène Git & Purge Tiers"]
-    Step0 --> CheckType{"Nature du Dépôt ?"}
+    Start(["Lancement san_init"]) --> Step0["Étape 0 : Exécution git_ai_hygiene.sh & Purge Tiers"]
+    Step0 --> DetectStack["Étape 1 : Détection Déterministe de la Stack (10 profils)"]
+    DetectStack --> GenRulesJson["Étape 2 : Génération de .agents/rules.json"]
     
-    CheckType -->|"Dépôt Frais / Starter"| Case1["Étape 1A : Extraction Starter & Interview Développeur"]
-    CheckType -->|"Codebase Existante"| Case2["Étape 1B : Rétro-Ingénierie Autonome (Sous-Agents)"]
+    GenRulesJson --> CheckType{"Nature du Dépôt ?"}
+    CheckType -->|"Dépôt Frais / Starter"| Case1["Étape 3A : Interview Développeur 4 Volets"]
+    CheckType -->|"Codebase Existante"| Case2["Étape 3B : Rétro-Ingénierie Autonome (Sous-Agents 'inherit')"]
     
-    Case1 --> Step2["Étape 2 : Rédaction des Règles (BRAND, LOGO, PRODUCT, PROJECT)"]
-    Case2 --> Step2
+    Case1 --> Step4["Étape 4 : Rédaction Normative des Règles (.agents/rules/*.md)"]
+    Case2 --> Step4
     
-    Step2 --> Step3["Étape 3 : Traitement du Logo (SVG -> Déclinaisons PNG)"]
-    Step3 --> Step4["Étape 4 : Indexation GEMINI.md & Purge README.md"]
-    Step4 --> EndVal(["Validation & Clôture"])
+    Step4 --> Step5["Étape 5 : Exécution svg_to_png.mjs (Favicons & Splash Screens)"]
+    Step5 --> Step6["Étape 6 : Indexation GEMINI.md & Assainissement README.md"]
+    Step6 --> EndVal(["Onboarding Validé & Prêt pour san_planner / san_brainstorming"])
 ```
 
 ### Étape 0 : Hygiène Git Immédiate & Purge des Agents Tiers
-1. **Désindexation Git :**
-   - Vérifier si `.agents/`, `AGENTS.md`, `CLAUDE.md`, `.claude/`, `.opencode/`, `.poolside/`, `.cursor/`, `.cursorrules`, `GEMINI.md` sont indexés dans Git :
-     ```bash
-     git rm -r --cached .agents .claude .opencode .poolside .cursor CLAUDE.md AGENTS.md GEMINI.md .cursorrules 2>/dev/null || true
-     ```
-2. **Verrouillage Double Étage :**
-   - Insérer dans `<dir>/.gitignore` :
-     ```gitignore
-     # --- Antigravity AI Local Isolation ---
-     /.agents/
-     /AGENTS.md
-     /GEMINI.md
-     /.claude/
-     /CLAUDE.md
-     /.opencode/
-     /.poolside/
-     /.cursor/
-     /.cursorrules/
-     ```
-   - Inscrire les mêmes exclusions dans `<dir>/.git/info/exclude`.
-3. **Purge et Absorption :**
-   - Parcourir les anciens fichiers d'instructions tiers. Extraire toute règle de convention utile (linter, scripts custom, ports spécifiques).
-   - Supprimer physiquement les répertoires et fichiers d'agents tiers obsolètes.
-   - Si un dossier `.agents/` provient d'un autre dev (via git pull ou clone), écraser son contenu pour éviter d'hériter de prompts toxiques.
+1. Écrire et exécuter le script `scripts/git_ai_hygiene.sh`.
+2. Inspecter le répertoire racine pour repérer les traces d'anciens agents (`CLAUDE.md`, `.claude/`, `.cursorrules`, `AGENTS.md`). Extraire les commandes utiles (ports, scripts de test), puis supprimer ces fichiers obsolètes.
+
+### Étape 1 : Détection Déterministe de la Stack
+1. Scanner les fichiers indicateurs (Vite, Next, Expo, Laravel, Adonis, Nest, Go, Python).
+2. Vérifier les gestionnaires de paquets (`pnpm`, `npm`, `composer`, `uv`, `go`).
+3. Noter les spécificités dans la mémoire d'orchestration pour préremplir `PROJECT.md`.
+
+### Étape 2 : Déploiement de `rules.json`
+1. Créer le fichier `<dir>/.agents/rules.json` adapté aux globs de la stack détectée.
+
+### Étape 3A : Cas Dépôt Frais (Interview Développeur 4 Volets)
+Poser un questionnaire ciblé et structuré au développeur :
+1. **Âme & Rendu Visuel :** Émotion cible, style architectural, palette primaire, anti-patterns IA interdits.
+2. **Identité Graphique :** Présence d'un SVG maître ou génération de 3 propositions vectorielles.
+3. **Cadrage Produit :** Persona prioritaire, contraintes 3G/Mobile Money, modèle économique.
+4. **Socle d'Ingénierie :** Validation des choix d'architecture flous.
+
+### Étape 3B : Cas Codebase Existante / Monorepo (Rétro-Ingénierie Autonome)
+Déployer des sous-agents en lecture seule (`Model: 'inherit'`) :
+1. Extraction des styles existants (`tailwind.config.*`, CSS vars) $\rightarrow$ Synthèse `BRAND.md`.
+2. Localisation des logos et icônes $\rightarrow$ Synthèse `LOGO.md`.
+3. Analyse des modèles de données et routes $\rightarrow$ Synthèse `PRODUCT.md` et `API.md`.
+4. Inspection des dépendances, linters et tests $\rightarrow$ Synthèse `PROJECT.md`.
+5. Présentation d'une note de synthèse unique au développeur pour validation expresse.
+
+### Étape 4 : Rédaction Normative des Règles
+1. Rédiger les versions instanciées de `BRAND.md`, `PRODUCT.md`, `PROJECT.md`, `API.md` et `LOGO.md` dans `.agents/rules/`.
+
+### Étape 5 : Exécution du Pipeline Graphique `svg_to_png.mjs`
+1. Enregistrer le logo validé dans `logos/` ou `assets/branding/`.
+2. Lancer `node scripts/svg_to_png.mjs` pour générer automatiquement l'ensemble des favicons, icônes Apple/PWA et splash screens.
+
+### Étape 6 : Indexation Maître et Nettoyage Documentaire
+1. Générer `<dir>/.agents/GEMINI.md` listant les règles locales créées.
+2. Purifier `README.md` des références obsolètes aux anciens agents tiers.
 
 ---
 
-### Cas 1 : Dépôt Frais (Starter vierge Laravel, Next.js, React, Mobile)
-
-#### Étape 1A : Entretien Dirigé avec le Développeur
-Poser un questionnaire structuré et concis articulé autour des 4 axes fondateurs :
-1. **Identité Visuelle & Motion (`BRAND.md`) :**
-   - *Âme & Ressenti :* Quelle émotion brute le produit doit-il susciter ? Quel est le style visuel (brutaliste, feutré, minimaliste high-tech, néo-banque) ? Quels sont les **anti-patterns visuels interdits** (ce qu'une IA générique ferait et qu'il faut bannir) ?
-   - *Cinétique :* Quel est le tempérament du mouvement (claquant/sec, organique/fluide, rebondissant/spring) ? Quelles sont les courbes Bézier et durées normalisées ?
-   - *Tokens :* Couleurs primaires, neutres d'arrière-plan, polices typographiques de caractère.
-2. **Identité de Marque (`LOGO.md`) :**
-   - Le développeur dispose-t-il d'un fichier SVG existant ?
-   - À défaut, recenser les symboles forts. Générer **3 propositions SVG distinctes**. Une fois le choix arrêté par le développeur, **supprimer immédiatement les 2 autres**.
-3. **Vision Business (`PRODUCT.md`) :**
-   - Cible d'utilisateurs exacte, problème douloureux résolu, proposition de valeur unique, modèle économique, contraintes géographiques (ex. Afrique / Congo : 3G/EDGE, Mobile Money, WhatsApp).
-4. **Socle d'Ingénierie (`PROJECT.md`) :**
-   - Préciser les choix d'architecture flous (gestion d'état, convention d'API) et injecter les invariants Antigravity (Quality Gate, tests obligatoires, gestion du CHANGELOG).
-
----
-
-### Cas 2 : Codebase Existante ou Monorepo Actif
-
-#### Étape 1B : Rétro-Ingénierie Autonome par Sous-Agents
-Interdiction de bombarder le développeur de questions si le code détient la vérité. Déployer des sous-agents d'inspection en mode lecture seule (`Model: 'inherit'`) :
-1. **Extraction Graphique & Motion $\rightarrow$ `BRAND.md` :**
-   - Scanner les fichiers de styles : `tailwind.config.js`, `globals.css`, variables CSS natives, tokens Sass.
-   - Extraire les `@keyframes`, transitions Framer Motion, animations GSAP ou Reanimated pour cartographier le système cinétique existant.
-   - Synthétiser l'ambiance visuelle et rédiger la liste noire anti-générique.
-2. **Détection des Assets $\rightarrow$ `LOGO.md` :**
-   - Localiser les logos SVG (`public/`, `assets/`, `resources/`).
-   - Documenter les variantes (clair, sombre, monochrome, icône seule) et les dimensions d'affichage.
-3. **Analyse Produit $\rightarrow$ `PRODUCT.md` :**
-   - Parcourir les landing pages, textes statiques, fichiers de traduction i18n, README historique et modèles de données pour formaliser la proposition de valeur.
-4. **Analyse Technique $\rightarrow$ `PROJECT.md` :**
-   - Inspecter `package.json`, `composer.json`, Dockerfile, structure des dossiers, frameworks de tests (`jest`, `pest`, `phpunit`, `playwright`).
-   - Documenter la stack réelle, les commandes de build, les linters et le système de versions.
-5. **Arbitrage Final Unique :**
-   - Ne solliciter le développeur qu'en une seule salve finale pour valider la synthèse et trancher les contradictions détectées.
-
----
-
-### Étape 2 : Rédaction Normative des Règles (`.agents/rules/*.md`)
-L'orchestrateur rédige les fichiers de règles définitifs en appliquant les modèles standardisés :
-- `BRAND.md` : Direction artistique sans concession, tokens cinétiques stricts (durées, easings), tokens statiques hexadécimaux (zéro couleur magique).
-- `LOGO.md` : Consigne le SVG retenu, règles de respiration, zones d'exclusion et animations CSS/SVG.
-- `PRODUCT.md` : Persona cible, parcours d'usage clés, indicateurs de succès (KPIs).
-- `PROJECT.md` : Gravure dans le marbre de la cascade des modèles (Argon/Pro/Flash), de la règle de délégation stricte du code, du Fast-Track orchestrateur, de l'entonnoir d'audit en 2 étages et de la politique de tests.
-- `API.md` : (Si backend présent) Conventions REST/WebSocket, format d'erreurs normalisé, gestion des clés d'idempotence.
-
----
-
-### Étape 3 : Déclinaison des Assets du Logo
-1. Sauvegarder le SVG validé dans les assets du projet.
-2. Exécuter le script `scripts/svg_to_png.mjs` pour générer automatiquement les versions PNG requises :
-   - Favicons (16x16, 32x32)
-   - Icônes Apple Touch (180x180)
-   - Icônes PWA / Android (192x192, 512x512)
-   - Logos d'en-tête haute définition.
-
----
-
-### Étape 4 : Indexation Maître et Nettoyage Documentaire
-1. **Génération de `<dir>/.agents/GEMINI.md` :**
-   - Rédiger la table de routage pointant vers chaque règle de `.agents/rules/`.
-   - Journaliser les éventuels skills locaux créés pour le projet.
-2. **Nettoyage du `README.md` :**
-   - Supprimer toute mention d'anciens outils d'IA supprimés.
-   - S'assurer que les instructions d'installation et de build correspondent à la stack réelle.
-
----
-
-## 7. PRINCIPES DIRECTEURS ET INVARIANTS
+## 10. PRINCIPES DIRECTEURS ET INVARIANTS
 
 ### 1. Invariant d'Isolation Git Absolue
 `.agents/` est **strictement local**. Il ne doit sous aucun prétexte figurer dans un commit Git. Si une équipe distante commit un `.agents/`, `san_init` l'exclut localement (`git update-index --skip-worktree` ou retrait de cache) pour préserver la bulle de travail locale.
 
 ### 2. Invariant de Centralisation Monorepo
-Dans une architecture monorepo (`apps/web`, `apps/mobile`, `packages/api`), le dossier `.agents/` se situe **exclusivement à la racine racine** du dépôt. Les sous-dossiers n'ont pas de `.agents/` propre : leurs particularités techniques sont documentées dans `.agents/rules/technicals/*.md`.
+Dans une architecture monorepo (`apps/web`, `apps/mobile`, `packages/api`), le dossier `.agents/` se situe **exclusivement à la racine du dépôt Git**. Les sous-dossiers n'ont pas de `.agents/` propre : leurs particularités techniques sont documentées dans `.agents/rules/technicals/*.md`.
 
-### 3. Invariant de l'Âme Vivante (Anti-Design Générique)
-`BRAND.md` ne peut se résumer à une liste de codes hexadécimaux. Il doit obligatoirement expliciter une tension esthétique, un caractère affirmé et un tempérament cinétique (animations). Toute génération ressemblant à un template SaaS d'IA non personnalisé constitue une violation de standard.
+### 3. Invariant de Souveraineté de `rules.json`
+Le scan plat d'Antigravity doit être systématiquement contourné par `rules.json` pour garantir que les règles lourdes de design ou d'API ne polluent pas les sessions de diagnostic serveur ou de refactoring d'infrastructure.
 
-### 4. Invariant de Gouvernance dans `PROJECT.md`
-`PROJECT.md` est la constitution technique du projet. Il doit consigner de manière inaltérable :
-- Le routage des modèles : session principale sous Argon/Pro ; sous-agents d'audit sous `Model: 'inherit'` ; sous-agents de code sous `Model: 'flash'`.
-- La délégation stricte : l'orchestrateur ne code jamais et s'appuie sur le Fast-Track d'hygiène pour la maintenance documentaire.
-- L'entonnoir d'audit en 2 étages (Étage 1 déterministe scripté $\rightarrow$ Étage 2 cognitif LLM).
-- L'obligation de maintenir `CHANGELOG.md` et de respecter le cycle `/roadmaps/` vers `/roadmaps/archives/`.
+### 4. Invariant de Preuve Graphique
+Le fichier `LOGO.md` et les assets générés par `svg_to_png.mjs` doivent exister physiquement sur le disque avant que l'étape d'onboarding ne soit déclarée terminée.
 
 ---
 
-## 8. MATRICE DE BRANCHEMENT ET RÉFÉRENCES CROISÉES
+## 11. MATRICE DE BRANCHEMENT ET RÉFÉRENCES CROISÉES
 
 ```mermaid
 flowchart LR
     Dev(["Développeur"]) --> san_init["san_init.md"]
     san_init --> GEMINI[".agents/GEMINI.md"]
+    san_init --> RULES_JSON[".agents/rules.json"]
     san_init --> RULES[".agents/rules/*.md"]
     
     RULES --> san_brainstorming["san_brainstorming.md"]
@@ -281,13 +780,13 @@ flowchart LR
 ### Amont :
 - **Développeur / Tech Lead :** Déclenchement de l'onboarding lors du clone ou du bootstrap d'un projet.
 
-### Aval (Clients des Livrables de `san_init`) :
+### Aval (Clients Directs des Livrables de `san_init`) :
 - [san_brainstorming](san_brainstorming.md) : Utilise `PRODUCT.md` et `BRAND.md` pour cadrer les séances d'idéation amont.
 - [san_planner](san_planner.md) : S'appuie sur `PROJECT.md` et `PRODUCT.md` pour structurer les roadmaps de production.
 - [san_designer](san_designer.md) : Lit obligatoirement `BRAND.md` et `LOGO.md` comme source de vérité unique avant tout tracé d'écran.
 - [san_ux_ui_expert](san_ux_ui_expert.md) : Consomme les tokens et l'âme de `BRAND.md` et respecte la stack fixée dans `PROJECT.md`.
 - [san_backend_expert](san_backend_expert.md) : Applique les conventions d'architecture de `PROJECT.md` et les spécifications d'`API.md`.
-- [san_executer](san_executer.md) : Lit `GEMINI.md` et `PROJECT.md` comme cadre d'orchestration global Full-Stack.
+- [san_executer](san_executer.md) : Lit `GEMINI.md`, `rules.json` et `PROJECT.md` comme cadre d'orchestration global Full-Stack.
 - [san_qa_security_expert](san_qa_security_expert.md) : Se réfère à la politique de tests et aux seuils définis dans `PROJECT.md`.
 - [san_devops_expert](san_devops_expert.md) : Exploite les commandes de build et conventions d'environnement documentées dans `PROJECT.md`.
 - [san_store_legal_expert](san_store_legal_expert.md) : Utilise `PRODUCT.md` pour contextualiser la conformité et les politiques de confidentialité.
