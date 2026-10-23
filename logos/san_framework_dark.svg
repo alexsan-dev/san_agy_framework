@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 280" width="100%" height="100%">
+  <!-- Dark Obsidian Background -->
+  <rect width="960" height="280" rx="24" fill="#0b0f19"/>
+  <rect width="956" height="276" x="2" y="2" rx="22" fill="none" stroke="#1e293b" stroke-width="2"/>
+
+  <defs>
+    <linearGradient id="darkCyan" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#0891b2"/>
+      <stop offset="50%" stop-color="#06b6d4"/>
+      <stop offset="100%" stop-color="#67e8f9"/>
+    </linearGradient>
+
+    <linearGradient id="darkIndigo" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4f46e5"/>
+      <stop offset="50%" stop-color="#6366f1"/>
+      <stop offset="100%" stop-color="#818cf8"/>
+    </linearGradient>
+
+    <linearGradient id="darkEmerald" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#059669"/>
+      <stop offset="100%" stop-color="#10b981"/>
+    </linearGradient>
+
+    <filter id="darkGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- Left Icon Group -->
+  <g transform="translate(140, 140) scale(0.65)">
+    <polygon points="0,-160 138,-80 138,80 0,160 -138,80 -138,-80" 
+             fill="none" stroke="#223049" stroke-width="3" stroke-dasharray="10 6"/>
+
+    <path d="M 0,-130 L -105,-50 L -105,50 L 0,-10 Z" 
+          fill="url(#darkIndigo)" opacity="0.95"/>
+
+    <path d="M 0,-130 L 105,-50 L 105,50 L 0,-10 Z" 
+          fill="url(#darkCyan)" filter="url(#darkGlow)"/>
+
+    <polygon points="0,-100 60,-40 0,25 -60,-40" 
+             fill="#0b0f19" stroke="url(#darkCyan)" stroke-width="3"/>
+
+    <circle cx="0" cy="-40" r="14" fill="url(#darkEmerald)" filter="url(#darkGlow)"/>
+    <circle cx="0" cy="-40" r="5" fill="#ffffff"/>
+  </g>
+
+  <!-- Vertical Divider Line -->
+  <line x1="280" y1="60" x2="280" y2="220" stroke="#1f293d" stroke-width="2"/>
+
+  <!-- Typography Group -->
+  <g transform="translate(320, 0)">
+    <text x="0" y="125" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="54" font-weight="900" letter-spacing="4" fill="#f8fafc">
+      SAN<tspan fill="url(#darkCyan)">.AGY</tspan>
+    </text>
+
+    <text x="2" y="172" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="20" font-weight="600" letter-spacing="6" fill="#94a3b8">
+      FRAMEWORK D'ORCHESTRATION
+    </text>
+
+    <g transform="translate(2, 195)">
+      <rect width="210" height="26" rx="6" fill="#161e2e" stroke="#223049" stroke-width="1"/>
+      <circle cx="14" cy="13" r="4" fill="#10b981"/>
+      <text x="26" y="18" font-family="monospace" font-size="11" font-weight="700" fill="#cbd5e1" letter-spacing="1.5">
+        GOOGLE ANTIGRAVITY CLI
+      </text>
+    </g>
+  </g>
+</svg>

@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+vendor/
+
+# Environment & Secrets
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+
+# Build & Cache
+dist/
+build/
+.cache/
+*.log
+
+# OS & IDE
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Antigravity local agent context (if strictly local)
+# Note: client output templates in src/ are tracked, but local runtime .agents/ is ignored
+.agents/

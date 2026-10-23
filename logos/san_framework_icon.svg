@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <!-- Background Gradient -->
+    <radialGradient id="bgGrad" cx="50%" cy="50%" r="70%">
+      <stop offset="0%" stop-color="#161e2e"/>
+      <stop offset="100%" stop-color="#0b0f19"/>
+    </radialGradient>
+
+    <!-- Cyan Glow Gradient -->
+    <linearGradient id="cyanGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#0891b2"/>
+      <stop offset="50%" stop-color="#06b6d4"/>
+      <stop offset="100%" stop-color="#67e8f9"/>
+    </linearGradient>
+
+    <!-- Indigo Core Gradient -->
+    <linearGradient id="indigoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4f46e5"/>
+      <stop offset="50%" stop-color="#6366f1"/>
+      <stop offset="100%" stop-color="#818cf8"/>
+    </linearGradient>
+
+    <!-- Emerald Accent Gradient -->
+    <linearGradient id="emeraldGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#059669"/>
+      <stop offset="100%" stop-color="#10b981"/>
+    </linearGradient>
+
+    <!-- Subtle Glow Filter -->
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- Container Base with rounded corners -->
+  <rect width="512" height="512" rx="108" fill="url(#bgGrad)"/>
+  <rect width="508" height="508" x="2" y="2" rx="106" fill="none" stroke="#1f293d" stroke-width="2"/>
+
+  <!-- Geometric Levitation Grid (Antigravity Hexagon) -->
+  <g transform="translate(256, 256)">
+    <!-- Outer Hex Shield (Cartesian Ring) -->
+    <polygon points="0,-180 156,-90 156,90 0,180 -156,90 -156,-90" 
+             fill="none" stroke="#223049" stroke-width="3" stroke-dasharray="12 8"/>
+
+    <!-- Dynamic Levitating Prism (Antigravity Arrow & SAN Monogram) -->
+    <!-- Left Wing (Indigo Solid) -->
+    <path d="M 0,-150 L -120,-60 L -120,60 L 0,-10 Z" 
+          fill="url(#indigoGrad)" opacity="0.95"/>
+
+    <!-- Right Wing (Cyan Vibrant) -->
+    <path d="M 0,-150 L 120,-60 L 120,60 L 0,-10 Z" 
+          fill="url(#cyanGrad)" filter="url(#glow)"/>
+
+    <!-- Bottom Anchor Wedge (Cartesian Foundation) -->
+    <path d="M -120,90 L 0,160 L 120,90 L 0,40 Z" 
+          fill="#111827" stroke="#334155" stroke-width="2"/>
+
+    <!-- Central Levitating Energy Core (SAN Key) -->
+    <polygon points="0,-120 70,-45 0,30 -70,-45" 
+             fill="#0b0f19" stroke="url(#cyanGrad)" stroke-width="4"/>
+
+    <!-- Center Anti-Gravity Spark (Emerald Core) -->
+    <circle cx="0" cy="-45" r="16" fill="url(#emeraldGrad)" filter="url(#glow)"/>
+    <circle cx="0" cy="-45" r="6" fill="#ffffff"/>
+
+    <!-- Upward Motion Vector Lines (Levitation Stream) -->
+    <line x1="-50" y1="90" x2="-50" y2="120" stroke="#06b6d4" stroke-width="3" stroke-linecap="round" opacity="0.6"/>
+    <line x1="0" y1="80" x2="0" y2="135" stroke="#10b981" stroke-width="4" stroke-linecap="round" opacity="0.8"/>
+    <line x1="50" y1="90" x2="50" y2="120" stroke="#6366f1" stroke-width="3" stroke-linecap="round" opacity="0.6"/>
+  </g>
+</svg>
