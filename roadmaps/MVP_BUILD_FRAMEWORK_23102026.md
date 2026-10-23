@@ -1,7 +1,7 @@
 # ROADMAP EXHAUSTIVE — CONSTRUCTION DU FRAMEWORK « GOOGLE ANTIGRAVITY » (`san_*`)
 
 > **Fichier :** `/roadmaps/MVP_BUILD_FRAMEWORK_23102026.md`  
-> **Statut :** EN COURS (PHASES 1, 2, 3 & 4 VALIDÉES — PASSAGE EN PHASE 5)  
+> **Statut :** EN COURS (PHASES 1, 2, 3, 4 & 5 VALIDÉES — PASSAGE EN PHASE 6)  
 > **Responsables :** `san_executer` & `san_planner`  
 > **Objectif :** Disposer d'un framework 100 % opérationnel, packagé dans `src/` et installable en une commande CLI sur n'importe quel projet client.  
 > **Convention de nommage :** `[PHASE]_[PROBLEMATIQUE]_[DATE].md` (format JJMMAAAA)
@@ -119,29 +119,29 @@
 
 ## PHASE 5 : PACKAGING DU PÔLE CONCEPTION VISUELLE & FULL-STACK DANS `src/skills/`
 
-- [ ] Implémenter le skill exécutable `src/skills/san_designer/` :
-  - [ ] `SKILL.md` (workflow `/ux-scan`, scoring `/10`, contraintes WCAG AA plein soleil).
-  - [ ] `references/audit_criteria.md` (grilles d'évaluation psychologie cognitive, contexte local et UI).
-  - [ ] `templates/device_frames.html` (cadres réalistes : Dynamic Island, status bar, encoches).
-- [ ] Implémenter le skill exécutable `src/skills/san_ux_ui_expert/` :
-  - [ ] `SKILL.md` (gestion des 5 états UI obligatoires, micro-interactions 60 fps, offline queue).
-  - [ ] `references/anti_ai_taste_rules.md` (matrice négative des tics graphiques IA interdits).
-  - [ ] `references/client_resilience_domains.md` (gestion MMKV/SQLite, retries avec `Idempotency-Key`).
-  - [ ] `scripts/front_quality_gate.sh` (script automatisé : `tsc --noEmit`, tests `Jest`, scan bundle).
-  - [ ] `templates/FRONT_SECURITY_PERF_REPORT.md` (rapport scoré sur /100).
-- [ ] Implémenter le skill exécutable `src/skills/san_backend_expert/` :
-  - [ ] `SKILL.md` (protocole *Contract-First*, verrous atomiques Redis, contrôleurs fins SOLID).
-  - [ ] `references/backend_stack_alexsan.md` (standards Laravel & AdonisJS, typage strict).
-  - [ ] `references/resilience_and_domains.md` (gestion Mobile Money, réconciliation cron, webhook HMAC).
-  - [ ] `scripts/backend_quality_gate.sh` (script automatisé : `phpstan`/`tsc`, tests `Pest`/`Japa`, scan N+1).
-  - [ ] `templates/SECURITY_REPORT_TEMPLATE.md` (modèle d'audit pentest OWASP API).
-- [ ] Implémenter le skill exécutable `src/skills/san_executer/` :
-  - [ ] `SKILL.md` (alias `san_execute`, moteur de triage Full-Stack, orchestration des experts).
-  - [ ] `references/orchestration_matrix.md` (arbre de décision BACK_ONLY, FRONT_ONLY, FULL_STACK).
-  - [ ] `references/contract_first_protocol.md` (synchronisation obligatoire des fichiers `.bru` et endpoints).
-  - [ ] `scripts/e2e_verification_gate.sh` (script global vérifiant tests front + back avant livraison).
-- [ ] Tests de la Phase 5 :
-  - [ ] Vérifier que `front_quality_gate.sh` et `backend_quality_gate.sh` retournent bien un exit code `1` en cas d'erreur simulée.
+- [x] Implémenter le skill exécutable `src/skills/san_designer/` :
+  - [x] `SKILL.md` (workflow `/ux-scan`, scoring `/10`, contraintes WCAG AA plein soleil).
+  - [x] `references/audit_criteria.md` (grilles d'évaluation psychologie cognitive, contexte local et UI).
+  - [x] `templates/device_frames.html` (cadres réalistes : Dynamic Island, status bar, encoches).
+- [x] Implémenter le skill exécutable `src/skills/san_ux_ui_expert/` :
+  - [x] `SKILL.md` (gestion des 5 états UI obligatoires, micro-interactions 60 fps, offline queue).
+  - [x] `references/anti_ai_taste_rules.md` (matrice négative des tics graphiques IA interdits).
+  - [x] `references/client_resilience_domains.md` (gestion MMKV/SQLite, retries avec `Idempotency-Key`).
+  - [x] `scripts/front_quality_gate.sh` (script automatisé : `tsc --noEmit`, tests `Jest`, scan bundle).
+  - [x] `templates/FRONT_SECURITY_PERF_REPORT.md` (rapport scoré sur /100).
+- [x] Implémenter le skill exécutable `src/skills/san_backend_expert/` :
+  - [x] `SKILL.md` (protocole *Contract-First*, verrous atomiques Redis, contrôleurs fins SOLID).
+  - [x] `references/backend_stack_alexsan.md` (standards Laravel & AdonisJS, typage strict).
+  - [x] `references/resilience_and_domains.md` (gestion Mobile Money, réconciliation cron, webhook HMAC).
+  - [x] `scripts/backend_quality_gate.sh` (script automatisé : `phpstan`/`tsc`, tests `Pest`/`Japa`, scan N+1).
+  - [x] `templates/SECURITY_REPORT_TEMPLATE.md` (modèle d'audit pentest OWASP API).
+- [x] Implémenter le skill exécutable `src/skills/san_executer/` :
+  - [x] `SKILL.md` (alias `san_execute`, moteur de triage Full-Stack, orchestration des experts).
+  - [x] `references/orchestration_matrix.md` (arbre de décision BACK_ONLY, FRONT_ONLY, FULL_STACK).
+  - [x] `references/contract_first_protocol.md` (synchronisation obligatoire des fichiers `.bru` et endpoints).
+  - [x] `scripts/e2e_verification_gate.sh` (script global vérifiant tests front + back avant livraison).
+- [x] Tests de la Phase 5 :
+  - [x] Vérifier que `front_quality_gate.sh` et `backend_quality_gate.sh` retournent bien un exit code `1` en cas d'erreur simulée (`tests/phase5/test_phase5.sh`).
 
 ---
 

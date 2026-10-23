@@ -13,8 +13,40 @@ et ce projet adhère à [Semantic Versioning](https://semver.org/lang/fr/).
 
 ### Planned
 - Implémentation du CLI d'installation (`npx @alexsan/agy-framework init`).
-- Packaging de la Phase 5 (Pôle conception visuelle & Full-Stack dans `src/skills/`).
 - Packaging de la Phase 6 (Pôle qualité, DevOps, légal & croissance dans `src/skills/`).
+
+---
+
+## [0.4.0] - 2026-10-23
+
+### Added
+- **Phase 5 Validée — Packaging du Pôle Conception Visuelle & Full-Stack dans `src/skills/` :**
+  - **`src/skills/san_designer/` :**
+    - `SKILL.md` : Design visuel haute fidélité 100% code (HTML/Tailwind), zéro CDN externe, 5 canvas normés (Play Store 1080x1920, App Store 1290x2796, Desktop 1440x900, Tablette 820x1180, Feature Graphic 1024x500), workflow `/ux-scan` à 2 étages et formules mathématiques du contraste (> 7:1 plein soleil).
+    - `references/audit_criteria.md` : Grille d'évaluation des 3 auditeurs (Psychologie cognitive, Contexte local Afrique/3G, Design System tokens).
+    - `references/contrast_mathematics.md` & `references/device_canvas_specs.md`.
+    - `templates/device_frames.html` : Composants purs HTML/CSS reproduisant iPhone (Dynamic Island) et Android (poinçon) sans CDN.
+    - `templates/mockup_standalone.html` & `scripts/export_png.mjs`.
+  - **`src/skills/san_ux_ui_expert/` :**
+    - `SKILL.md` : Lead Frontend & Mobile, React.js / React Native / Expo Router / Tailwind strict, gestion obligatoire des 5 états UI sur CHAQUE vue, résilience 3G et sécurité zéro-fuite (Keychain / Keystore).
+    - `references/anti_ai_taste_rules.md` : Matrice négative proscrivant les tics visuels IA (dégradés néon, cartes 3 colonnes grises uniformes, spinners aveugles).
+    - `references/client_resilience_domains.md` : Cache SQLite/MMKV, Optimistic UI, file d'attente Outbox, compression d'images < 300 Ko et haptiques Expo.
+    - `scripts/front_quality_gate.sh` : Script Bash déterministe avec détection de gestionnaire de paquets, `tsc --noEmit`, linters, tests Jest/Vitest et scan de fuites mémoire.
+    - `templates/FIVE_STATES_COMPONENT.tsx`, `templates/USE_OFFLINE_MUTATION.ts`, `templates/FRONT_SECURITY_PERF_REPORT.md`.
+  - **`src/skills/san_backend_expert/` :**
+    - `SKILL.md` : Lead Backend & Systèmes Distribués, PHP 8.2+ Laravel / AdonisJS v6 strict, dogme de l'idempotence absolue (`Idempotency-Key` UUIDv4 avec verrou atomique Redis 24h), sécurité financière Mobile Money de fer (triple verrou, webhooks HMAC-SHA256 en temps constant avec `hash_equals()`, cron de réconciliation 5 min).
+    - `references/backend_stack_alexsan.md` & `references/resilience_and_domains.md` (exponential backoff avec full jitter anti-thundering herd).
+    - `scripts/backend_quality_gate.sh` : Script Bash autonome exécutant PHPStan max / `tsc`, Pest / PHPUnit / Japa, scan statique anti-N+1 (`preventLazyLoading`) et audit de sécurité Composer/NPM.
+    - `templates/SECURITY_REPORT_TEMPLATE.md` (audit pentest OWASP API Security Top 10), `ENDPOINT_RULE_TEMPLATE.md`, `BRUNO_REQUEST_TEMPLATE.bru`, `SERVICE_ACTION_TEMPLATE.php`, `MOMO_WEBHOOK_CONTROLLER.php`.
+  - **`src/skills/san_executer/` :**
+    - `SKILL.md` : Chef d'orchestre Full-Stack, moteur de triage architectural en 3 profils (`BACK_ONLY`, `FRONT_ONLY`, `FULL_STACK`), pipeline de delivery en 6 étapes et disjoncteur anti-boucle.
+    - `references/orchestration_matrix.md` : Arbre de décision Mermaid et allocation des sous-agents au moindre privilège.
+    - `references/contract_first_protocol.md` : Synchronisation intangible des spécifications d'endpoints, interfaces TypeScript et requêtes Bruno.
+    - `scripts/e2e_verification_gate.sh` : Script de coordination globale exécutant les gates front + back et assertions de contrats Bruno.
+    - `templates/ENDPOINT_CONTRACT_TEMPLATE.md`, `templates/BRUNO_REQUEST_TEMPLATE.bru`, `templates/EXECUTION_REPORT_TEMPLATE.md`.
+- **Suite de Tests Automatisés Phase 5 (`tests/phase5/test_phase5.sh`) :**
+  - Validation du rejet strict (`exit 1`) en cas d'erreurs simulées sur le frontend et le backend.
+  - Validation du succès (`exit 0`) sur environnements conformes et coordination E2E globale.
 
 ---
 

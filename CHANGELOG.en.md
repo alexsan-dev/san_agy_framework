@@ -13,8 +13,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Planned
 - Universal CLI installer implementation (`npx @alexsan/agy-framework init`).
-- Packaging Phase 5 (Visual design & Full-Stack core into `src/skills/`).
 - Packaging Phase 6 (Quality, DevOps, legal & growth into `src/skills/`).
+
+---
+
+## [0.4.0] - 2026-10-23
+
+### Added
+- **Phase 5 Validated — Packaging of Visual Design & Full-Stack Core into `src/skills/`:**
+  - **`src/skills/san_designer/`:**
+    - `SKILL.md`: High-fidelity 100% code visual design (HTML/Tailwind), zero external CDN, 5 standard canvas specifications (Play Store 1080x1920, App Store 1290x2796, Desktop 1440x900, Tablet 820x1180, Feature Graphic 1024x500), two-tier `/ux-scan` workflow, and mathematical contrast models (> 7:1 daylight AAA).
+    - `references/audit_criteria.md`: 10-pt evaluation grid across 3 auditor profiles (Cognitive Psychology, Emerging Markets/3G Reality, Design System tokens).
+    - `references/contrast_mathematics.md` & `references/device_canvas_specs.md`.
+    - `templates/device_frames.html`: Pure HTML/CSS device frames simulating iPhone (Dynamic Island) and Android (punch-hole) with zero CDN dependencies.
+    - `templates/mockup_standalone.html` & `scripts/export_png.mjs`.
+  - **`src/skills/san_ux_ui_expert/`:**
+    - `SKILL.md`: Lead Frontend & Mobile Engineer, React.js / React Native / Expo Router / Tailwind strict, mandatory implementation of the 5 UI states across EVERY view, 3G resilience, and zero-leak client security (Keychain/Keystore).
+    - `references/anti_ai_taste_rules.md`: Negative matrix prohibiting AI visual clichés (neon gradients, uniform 3-column grey cards, blind full-screen spinners).
+    - `references/client_resilience_domains.md`: SQLite/MMKV caching, Optimistic UI, Outbox queue pattern, image pre-compression < 300 KB, and Expo haptics.
+    - `scripts/front_quality_gate.sh`: Deterministic bash script with package manager detection, `tsc --noEmit`, linters, Jest/Vitest tests, and memory leak scanning.
+    - `templates/FIVE_STATES_COMPONENT.tsx`, `templates/USE_OFFLINE_MUTATION.ts`, `templates/FRONT_SECURITY_PERF_REPORT.md`.
+  - **`src/skills/san_backend_expert/`:**
+    - `SKILL.md`: Lead Backend & Distributed Systems, PHP 8.2+ Laravel / AdonisJS v6 strict, absolute idempotency dogma (`Idempotency-Key` UUIDv4 with 24h atomic Redis lock), ironclad Mobile Money financial security (triple locking, constant-time HMAC-SHA256 webhooks via `hash_equals()`, 5-min reconciliation cron).
+    - `references/backend_stack_alexsan.md` & `references/resilience_and_domains.md` (exponential backoff with full jitter anti-thundering herd).
+    - `scripts/backend_quality_gate.sh`: Autonomous bash script executing PHPStan max / `tsc`, Pest / PHPUnit / Japa, static N+1 query prevention (`preventLazyLoading`), and Composer/NPM security audits.
+    - `templates/SECURITY_REPORT_TEMPLATE.md` (OWASP API Security Top 10 pentest report), `ENDPOINT_RULE_TEMPLATE.md`, `BRUNO_REQUEST_TEMPLATE.bru`, `SERVICE_ACTION_TEMPLATE.php`, `MOMO_WEBHOOK_CONTROLLER.php`.
+  - **`src/skills/san_executer/`:**
+    - `SKILL.md`: Full-Stack Orchestrator, 3-profile architectural triage engine (`BACK_ONLY`, `FRONT_ONLY`, `FULL_STACK`), 6-step delivery pipeline, and circuit-breaker.
+    - `references/orchestration_matrix.md`: Mermaid decision tree and least-privilege subagent assignment matrix.
+    - `references/contract_first_protocol.md`: Inviolable synchronization of endpoint specifications, TypeScript interfaces, and Bruno requests.
+    - `scripts/e2e_verification_gate.sh`: Unified coordinator script executing front + back quality gates and Bruno contract assertions.
+    - `templates/ENDPOINT_CONTRACT_TEMPLATE.md`, `templates/BRUNO_REQUEST_TEMPLATE.bru`, `templates/EXECUTION_REPORT_TEMPLATE.md`.
+- **Phase 5 Automated Test Suite (`tests/phase5/test_phase5.sh`):**
+  - Validation of strict rejection (`exit 1`) upon simulated frontend and backend errors.
+  - Validation of success (`exit 0`) on compliant environments and global E2E orchestration.
 
 ---
 

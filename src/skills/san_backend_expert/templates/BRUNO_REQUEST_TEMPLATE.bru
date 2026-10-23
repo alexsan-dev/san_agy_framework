@@ -1,0 +1,62 @@
+meta {
+  name: Initier un Paiement Mobile Money
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{base_url}}/api/v1/wallet/charges
+  body: json
+  auth: bearer
+}
+
+headers {
+  Content-Type: application/json
+  Accept: application/json
+  Idempotency-Key: 9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d
+}
+
+auth:bearer {
+  token: {{auth_token}}
+}
+
+body:json {
+  {
+    "wallet_id": "{{wallet_id}}",
+    "amount": 25000,
+    "currency": "XAF",
+    "provider": "MTN_MOMO",
+    "phone_number": "+242069123456",
+    "reference": "CMD-2026-10-8842",
+    "metadata": {
+      "order_id": "ORD-9912",
+      "customer_name": "M. Ngoma"
+    }
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.success: eq true
+  res.body.data.transaction_id: isDefined
+  res.body.data.status: in ["PENDING", "COMPLETED"]
+  res.responseTime: lt 800
+}
+
+tests {
+  test("La réponse contient un code HTTP 201 et success=true", function() {
+    expect(res.getStatus()).to.equal(201);
+    expect(res.getBody().success).to.be.true;
+  });
+
+  test("La transaction contient un montant et une devise valides", function() {
+    const data = res.getBody().data;
+    expect(data.amount).to.equal(25000);
+    expect(data.currency).to.equal("XAF");
+  });
+
+  test("L'en-tête X-Idempotency est présent dans la réponse", function() {
+    const idempotencyHeader = res.getHeader('x-idempotency');
+    expect(['HIT', 'MISS']).to.include(idempotencyHeader);
+  });
+}
