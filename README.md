@@ -1,5 +1,6 @@
 # FRAMEWORK « GOOGLE ANTIGRAVITY » (`san_*`) — INDEX MAÎTRE D'ARCHITECTURE
 
+> **Langue :** Français | [English version](README.en.md)  
 > **Manifeste :** Système d'orchestration agentique et suite de compétences d'ingénierie logicielle pour Google Antigravity CLI (AGY).  
 > **Auteur :** Alexsan.pro  
 > **Cible :** Tout projet Full-Stack Web, Mobile ou API (React, Next.js, Expo, React Native, Laravel, AdonisJS, Node.js).  
@@ -93,11 +94,9 @@ san_agy_framework/
 │   ├── san_exporter.md                 # Capture headless Playwright, exports stores et SVG vers PNG
 │   └── san_doc_keeper.md               # Gardien de CHANGELOG.md, README.md, archivage et fast-track
 │
-└── src/                                # PACKAGES EXÉCUTABLES DISTRIBUÉS SUR LA MACHINE DU CLIENT
-    ├── README.md                       # Définition du périmètre distribuable client
-    ├── cli/                            # Script d'installation universel (CLI npx init)
+└── src/                                # LE PRODUIT FINI (Injecté dans <projet>/.agents/ chez le client)
     ├── skills/                         # Vrais dossiers de skills exécutables (SKILL.md, scripts, templates)
-    └── sub-skills/                     # Vrais dossiers de sous-skills exécutables
+    └── rules/                          # Modèles de règles initiales (BRAND, PROJECT, PRODUCT, API)
 ```
 
 ---

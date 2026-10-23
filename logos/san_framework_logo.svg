@@ -1,76 +1,53 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 280" width="100%" height="100%">
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="300" viewBox="0 0 1120 300" fill="none" role="img" aria-labelledby="title desc">
+  <title id="title">san_agy_framework — logo officiel</title>
+  <desc id="desc">Prisme hexagonal facetté avec un A ascendant, suivi du logotype san_agy_framework.</desc>
   <defs>
-    <!-- Cyan Glow Gradient -->
-    <linearGradient id="logoCyan" x1="0%" y1="100%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#0891b2"/>
-      <stop offset="50%" stop-color="#06b6d4"/>
-      <stop offset="100%" stop-color="#67e8f9"/>
+    <linearGradient id="facet-cyan" x1="128" y1="18" x2="218" y2="122" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#22D3EE"/>
+      <stop offset="1" stop-color="#0891B2"/>
     </linearGradient>
-
-    <!-- Indigo Gradient -->
-    <linearGradient id="logoIndigo" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#4f46e5"/>
-      <stop offset="50%" stop-color="#6366f1"/>
-      <stop offset="100%" stop-color="#818cf8"/>
+    <linearGradient id="facet-indigo" x1="38" y1="69" x2="128" y2="225" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#6366F1"/>
+      <stop offset="1" stop-color="#3730A3"/>
     </linearGradient>
-
-    <!-- Emerald Gradient -->
-    <linearGradient id="logoEmerald" x1="0%" y1="100%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#059669"/>
-      <stop offset="100%" stop-color="#10b981"/>
+    <linearGradient id="beam-left" x1="77" y1="48" x2="145" y2="158" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#67E8F9"/>
+      <stop offset="1" stop-color="#06B6D4"/>
     </linearGradient>
-
-    <filter id="logoGlow" x="-20%" y="-20%" width="140%" height="140%">
-      <feGaussianBlur stdDeviation="6" result="blur"/>
-      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
-    </filter>
+    <linearGradient id="beam-right" x1="128" y1="45" x2="179" y2="158" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#F8FAFC"/>
+      <stop offset="1" stop-color="#A5F3FC"/>
+    </linearGradient>
+    <linearGradient id="brand-accent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#06B6D4"/>
+      <stop offset="1" stop-color="#6366F1"/>
+    </linearGradient>
   </defs>
 
-  <!-- Left Icon Group -->
-  <g transform="translate(140, 140) scale(0.65)">
-    <!-- Hexagonal Dashed Ring -->
-    <polygon points="0,-160 138,-80 138,80 0,160 -138,80 -138,-80" 
-             fill="none" stroke="#223049" stroke-width="3" stroke-dasharray="10 6"/>
-
-    <!-- Left Wing -->
-    <path d="M 0,-130 L -105,-50 L -105,50 L 0,-10 Z" 
-          fill="url(#logoIndigo)" opacity="0.95"/>
-
-    <!-- Right Wing -->
-    <path d="M 0,-130 L 105,-50 L 105,50 L 0,-10 Z" 
-          fill="url(#logoCyan)" filter="url(#logoGlow)"/>
-
-    <!-- Center Cutout Key -->
-    <polygon points="0,-100 60,-40 0,25 -60,-40" 
-             fill="#0b0f19" stroke="url(#logoCyan)" stroke-width="3"/>
-
-    <!-- Emerald Dot -->
-    <circle cx="0" cy="-40" r="14" fill="url(#logoEmerald)" filter="url(#logoGlow)"/>
-    <circle cx="0" cy="-40" r="5" fill="#ffffff"/>
+  <!-- Emblème facetté : géométrie nette, sans ombre floue -->
+  <g transform="translate(18 27) scale(1.05)" stroke-linejoin="miter">
+    <path d="M128 18 218 69v104l-90 52-90-52V69L128 18Z" fill="#0B0F19" stroke="#334155" stroke-width="3"/>
+    <path d="M128 18 218 69 128 122 38 69 128 18Z" fill="url(#facet-cyan)"/>
+    <path d="M38 69 128 122v103l-90-52V69Z" fill="url(#facet-indigo)"/>
+    <path d="M218 69 128 122v103l90-52V69Z" fill="#164E63"/>
+    <path d="M128 18 128 122 218 69 128 18Z" fill="#06B6D4" opacity=".72"/>
+    <path d="M128 18 38 69 128 122V18Z" fill="#6366F1" opacity=".55"/>
+    <!-- Les deux faisceaux dessinent un A / vecteur ascendant -->
+    <path d="M128 45 77 145 100 158 128 103 145 75 128 45Z" fill="url(#beam-left)"/>
+    <path d="M128 45 179 145 156 158 128 103 111 75 128 45Z" fill="url(#beam-right)"/>
+    <path d="M100 117h56l-11 20h-34l-11-20Z" fill="#10B981"/>
+    <!-- Vecteurs d'élévation et porte de validation -->
+    <path d="M92 181 105 188 92 195" stroke="#67E8F9" stroke-width="4" stroke-linecap="square"/>
+    <path d="M164 181 151 188 164 195" stroke="#10B981" stroke-width="4" stroke-linecap="square"/>
+    <path d="M118 185h20" stroke="#F8FAFC" stroke-width="4" stroke-linecap="square"/>
+    <path d="M38 69 128 122 218 69M128 122v103" stroke="#F8FAFC" stroke-opacity=".2" stroke-width="1.5"/>
   </g>
 
-  <!-- Vertical Divider Line -->
-  <line x1="280" y1="60" x2="280" y2="220" stroke="#1e293b" stroke-width="2"/>
-
-  <!-- Typography Group -->
-  <g transform="translate(320, 0)">
-    <!-- Main Title -->
-    <text x="0" y="125" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="54" font-weight="900" letter-spacing="4" fill="#f8fafc">
-      SAN<tspan fill="url(#logoCyan)">.AGY</tspan>
-    </text>
-
-    <!-- Subtitle / Architecture Descriptor -->
-    <text x="2" y="172" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="20" font-weight="600" letter-spacing="6" fill="#94a3b8">
-      FRAMEWORK D'ORCHESTRATION
-    </text>
-
-    <!-- Tag Badge -->
-    <g transform="translate(2, 195)">
-      <rect width="180" height="26" rx="6" fill="#111827" stroke="#1e293b" stroke-width="1"/>
-      <circle cx="14" cy="13" r="4" fill="#10b981"/>
-      <text x="26" y="18" font-family="monospace" font-size="11" font-weight="700" fill="#cbd5e1" letter-spacing="1.5">
-        CARTESIAN · ZERO-NEGL
-      </text>
-    </g>
+  <!-- Logotype : les couleurs structurent le nom sans effet décoratif superflu -->
+  <g font-family="Inter, Manrope, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif">
+    <text x="324" y="137" font-size="49" font-weight="750" letter-spacing="-2.2" fill="#0B0F19">san<tspan fill="#06B6D4">_agy</tspan><tspan fill="#6366F1">_framework</tspan></text>
+    <path d="M326 163h68" stroke="url(#brand-accent)" stroke-width="4" stroke-linecap="square"/>
+    <text x="326" y="194" font-size="14" font-weight="650" letter-spacing="3.2" fill="#475569">CARTESIAN ORCHESTRATION FRAMEWORK</text>
+    <text x="326" y="222" font-size="12" font-weight="500" letter-spacing="1.7" fill="#64748B">ANTIGRAVITY CLI · PRECISION BY DESIGN</text>
   </g>
 </svg>

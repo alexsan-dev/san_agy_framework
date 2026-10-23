@@ -1,5 +1,7 @@
 # CHANGELOG — `san_agy_framework`
 
+> **Langue :** Français | [English version](CHANGELOG.en.md)
+
 Toutes les modifications notables apportées à ce projet sont consignées dans ce fichier.
 
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/)

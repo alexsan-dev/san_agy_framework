@@ -1,72 +1,38 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" fill="none" role="img" aria-labelledby="title desc">
+  <title id="title">san_agy_framework — icône</title>
+  <desc id="desc">Icône carrée sur fond Obsidian Slate, avec prisme hexagonal cyan et indigo et A ascendant.</desc>
   <defs>
-    <!-- Background Gradient -->
-    <radialGradient id="bgGrad" cx="50%" cy="50%" r="70%">
-      <stop offset="0%" stop-color="#161e2e"/>
-      <stop offset="100%" stop-color="#0b0f19"/>
-    </radialGradient>
-
-    <!-- Cyan Glow Gradient -->
-    <linearGradient id="cyanGrad" x1="0%" y1="100%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#0891b2"/>
-      <stop offset="50%" stop-color="#06b6d4"/>
-      <stop offset="100%" stop-color="#67e8f9"/>
+    <linearGradient id="facet-cyan" x1="240" y1="135" x2="343" y2="255" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#22D3EE"/>
+      <stop offset="1" stop-color="#0891B2"/>
     </linearGradient>
-
-    <!-- Indigo Core Gradient -->
-    <linearGradient id="indigoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#4f46e5"/>
-      <stop offset="50%" stop-color="#6366f1"/>
-      <stop offset="100%" stop-color="#818cf8"/>
+    <linearGradient id="facet-indigo" x1="150" y1="190" x2="245" y2="350" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#6366F1"/>
+      <stop offset="1" stop-color="#3730A3"/>
     </linearGradient>
-
-    <!-- Emerald Accent Gradient -->
-    <linearGradient id="emeraldGrad" x1="0%" y1="100%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#059669"/>
-      <stop offset="100%" stop-color="#10b981"/>
+    <linearGradient id="beam-left" x1="205" y1="158" x2="267" y2="290" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#67E8F9"/>
+      <stop offset="1" stop-color="#06B6D4"/>
     </linearGradient>
-
-    <!-- Subtle Glow Filter -->
-    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-      <feGaussianBlur stdDeviation="8" result="blur"/>
-      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
-    </filter>
+    <linearGradient id="beam-right" x1="256" y1="155" x2="307" y2="290" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#F8FAFC"/>
+      <stop offset="1" stop-color="#A5F3FC"/>
+    </linearGradient>
   </defs>
-
-  <!-- Container Base with rounded corners -->
-  <rect width="512" height="512" rx="108" fill="url(#bgGrad)"/>
-  <rect width="508" height="508" x="2" y="2" rx="106" fill="none" stroke="#1f293d" stroke-width="2"/>
-
-  <!-- Geometric Levitation Grid (Antigravity Hexagon) -->
-  <g transform="translate(256, 256)">
-    <!-- Outer Hex Shield (Cartesian Ring) -->
-    <polygon points="0,-180 156,-90 156,90 0,180 -156,90 -156,-90" 
-             fill="none" stroke="#223049" stroke-width="3" stroke-dasharray="12 8"/>
-
-    <!-- Dynamic Levitating Prism (Antigravity Arrow & SAN Monogram) -->
-    <!-- Left Wing (Indigo Solid) -->
-    <path d="M 0,-150 L -120,-60 L -120,60 L 0,-10 Z" 
-          fill="url(#indigoGrad)" opacity="0.95"/>
-
-    <!-- Right Wing (Cyan Vibrant) -->
-    <path d="M 0,-150 L 120,-60 L 120,60 L 0,-10 Z" 
-          fill="url(#cyanGrad)" filter="url(#glow)"/>
-
-    <!-- Bottom Anchor Wedge (Cartesian Foundation) -->
-    <path d="M -120,90 L 0,160 L 120,90 L 0,40 Z" 
-          fill="#111827" stroke="#334155" stroke-width="2"/>
-
-    <!-- Central Levitating Energy Core (SAN Key) -->
-    <polygon points="0,-120 70,-45 0,30 -70,-45" 
-             fill="#0b0f19" stroke="url(#cyanGrad)" stroke-width="4"/>
-
-    <!-- Center Anti-Gravity Spark (Emerald Core) -->
-    <circle cx="0" cy="-45" r="16" fill="url(#emeraldGrad)" filter="url(#glow)"/>
-    <circle cx="0" cy="-45" r="6" fill="#ffffff"/>
-
-    <!-- Upward Motion Vector Lines (Levitation Stream) -->
-    <line x1="-50" y1="90" x2="-50" y2="120" stroke="#06b6d4" stroke-width="3" stroke-linecap="round" opacity="0.6"/>
-    <line x1="0" y1="80" x2="0" y2="135" stroke="#10b981" stroke-width="4" stroke-linecap="round" opacity="0.8"/>
-    <line x1="50" y1="90" x2="50" y2="120" stroke="#6366f1" stroke-width="3" stroke-linecap="round" opacity="0.6"/>
+  <rect width="512" height="512" fill="#0B0F19"/>
+  <rect x="1" y="1" width="510" height="510" stroke="#1E293B" stroke-width="2"/>
+  <g transform="translate(108 123) scale(1.16)" stroke-linejoin="miter">
+    <path d="M128 18 218 69v104l-90 52-90-52V69L128 18Z" fill="#0B0F19" stroke="#334155" stroke-width="3"/>
+    <path d="M128 18 218 69 128 122 38 69 128 18Z" fill="url(#facet-cyan)"/>
+    <path d="M38 69 128 122v103l-90-52V69Z" fill="url(#facet-indigo)"/>
+    <path d="M218 69 128 122v103l90-52V69Z" fill="#164E63"/>
+    <path d="M128 18 128 122 218 69 128 18Z" fill="#06B6D4" opacity=".72"/>
+    <path d="M128 18 38 69 128 122V18Z" fill="#6366F1" opacity=".55"/>
+    <path d="M128 45 77 145 100 158 128 103 145 75 128 45Z" fill="url(#beam-left)"/>
+    <path d="M128 45 179 145 156 158 128 103 111 75 128 45Z" fill="url(#beam-right)"/>
+    <path d="M100 117h56l-11 20h-34l-11-20Z" fill="#10B981"/>
+    <path d="M92 181 105 188 92 195M164 181 151 188 164 195" stroke="#67E8F9" stroke-width="4" stroke-linecap="square"/>
+    <path d="M118 185h20" stroke="#F8FAFC" stroke-width="4" stroke-linecap="square"/>
+    <path d="M38 69 128 122 218 69M128 122v103" stroke="#F8FAFC" stroke-opacity=".2" stroke-width="1.5"/>
   </g>
 </svg>
