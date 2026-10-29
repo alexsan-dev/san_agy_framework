@@ -78,7 +78,7 @@ export function resolveSkillList(skillsInput, availableSkills = getAvailableSkil
 /**
  * Exécute l'hygiène Git souveraine et l'isolation hermétique
  */
-export function executeGitHygiene(projectDir, { dryRun = false } = {}) {
+export function executeGitHygiene(projectDir, { dryRun = false, preserveOpencode = false } = {}) {
   const report = {
     isGit: false,
     gitRoot: null,
@@ -110,9 +110,8 @@ export function executeGitHygiene(projectDir, { dryRun = false } = {}) {
     'CLAUDE.md',
     '.cursorrules',
     '.windsurfrules',
-    '.opencode',
     '.poolside',
-    'AGENTS.md'
+    ...(preserveOpencode ? [] : ['.opencode', 'AGENTS.md'])
   ];
 
   const OBSOLETE_DIRS = [
@@ -181,11 +180,12 @@ export function executeGitHygiene(projectDir, { dryRun = false } = {}) {
     }
 
     const GITIGNORE_MARKER = '# --- ANTIGRAVITY AI ISOLATION (san_*) ---';
+    // En mode opencode, AGENTS.md est le fichier de contexte partagé : il reste committable.
+    const agentsMdIgnore = preserveOpencode ? '# /AGENTS.md  (committable — contexte opencode)\n' : '/AGENTS.md\n';
     const GITIGNORE_BLOCK = `\n# --- ANTIGRAVITY AI ISOLATION (san_*) ---
 # Espace souverain local Antigravity (Zéro fuite Git)
 /.agents/
-/AGENTS.md
-/GEMINI.md
+${agentsMdIgnore}/GEMINI.md
 
 # Résidus tiers purgés
 /.claude/
@@ -243,6 +243,188 @@ export function executeGitHygiene(projectDir, { dryRun = false } = {}) {
 }
 
 /**
+ * Marqueur interne inséré dans les fichiers de contexte opencode générés.
+ * Il permet de distinguer un fichier auto-généré (régénérable) d'un fichier
+ * personnalisé par le développeur (préservé par Smart Merge).
+ */
+const OPENCODE_CONTEXT_MARKER = '<!-- san_* opencode context (generated) -->';
+
+/**
+ * Génère le fichier de contexte `AGENTS.md` lu automatiquement par opencode.
+ * Smart Merge : un AGENTS.md existant sans marqueur (rédigé par l'utilisateur)
+ * n'est jamais écrasé, sauf en cas de `--force`.
+ */
+export function generateAgentsContext(projectRoot, { skills = [], dryRun = false, force = false } = {}) {
+  const dest = path.join(projectRoot, 'AGENTS.md');
+  const templatePath = path.join(SKILLS_SRC_DIR, 'san_init', 'templates', 'AGENTS_INDEX_TEMPLATE.md');
+
+  if (fs.existsSync(dest) && !force) {
+    const existing = fs.readFileSync(dest, 'utf8');
+    if (!existing.includes(OPENCODE_CONTEXT_MARKER)) {
+      return { file: 'AGENTS.md', status: 'preserved' };
+    }
+  }
+
+  let content = '';
+  if (fs.existsSync(templatePath)) {
+    content = fs.readFileSync(templatePath, 'utf8');
+  } else {
+    content = `${OPENCODE_CONTEXT_MARKER}\n# Contexte opencode — Framework Antigravity (san_*)\n`;
+  }
+
+  const skillLines = (skills.length ? skills : getAvailableSkills())
+    .map((s) => `* **${s}** — ${getSkillDescription(s) || 'Compétence du framework san_*.'}`)
+    .join('\n');
+  content = content.replace('{{SKILLS_LIST}}', skillLines || '* (aucune compétence)');
+
+  if (!dryRun) {
+    fs.writeFileSync(dest, content, 'utf8');
+  }
+
+  return { file: 'AGENTS.md', status: 'created' };
+}
+
+/**
+ * Fusionne la configuration opencode.json sans écraser les champs utilisateur.
+ * Ajoute le chemin des compétences (.agents/skills) via `skills.paths` et
+ * l'index maître (.agents/GEMINI.md) via `instructions`.
+ */
+export function mergeOpencodeConfig(projectRoot, { dryRun = false } = {}) {
+  const configPath = path.join(projectRoot, 'opencode.json');
+  let config = { $schema: 'https://opencode.ai/config.json' };
+  let existed = false;
+
+  if (fs.existsSync(configPath)) {
+    existed = true;
+    try {
+      const parsed = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+      if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) config = parsed;
+    } catch {
+      return { file: 'opencode.json', status: 'skipped-invalid' };
+    }
+  }
+
+  const desiredSkillPath = '.agents/skills';
+  const existingPaths = Array.isArray(config.skills?.paths) ? config.skills.paths : [];
+  if (!existingPaths.includes(desiredSkillPath)) existingPaths.push(desiredSkillPath);
+  config.skills = { ...(config.skills ?? {}), paths: existingPaths };
+
+  const instructions = Array.isArray(config.instructions) ? config.instructions : [];
+  for (const target of ['.agents/GEMINI.md']) {
+    if (!instructions.includes(target)) instructions.push(target);
+  }
+  if (instructions.length) config.instructions = instructions;
+
+  if (!config.$schema) config.$schema = 'https://opencode.ai/config.json';
+
+  const next = JSON.stringify(config, null, 2) + '\n';
+  if (!dryRun) fs.writeFileSync(configPath, next, 'utf8');
+
+  return { file: 'opencode.json', status: existed ? 'merged' : 'created' };
+}
+
+/**
+ * Génère la couche de contexte opencode complète (AGENTS.md + opencode.json)
+ * sur une codebase déjà déployée, sans toucher aux règles ni aux skills.
+ */
+export function generateOpencodeContext(projectRoot, { skills = [], dryRun = false, force = false } = {}) {
+  const results = [];
+  results.push(generateAgentsContext(projectRoot, { skills, dryRun, force }));
+  results.push(mergeOpencodeConfig(projectRoot, { dryRun }));
+  return results;
+}
+
+/**
+ * Moteur de la commande `update` : rend une codebase déjà déployée
+ * compréhensible par opencode (contexte) et resynchronise les compétences.
+ */
+export async function updateFramework(options = {}) {
+  const dryRun = Boolean(options.dryRun);
+  const force = Boolean(options.force);
+  const projectRoot = options.targetDir ? path.resolve(options.targetDir) : process.cwd();
+
+  const agentsDir = path.join(projectRoot, '.agents');
+  const skillsDestDir = path.join(agentsDir, 'skills');
+  const hasAgents = fs.existsSync(agentsDir);
+
+  const availableSkills = getAvailableSkills();
+  const selectedSkills = resolveSkillList(options.skills, availableSkills);
+
+  const report = {
+    projectRoot,
+    hasAgents,
+    skillsResynced: [],
+    opencodeContext: []
+  };
+
+  // 1. Resynchronisation (non destructive) des compétences déployées.
+  for (const skillName of selectedSkills) {
+    const src = path.join(SKILLS_SRC_DIR, skillName);
+    const dest = path.join(skillsDestDir, skillName);
+    if (!fs.existsSync(src)) continue;
+    if (!dryRun) {
+      fs.mkdirSync(skillsDestDir, { recursive: true });
+      if (fs.existsSync(dest) && force) {
+        fs.rmSync(dest, { recursive: true, force: true });
+      }
+      fs.cpSync(src, dest, { recursive: true });
+
+      const scriptsPath = path.join(dest, 'scripts');
+      if (fs.existsSync(scriptsPath)) {
+        try {
+          for (const f of fs.readdirSync(scriptsPath)) {
+            try { fs.chmodSync(path.join(scriptsPath, f), 0o755); } catch {}
+          }
+        } catch {}
+      }
+    }
+    report.skillsResynced.push(skillName);
+  }
+
+  // 2. Génération / rafraîchissement de la couche de contexte opencode.
+  report.opencodeContext = generateOpencodeContext(projectRoot, {
+    skills: selectedSkills,
+    dryRun,
+    force
+  });
+
+  // 3. Bilan récapitulatif.
+  console.log('');
+  console.log(`${colors.cyan}============================================================${colors.reset}`);
+  console.log(`${colors.bold}${colors.brightCyan}  MISE À JOUR OP ENCODE — FRAMEWORK ANTIGRAVITY (san_*)${colors.reset}`);
+  console.log(`${colors.cyan}============================================================${colors.reset}`);
+  console.log(`  ${colors.bold}Projet${colors.reset}      : ${projectRoot}`);
+  console.log(`  ${colors.bold}Déploiement${colors.reset}  : ${hasAgents ? `${colors.green}Détecté (.agents/)${colors.reset}` : `${colors.yellow}Absent (aucun .agents/)${colors.reset}`}`);
+  console.log(`  ${colors.bold}Skills resync${colors.reset} : ${report.skillsResynced.length}/${availableSkills.length}`);
+  if (dryRun) {
+    console.log(`  ${colors.yellow}${colors.bold}[DRY-RUN]${colors.reset} Mode simulation actif — aucun octet écrit.`);
+  }
+
+  console.log('');
+  console.log(`${colors.bold}🧠 Contexte opencode :${colors.reset}`);
+  for (const r of report.opencodeContext) {
+    const badge = r.status === 'preserved'
+      ? `${colors.yellow}[PRÉSERVÉ]${colors.reset} (fichier personnalisé conservé)`
+      : r.status === 'skipped-invalid'
+        ? `${colors.yellow}[IGNORÉ]${colors.reset} (JSON invalide, non modifié)`
+        : `${colors.green}[${r.status === 'merged' ? 'FUSIONNÉ' : 'CRÉÉ'}]${colors.reset}`;
+    console.log(`  • ${r.file.padEnd(14)} : ${badge}`);
+  }
+
+  console.log('');
+  console.log(`${colors.brightCyan}ℹ Relancez opencode pour recharger le contexte et les compétences.${colors.reset}`);
+  console.log(`${colors.cyan}============================================================${colors.reset}\n`);
+
+  return {
+    success: true,
+    projectRoot,
+    hasAgents,
+    skillsResynced: report.skillsResynced,
+    opencodeContext: report.opencodeContext
+  };
+}
+
+/**
  * Moteur principal d'installation du framework Antigravity
  * @param {Object} options
  * @param {'local'|'global'} [options.targetMode='local']
@@ -250,11 +432,13 @@ export function executeGitHygiene(projectDir, { dryRun = false } = {}) {
  * @param {string[]} [options.skills]
  * @param {boolean} [options.dryRun=false]
  * @param {boolean} [options.force=false]
+ * @param {boolean} [options.opencode=false]
  */
 export async function installFramework(options = {}) {
   const targetMode = options.targetMode || 'local';
   const dryRun = Boolean(options.dryRun);
   const force = Boolean(options.force);
+  const opencode = Boolean(options.opencode);
 
   const availableSkills = getAvailableSkills();
   const selectedSkills = resolveSkillList(options.skills, availableSkills);
@@ -370,8 +554,13 @@ export async function installFramework(options = {}) {
   // 3. Hygiène Git automatique
   let hygiene = { isGit: false, purgedFiles: [], purgedDirs: [] };
   if (targetMode === 'local' && projectRoot) {
-    hygiene = executeGitHygiene(projectRoot, { dryRun });
+    hygiene = executeGitHygiene(projectRoot, { dryRun, preserveOpencode: opencode });
   }
+
+  // 3bis. Couche de contexte opencode (AGENTS.md + opencode.json) si demandée
+  const opencodeContext = opencode && projectRoot
+    ? generateOpencodeContext(projectRoot, { skills: selectedSkills, dryRun, force })
+    : [];
 
   // 4. Bilan récapitulatif élégant
   console.log('');
@@ -420,6 +609,19 @@ export async function installFramework(options = {}) {
     }
   }
 
+  if (opencode && opencodeContext.length) {
+    console.log('');
+    console.log(`${colors.bold}🧠 Contexte opencode (AGENTS.md + opencode.json) :${colors.reset}`);
+    for (const r of opencodeContext) {
+      const badge = r.status === 'preserved'
+        ? `${colors.yellow}[PRÉSERVÉ]${colors.reset} (fichier personnalisé conservé)`
+        : r.status === 'skipped-invalid'
+          ? `${colors.yellow}[IGNORÉ]${colors.reset} (JSON invalide, non modifié)`
+          : `${colors.green}[${r.status === 'merged' ? 'FUSIONNÉ' : 'CRÉÉ'}]${colors.reset}`;
+      console.log(`  • ${r.file.padEnd(14)} : ${badge}`);
+    }
+  }
+
   console.log('');
   console.log(`${colors.bold}🚀 Prochaines étapes recommandées :${colors.reset}`);
   console.log(`  ${colors.brightCyan}1.${colors.reset} ${colors.bold}san_init${colors.reset}          : Initialiser et cadrer chirurgicalement le projet`);
@@ -434,6 +636,7 @@ export async function installFramework(options = {}) {
     installedSkills,
     rulesStatus,
     geminiStatus,
-    hygiene
+    hygiene,
+    opencodeContext
   };
 }

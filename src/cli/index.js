@@ -21,6 +21,7 @@ import {
   getSkillDescription,
   resolveSkillList,
   installFramework,
+  updateFramework,
   colors
 } from './installer.js';
 
@@ -63,6 +64,7 @@ export function showHelp() {
   console.log(`  san-framework <commande> [options]\n`);
   console.log(`${colors.bold}COMMANDES :${colors.reset}`);
   console.log(`  ${colors.brightCyan}init${colors.reset}                     Installer le framework dans le projet ou globalement`);
+  console.log(`  ${colors.brightCyan}update${colors.reset}                   Resynchroniser et générer le contexte opencode (AGENTS.md) sur un repo déjà déployé`);
   console.log(`  ${colors.brightCyan}list${colors.reset}                     Lister l'ensemble des 17 skills du catalogue`);
   console.log(`  ${colors.brightCyan}version, -v, --version${colors.reset}   Afficher la version installée`);
   console.log(`  ${colors.brightCyan}help, -h, --help${colors.reset}         Afficher ce guide d'aide\n`);
@@ -73,12 +75,17 @@ export function showHelp() {
   console.log(`  ${colors.cyan}--skills=<liste>${colors.reset}         Sélection granulaire de skills (ex: --skills=san_init,san_planner)`);
   console.log(`  ${colors.cyan}--dry-run${colors.reset}                Mode simulation (zéro écriture sur le disque)`);
   console.log(`  ${colors.cyan}--force${colors.reset}                  Forcer la réécriture des skills existants`);
+  console.log(`  ${colors.cyan}--opencode${colors.reset}               Génère aussi le contexte opencode (AGENTS.md + opencode.json)`);
   console.log(`  ${colors.cyan}--dir=<chemin>${colors.reset}            Spécifier manuellement le répertoire cible\n`);
   console.log(`${colors.bold}EXEMPLES :${colors.reset}`);
   console.log(`  ${colors.gray}# Initialisation guidée interactive${colors.reset}`);
   console.log(`  npx @alexsan/agy-framework init\n`);
   console.log(`  ${colors.gray}# Déploiement complet en local avec isolation Git${colors.reset}`);
   console.log(`  npx @alexsan/agy-framework init --local --all\n`);
+  console.log(`  ${colors.gray}# Déploiement local + contexte opencode (AGENTS.md + skills.paths)${colors.reset}`);
+  console.log(`  npx @alexsan/agy-framework init --local --all --opencode\n`);
+  console.log(`  ${colors.gray}# Rendre un repo déjà déployé compréhensible par opencode${colors.reset}`);
+  console.log(`  npx @alexsan/agy-framework update\n`);
   console.log(`  ${colors.gray}# Déploiement granulaire du socle de cadrage${colors.reset}`);
   console.log(`  npx @alexsan/agy-framework init --skills=san_init,san_brainstorming,san_planner\n`);
   console.log(`  ${colors.gray}# Installation globale dans l'environnement Antigravity CLI${colors.reset}`);
@@ -178,7 +185,8 @@ async function main() {
       skills: { type: 'string' },
       'dry-run': { type: 'boolean' },
       force: { type: 'boolean' },
-      dir: { type: 'string' }
+      dir: { type: 'string' },
+      opencode: { type: 'boolean' }
     },
     allowPositionals: true,
     strict: false
@@ -201,6 +209,29 @@ async function main() {
   // 3. Commande List
   if (command === 'list') {
     showList();
+    process.exit(0);
+  }
+
+  // 3bis. Commande Update (rend une codebase déjà déployée compréhensible par opencode)
+  if (command === 'update') {
+    showBanner();
+    const availableSkills = getAvailableSkills();
+    let skillsToUpdate = null;
+    if (values.all) {
+      skillsToUpdate = availableSkills;
+    } else if (values.skills) {
+      skillsToUpdate = resolveSkillList(values.skills, availableSkills);
+    } else {
+      skillsToUpdate = availableSkills;
+    }
+
+    await updateFramework({
+      targetDir: values.dir,
+      skills: skillsToUpdate,
+      dryRun: Boolean(values['dry-run']),
+      force: Boolean(values.force)
+    });
+
     process.exit(0);
   }
 
@@ -236,7 +267,8 @@ async function main() {
       targetDir: values.dir,
       skills: skillsToInstall,
       dryRun: Boolean(values['dry-run']),
-      force: Boolean(values.force)
+      force: Boolean(values.force),
+      opencode: Boolean(values.opencode)
     });
 
     process.exit(0);

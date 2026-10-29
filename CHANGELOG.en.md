@@ -17,6 +17,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.1.0] - 2026-10-29
+
+### Added
+- **opencode compatibility (context & update):**
+  - **`update` command:** Re-synchronizes skills and generates/refreshes the opencode context layer (`AGENTS.md` + `opencode.json`) on any already-deployed codebase, making it immediately understandable by opencode.
+  - **`--opencode` flag (for `init`):** Additionally generates the opencode context during a local install: `AGENTS.md` (auto-loaded instructions) and `opencode.json` (`skills.paths: [".agents/skills"]` + `instructions: [".agents/GEMINI.md"]`).
+  - **opencode Smart Merge:** A customized `AGENTS.md` (without the marker) is never overwritten; `opencode.json` is merged without altering user fields.
+  - **opencode-aware Git hygiene:** In opencode mode, `AGENTS.md` stays committable and `.opencode/`/`AGENTS.md` are no longer purged.
+  - **`AGENTS_INDEX_TEMPLATE.md` template:** opencode context model with a routing table of the 17 skills.
+- **Phase 9 test suite (`tests/phase9/test_opencode.sh`):** 9 automated checks (context generation, `update` command, Smart Merge, dry-run) validated at 100%.
+
+---
+
 ## [1.0.0] - 2026-10-23
 
 ### Added

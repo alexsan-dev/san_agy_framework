@@ -250,6 +250,7 @@ The CLI operates either as an interactive step-by-step wizard or in non-interact
 | `--skills=<list>` | Granular selection of skills separated by commas (e.g. `--skills=init,planner,qa_security_expert,backend_expert`). |
 | `--dry-run` | Simulates the complete deployment and displays the report without writing any file to disk. |
 | `--force` | Forces overwriting of skills already present in the target destination. |
+| `--opencode` | Also generates the opencode context (`AGENTS.md` + `opencode.json`) during a local install. |
 | `--help`, `-h` | Displays complete command help and usage examples. |
 | `--version`, `-v` | Displays current framework version. |
 
@@ -265,6 +266,30 @@ npx @alexsan/agy-framework init --skills=init,planner,qa_security_expert,backend
 # Dry-run simulation to review changes before writing
 npx @alexsan/agy-framework init --dry-run
 ```
+
+### C. opencode Compatibility (`--opencode` & `update`)
+
+The framework also works with **opencode**. Two use cases:
+
+1. **Installation with opencode context:** the `--opencode` flag generates, on top of the `.agents/` tree, the context layer read by opencode:
+   - **`AGENTS.md`** at the project root — auto-loaded instructions (routing table of the 17 skills, governance rules and orchestration).
+   - **`opencode.json`** at the project root — `skills.paths: [".agents/skills"]` (skill discovery) and `instructions: [".agents/GEMINI.md"]`.
+
+   ```bash
+   npx @alexsan/agy-framework init --local --all --opencode
+   ```
+
+2. **Updating an already-deployed repo:** the `update` command re-synchronizes the skills and (re)generates the opencode context layer without touching existing rules or customizations. It makes any codebase already equipped with the framework immediately understandable by opencode:
+
+   ```bash
+   npx @alexsan/agy-framework update            # opencode context + skill resync
+   npx @alexsan/agy-framework update --force    # also regenerate an existing AGENTS.md
+   npx @alexsan/agy-framework update --dry-run  # simulation without writing
+   ```
+
+   After running, restart opencode to reload the context and skills.
+
+> **opencode Smart Merge:** a customized `AGENTS.md` (without the generation marker) is never overwritten, and `opencode.json` is merged without altering existing fields. In opencode mode, `AGENTS.md` stays committable (team sharing) while `.agents/` remains hermetically isolated from Git.
 
 ### B. Core Deployment Engine Mechanisms (`installer.js`)
 
@@ -290,6 +315,7 @@ npx @alexsan/agy-framework init --dry-run
 7. [x] **Quality, DevOps, Legal & Growth Packaging**: `san_qa_security_expert`, `san_devops_expert`, `san_store_legal_expert`, `san_growth_expert` in `src/skills/` (Phase 6 tests passed).
 8. [x] **Universal CLI Installer & Distribution**: Packaged via `package.json`, interactive `src/cli/index.js`, engine `src/cli/installer.js` (Phase 7 tests passed).
 9. [x] **Global E2E Integration & Release v1.0.0**: Complete 24/24 integration test suite passed 100% green (`tests/phase8/test_e2e_full.sh`), MVP roadmap archived, and v1.0.0 package ready for npm publishing.
+10. [x] **opencode Compatibility & Update (v1.1.0)**: `update` command and `--opencode` flag generating the opencode context (`AGENTS.md` + `opencode.json`), dedicated Smart Merge and a Phase 9 test suite validated at 100%.
 
 ---
 
