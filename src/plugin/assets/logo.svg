@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" fill="none" role="img" aria-labelledby="title desc">
+  <title id="title">san_agy_framework — icône</title>
+  <desc id="desc">Icône carrée sur fond Obsidian Slate, avec prisme hexagonal cyan et indigo et A ascendant.</desc>
+  <defs>
+    <linearGradient id="facet-cyan" x1="240" y1="135" x2="343" y2="255" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#22D3EE"/>
+      <stop offset="1" stop-color="#0891B2"/>
+    </linearGradient>
+    <linearGradient id="facet-indigo" x1="150" y1="190" x2="245" y2="350" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#6366F1"/>
+      <stop offset="1" stop-color="#3730A3"/>
+    </linearGradient>
+    <linearGradient id="beam-left" x1="205" y1="158" x2="267" y2="290" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#67E8F9"/>
+      <stop offset="1" stop-color="#06B6D4"/>
+    </linearGradient>
+    <linearGradient id="beam-right" x1="256" y1="155" x2="307" y2="290" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#F8FAFC"/>
+      <stop offset="1" stop-color="#A5F3FC"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" fill="#0B0F19"/>
+  <rect x="1" y="1" width="510" height="510" stroke="#1E293B" stroke-width="2"/>
+  <g transform="translate(108 123) scale(1.16)" stroke-linejoin="miter">
+    <path d="M128 18 218 69v104l-90 52-90-52V69L128 18Z" fill="#0B0F19" stroke="#334155" stroke-width="3"/>
+    <path d="M128 18 218 69 128 122 38 69 128 18Z" fill="url(#facet-cyan)"/>
+    <path d="M38 69 128 122v103l-90-52V69Z" fill="url(#facet-indigo)"/>
+    <path d="M218 69 128 122v103l90-52V69Z" fill="#164E63"/>
+    <path d="M128 18 128 122 218 69 128 18Z" fill="#06B6D4" opacity=".72"/>
+    <path d="M128 18 38 69 128 122V18Z" fill="#6366F1" opacity=".55"/>
+    <path d="M128 45 77 145 100 158 128 103 145 75 128 45Z" fill="url(#beam-left)"/>
+    <path d="M128 45 179 145 156 158 128 103 111 75 128 45Z" fill="url(#beam-right)"/>
+    <path d="M100 117h56l-11 20h-34l-11-20Z" fill="#10B981"/>
+    <path d="M92 181 105 188 92 195M164 181 151 188 164 195" stroke="#67E8F9" stroke-width="4" stroke-linecap="square"/>
+    <path d="M118 185h20" stroke="#F8FAFC" stroke-width="4" stroke-linecap="square"/>
+    <path d="M38 69 128 122 218 69M128 122v103" stroke="#F8FAFC" stroke-opacity=".2" stroke-width="1.5"/>
+  </g>
+</svg>

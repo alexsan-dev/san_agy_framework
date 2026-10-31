@@ -1,6 +1,6 @@
 {
   "name": "@alexsan/agy-framework",
-  "version": "1.1.0",
+  "version": "2.0.0",
   "description": "Universal Google Antigravity Framework & Cartesian Skills Engine for Developers",
   "type": "module",
   "main": "src/cli/index.js",
@@ -23,7 +23,14 @@
     "test:phase7": "bash tests/phase7/test_cli.sh",
     "test:phase8": "bash tests/phase8/test_e2e_full.sh",
     "test:phase9": "bash tests/phase9/test_opencode.sh",
-    "test": "npm run test:phase3 && npm run test:phase4 && npm run test:phase5 && npm run test:phase6 && npm run test:phase7 && npm run test:phase8 && npm run test:phase9"
+    "test:v2:phase1": "bash tests/v2/test_phase1_rules.sh",
+    "test:v2:phase2": "bash tests/v2/test_phase2_agents.sh",
+    "test:v2:phase3": "bash tests/v2/test_phase3_hooks.sh",
+    "test:v2:phase4a": "bash tests/v2/test_phase4a_gates.sh",
+    "test:v2:phase5": "bash tests/v2/test_phase5_skills.sh",
+    "test:v2:phase6": "bash tests/v2/test_phase6_cli.sh",
+    "test:v2:e2e": "bash tests/v2/test_e2e_v2_harness.sh",
+    "test": "npm run test:phase3 && npm run test:phase4 && npm run test:phase5 && npm run test:phase6 && npm run test:phase7 && npm run test:phase8 && npm run test:phase9 && npm run test:v2:phase1 && npm run test:v2:phase2 && npm run test:v2:phase3 && npm run test:v2:phase4a && npm run test:v2:phase5 && npm run test:v2:phase6 && npm run test:v2:e2e"
   },
   "keywords": [
     "antigravity",

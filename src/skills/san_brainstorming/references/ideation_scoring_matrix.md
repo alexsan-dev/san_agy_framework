@@ -53,8 +53,10 @@ Mesure la capacité du concept à résoudre un problème douloureux réel, à g�
 
 ---
 
-### Critère 3 : Réalité Terrain & Marchés Émergents (Base 10 — Poids 1.2 — Max 12 pts)
-*Le cœur de l'arbitrage Antigravity.* Évalue la résilience face aux contraintes physiques, économiques et culturelles de l'Afrique centrale et des marchés émergents (Congo, RDC, Afrique de l'Ouest).
+### Critère 3 : Réalité Terrain & Résilience Opérationnelle (Base 10 — Poids 1.2 — Max 12 pts)
+*Le cœur de l'arbitrage Antigravity.* Évalue l'adéquation au contexte réel d'usage selon le `PROJECT_PROFILE` sélectionné :
+- **Profil `emerging_market` :** Connectivité 3G/EDGE instable, terminaux Android d'entrée de gamme (1-2 Go RAM), culture WhatsApp et monétisation par Mobile Money (MTN MoMo, Airtel).
+- **Profils `global_saas` / `mobile_consumer` / `cli_devtools` / `api_platform` :** Friction d'adoption, résistance au changement des utilisateurs, compatibilité environnementale (OS, runtimes, quotas API) et robustesse aux coupures réseau ou timeouts.
 
 | Note /10 | Adéquation Terrain | Profil et Contraintes Supportées |
 | :---: | :--- | :--- |
@@ -183,12 +185,12 @@ def evaluer_option(impact: float, effort: float, terrain: float, risques: float)
 Le script `scripts/score_idea.py` est fourni pour évaluer automatiquement n'importe quelle option en ligne de commande ou dans un pipeline CI :
 
 ```bash
-# Exemple 1 : Évaluation d'une PWA légère Mobile Money
-python3 src/skills/san_brainstorming/scripts/score_idea.py --impact 8.5 --effort 8.0 --terrain 9.0 --risques 8.0
+# Exemple 1 : Évaluation en profil emerging_market
+python3 src/skills/san_brainstorming/scripts/score_idea.py --profile emerging_market --impact 8.5 --effort 8.0 --terrain 9.0 --risques 8.0
 
-# Exemple 2 : Option disqualifiée par la clause Terrain
-python3 src/skills/san_brainstorming/scripts/score_idea.py --impact 9.0 --effort 7.0 --terrain 3.5 --risques 8.0
+# Exemple 2 : Évaluation d'une CLI devtools (sans veto 3G absurde)
+python3 src/skills/san_brainstorming/scripts/score_idea.py --profile cli_devtools --impact 9.0 --effort 8.5 --terrain 8.0 --risques 8.5
 
-# Exemple 3 : Sortie JSON pour transmission programmatique
-python3 src/skills/san_brainstorming/scripts/score_idea.py --impact 8.5 --effort 8.0 --terrain 9.0 --risques 8.0 --json
+# Exemple 3 : Sortie JSON pour transmission programmatique vers san_planner
+python3 src/skills/san_brainstorming/scripts/score_idea.py --profile global_saas --impact 8.5 --effort 8.0 --terrain 8.0 --risques 8.0 --json
 ```

@@ -38,9 +38,10 @@ routing:
 1. **Entonnoir Socratique en 5 Questions Fermées :** Pose un questionnaire précis pour verrouiller l'objectif de monétisation, la cible utilisateur, le canal transactionnel, le vecteur d'usage et les verrous réglementaires.
 2. **Matrice d'Évaluation sur 40 Points :** Note rigoureusement chaque piste selon 4 critères pondérés (Impact Business, Effort Technique inversé, Réalité Terrain Afrique/Marchés émergents, Risques & Dépendances inversés).
 3. **Application des Seuils d'Exclusion Go / No-Go :** Élimine sans compromis toute idée ayant une note Terrain $< 4/10$ ou Risque $< 3/10$, ou un score cumulé $< 26/40$.
-4. **Veille & Exploration Marché Autonome :** Mobilise des sous-agents de recherche (`Model: 'inherit'`) via `san_searcher` pour analyser les patterns concurrentiels et benchmarks sectoriels en Afrique francophone et marchés similaires.
-5. **Formalisation Standardisée :** Rédige la fiche d'idée normative dans `/roadmaps/ideas/[THEME]_[JJMMAAAA].md` avec métadonnées YAML, personas, comparatif d'options et script de calcul.
-6. **Protocole de Transmission vers `san_planner` :** Fournit un bordereau de transfert prêt à l'ingestion contenant le périmètre du MVP et les prérequis techniques.
+4. **Exploration Parallèle & Pre-Mortem Architecte :** Mobilise en parallèle `san-researcher` (`Model: 'flash'`) pour les benchmarks et `san-architect` (`Model: 'pro'`) pour un audit *Pre-Mortem* anticipant les risques de rupture systémique.
+5. **Confrontation de 3 Pistes Réellement Viables :** Interdiction formelle de l'Option C « épouvantail » ; chaque piste proposée représente une stratégie défendable avec ses compromis lucides.
+6. **Formalisation Standardisée :** Rédige la fiche d'idée normative dans `/roadmaps/ideas/[THEME]_[JJMMAAAA].md` avec scoring profilé (`score_idea.py --profile`).
+7. **Protocole de Transmission vers `san_planner` :** Fournit un bordereau de transfert prêt à l'ingestion contenant le périmètre du MVP et les prérequis techniques.
 
 ### Ce qu'il NE FAIT PAS :
 - **Il ne planifie pas les tâches d'ingénierie :** Il ne rédige pas le découpage technique détaillé ni les phases d'implémentation (domaine exclusif de [san_planner](san_planner.md)).
@@ -409,12 +410,12 @@ flowchart TD
 - Poser les 5 questions fermées ou extraire les réponses de `.agents/rules/PRODUCT.md`.
 - Verrouiller les contraintes terrain non négociables.
 
-### Étape 2 : Veille & Benchmark Autonome
-- Lancer un sous-agent de recherche (`Model: 'inherit'`) pour examiner les retours d'expérience similaires sur des passerelles de paiement ou mécanismes d'onboarding comparables.
+### Étape 2 : Exploration Parallèle & Pre-Mortem
+- Lancer simultanément `san-researcher` (`Model: 'flash'`) pour les benchmarks et retours d'expérience, et `san-architect` (`Model: 'pro'`) pour un audit Pre-Mortem détectant les causes potentielles d'échec structurel.
 
-### Étape 3 : Modélisation des Options & Calcul de Score
-- Rédiger 3 options tranchées (A: MVP agile, B: Canal alternatif, C: Solution lourde/store).
-- Calculer rigoureusement les notes `/10` et exécuter le calcul pondéré `/40`.
+### Étape 3 : Modélisation des 3 Options Viables & Calcul de Score
+- Concevoir 3 options distinctes, réalistes et exploitables (interdiction formelle de l'Option C « épouvantail »).
+- Calculer rigoureusement les notes `/10` et exécuter le calcul pondéré `/40` via `scripts/score_idea.py --profile ...`.
 - Éliminer d'office toute proposition violant les seuils terrain ($< 4/10$) ou risques ($< 3/10$).
 
 ### Étape 4 : Rédaction de la Fiche d'Idée

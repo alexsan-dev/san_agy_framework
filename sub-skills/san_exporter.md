@@ -1,7 +1,7 @@
 ---
 name: san_exporter
 title: Artisan Exportation Headless, Rendu Graphique & Pipeline d'Assets
-version: 1.0.0
+version: 2.0.0
 type: sub_skill
 role: Headless Export Engineer & Graphical Asset Pipeline Specialist
 harness: google_antigravity_cli
@@ -11,8 +11,8 @@ routing:
     fallback_1: "gemini-3.1-pro-high"
     fallback_2: "gemini-3.8-flash-high"
   subagents:
-    asset_verification_and_geometry: "inherit"
-    script_execution_and_rendering: "flash"
+    worker: "san-designer-worker" # flash
+    auditor: "san-qa-auditor" # pro (conformité géométrique & alpha iOS ITMS-90717)
 triggers:
   - "san_exporter"
   - "exporte en png"

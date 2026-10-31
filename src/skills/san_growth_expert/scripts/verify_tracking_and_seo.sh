@@ -3,13 +3,10 @@
 # Script      : verify_tracking_and_seo.sh
 # Description : Audit déterministe du SEO technique, sitemap, métas et validation
 #               syntaxique stricte des blocs Schema.org JSON-LD.
-# Framework   : Google Antigravity (san_*) — alexsan.pro
+#               Supporte URL distante, serveur local ou dossiers statiques (dist/out/public).
+# Framework   : Google Antigravity (san_*) v2.0
 # ==============================================================================
 set -euo pipefail
-
-TARGET_URL="${1:-https://alexsan.pro}"
-SITEMAP_URL="${TARGET_URL%/}/sitemap.xml"
-ROBOTS_URL="${TARGET_URL%/}/robots.txt"
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -21,21 +18,87 @@ NC='\033[0m'
 
 ERRORS=0
 WARNINGS=0
+MODE_STATIC=0
+STATIC_DIR=""
+TARGET_INPUT="${1:-${TARGET_URL:-}}"
+
+# Détection intelligente de la cible : Dossier statique local, URL, ou fallback localhost
+if [ -n "$TARGET_INPUT" ]; then
+  if [ -d "$TARGET_INPUT" ]; then
+    MODE_STATIC=1
+    STATIC_DIR="$TARGET_INPUT"
+  elif echo "$TARGET_INPUT" | grep -qE '^https?://'; then
+    TARGET_URL="$TARGET_INPUT"
+  else
+    TARGET_URL="https://$TARGET_INPUT"
+  fi
+else
+  # Recherche automatique d'un dossier de build statique existant
+  for candidate in "dist" "out" "public" "build"; do
+    if [ -d "$candidate" ]; then
+      MODE_STATIC=1
+      STATIC_DIR="$candidate"
+      break
+    fi
+  done
+  # Fallback sur serveur de développement local
+  if [ "$MODE_STATIC" -eq 0 ]; then
+    TARGET_URL="http://localhost:3000"
+  fi
+fi
 
 echo -e "${BLUE}==================================================================${NC}"
 echo -e "${BOLD}${BLUE}    ANTIGRAVITY SEO, SITEMAP & SCHEMA.ORG AUDITOR                 ${NC}"
 echo -e "${BLUE}==================================================================${NC}"
-echo -e "${CYAN}URL Cible analysée : ${BOLD}${TARGET_URL}${NC}\n"
+
+if [ "$MODE_STATIC" -eq 1 ]; then
+  echo -e "${CYAN}Mode : Analyse de fichiers statiques locaux dans '${BOLD}${STATIC_DIR}/${NC}'\n"
+else
+  echo -e "${CYAN}URL Cible analysée : ${BOLD}${TARGET_URL}${NC}\n"
+fi
 
 # ------------------------------------------------------------------------------
 # 1. Contrôle du fichier robots.txt
 # ------------------------------------------------------------------------------
 echo -e "${BLUE}[1/4] Vérification de l'accessibilité de robots.txt...${NC}"
-ROBOTS_HTTP_CODE=$(curl -s -L -o /dev/null -w "%{http_code}" "$ROBOTS_URL" 2>/dev/null || echo "000")
+ROBOTS_CONTENT=""
 
-if [ "$ROBOTS_HTTP_CODE" = "200" ]; then
-  echo -e "${GREEN}✓ robots.txt accessible (HTTP 200) sur $ROBOTS_URL.${NC}"
-  ROBOTS_CONTENT=$(curl -s -L "$ROBOTS_URL" 2>/dev/null || true)
+if [ "$MODE_STATIC" -eq 1 ]; then
+  ROBOTS_FILE="${STATIC_DIR%/}/robots.txt"
+  if [ -f "$ROBOTS_FILE" ]; then
+    echo -e "${GREEN}✓ robots.txt présent sur le disque : $ROBOTS_FILE${NC}"
+    ROBOTS_CONTENT=$(cat "$ROBOTS_FILE")
+  else
+    echo -e "${RED}✗ ERREUR : robots.txt introuvable dans $STATIC_DIR !${NC}"
+    ERRORS=$((ERRORS + 1))
+  fi
+else
+  ROBOTS_URL="${TARGET_URL%/}/robots.txt"
+  ROBOTS_HTTP_CODE=$(curl -s -k -L -o /dev/null -w "%{http_code}" "$ROBOTS_URL" 2>/dev/null || echo "000")
+  if [ "$ROBOTS_HTTP_CODE" = "200" ]; then
+    echo -e "${GREEN}✓ robots.txt accessible (HTTP 200) sur $ROBOTS_URL.${NC}"
+    ROBOTS_CONTENT=$(curl -s -k -L "$ROBOTS_URL" 2>/dev/null || true)
+  else
+    # Fallback gracieux si serveur local éteint mais dossier statique présent
+    if [ "$TARGET_URL" = "http://localhost:3000" ] && [ "$ROBOTS_HTTP_CODE" = "000" ]; then
+      for candidate in "dist" "out" "public" "build"; do
+        if [ -d "$candidate" ] && [ -f "$candidate/robots.txt" ]; then
+          echo -e "${YELLOW}ℹ Serveur local inactif, bascule automatique sur les fichiers statiques de '$candidate/'.${NC}"
+          MODE_STATIC=1
+          STATIC_DIR="$candidate"
+          ROBOTS_CONTENT=$(cat "$candidate/robots.txt")
+          break
+        fi
+      done
+    fi
+    if [ "$MODE_STATIC" -eq 0 ]; then
+      echo -e "${RED}✗ ERREUR : robots.txt introuvable ou inaccessible (Code HTTP: $ROBOTS_HTTP_CODE) sur $ROBOTS_URL !${NC}"
+      ERRORS=$((ERRORS + 1))
+    fi
+  fi
+fi
+
+if [ -n "$ROBOTS_CONTENT" ]; then
   if echo "$ROBOTS_CONTENT" | grep -qiE "^[ \t]*Sitemap:[ \t]*https?://"; then
     SITEMAP_REF=$(echo "$ROBOTS_CONTENT" | grep -iE "^[ \t]*Sitemap:" | head -n 1)
     echo -e "${GREEN}✓ Référence au sitemap déclarée : ${CYAN}$SITEMAP_REF${NC}"
@@ -43,39 +106,64 @@ if [ "$ROBOTS_HTTP_CODE" = "200" ]; then
     echo -e "${YELLOW}⚠ AVERTISSEMENT : Aucune directive 'Sitemap:' explicite détectée dans robots.txt.${NC}"
     WARNINGS=$((WARNINGS + 1))
   fi
-else
-  echo -e "${RED}✗ ERREUR : robots.txt introuvable ou inaccessible (Code HTTP: $ROBOTS_HTTP_CODE) sur $ROBOTS_URL !${NC}"
-  ERRORS=$((ERRORS + 1))
 fi
 
 # ------------------------------------------------------------------------------
 # 2. Contrôle du fichier sitemap.xml
 # ------------------------------------------------------------------------------
 echo -e "\n${BLUE}[2/4] Vérification de l'accessibilité et du volume de sitemap.xml...${NC}"
-SITEMAP_HTTP_CODE=$(curl -s -L -o /dev/null -w "%{http_code}" "$SITEMAP_URL" 2>/dev/null || echo "000")
+SITEMAP_CONTENT=""
 
-if [ "$SITEMAP_HTTP_CODE" = "200" ]; then
-  echo -e "${GREEN}✓ sitemap.xml accessible (HTTP 200) sur $SITEMAP_URL.${NC}"
-  SITEMAP_CONTENT=$(curl -s -L "$SITEMAP_URL" 2>/dev/null || true)
+if [ "$MODE_STATIC" -eq 1 ]; then
+  SITEMAP_FILE="${STATIC_DIR%/}/sitemap.xml"
+  if [ -f "$SITEMAP_FILE" ]; then
+    echo -e "${GREEN}✓ sitemap.xml présent sur le disque : $SITEMAP_FILE${NC}"
+    SITEMAP_CONTENT=$(cat "$SITEMAP_FILE")
+  else
+    echo -e "${RED}✗ ERREUR : sitemap.xml introuvable dans $STATIC_DIR !${NC}"
+    ERRORS=$((ERRORS + 1))
+  fi
+else
+  SITEMAP_URL="${TARGET_URL%/}/sitemap.xml"
+  SITEMAP_HTTP_CODE=$(curl -s -k -L -o /dev/null -w "%{http_code}" "$SITEMAP_URL" 2>/dev/null || echo "000")
+  if [ "$SITEMAP_HTTP_CODE" = "200" ]; then
+    echo -e "${GREEN}✓ sitemap.xml accessible (HTTP 200) sur $SITEMAP_URL.${NC}"
+    SITEMAP_CONTENT=$(curl -s -k -L "$SITEMAP_URL" 2>/dev/null || true)
+  else
+    echo -e "${RED}✗ ERREUR : sitemap.xml inaccessible (Code HTTP: $SITEMAP_HTTP_CODE) sur $SITEMAP_URL !${NC}"
+    ERRORS=$((ERRORS + 1))
+  fi
+fi
+
+if [ -n "$SITEMAP_CONTENT" ]; then
   URL_COUNT=$(echo "$SITEMAP_CONTENT" | grep -c "<loc>" || true)
   echo -e "${GREEN}✓ Nombre d'URLs indexées détectées (<loc>) : ${BOLD}$URL_COUNT${NC}."
   if [ "$URL_COUNT" -eq 0 ]; then
     echo -e "${RED}✗ ERREUR : sitemap.xml ne contient aucune balise d'URL <loc> !${NC}"
     ERRORS=$((ERRORS + 1))
   fi
-else
-  echo -e "${RED}✗ ERREUR : sitemap.xml inaccessible (Code HTTP: $SITEMAP_HTTP_CODE) sur $SITEMAP_URL !${NC}"
-  ERRORS=$((ERRORS + 1))
 fi
 
 # ------------------------------------------------------------------------------
-# 3. Contrôle des balises méta indispensables de la page
+# 3. Contrôle des balises méta indispensables de la page d'accueil
 # ------------------------------------------------------------------------------
 echo -e "\n${BLUE}[3/4] Inspection des balises <meta> et en-têtes d'indexation...${NC}"
-PAGE_HTML=$(curl -s -L "$TARGET_URL" 2>/dev/null || true)
+PAGE_HTML=""
+
+if [ "$MODE_STATIC" -eq 1 ]; then
+  HTML_FILE="${STATIC_DIR%/}/index.html"
+  if [ -f "$HTML_FILE" ]; then
+    PAGE_HTML=$(cat "$HTML_FILE")
+  else
+    echo -e "${RED}✗ ERREUR CRITIQUE : Fichier index.html introuvable dans $STATIC_DIR !${NC}"
+    exit 1
+  fi
+else
+  PAGE_HTML=$(curl -s -k -L "$TARGET_URL" 2>/dev/null || true)
+fi
 
 if [ -z "$PAGE_HTML" ]; then
-  echo -e "${RED}✗ ERREUR CRITIQUE : Impossible de récupérer le contenu HTML de $TARGET_URL !${NC}"
+  echo -e "${RED}✗ ERREUR CRITIQUE : Impossible de récupérer le contenu HTML de la cible !${NC}"
   exit 1
 fi
 
@@ -132,21 +220,6 @@ for idx, raw_json in enumerate(blocks):
         print(f"    - @context : {context}")
         print(f"    - @type    : {schema_type}")
         print(f"    - name     : {name}")
-
-        # Contrôles sémantiques ciblés
-        if schema_type == "LocalBusiness":
-            currency = data.get("currenciesAccepted", "")
-            address = data.get("address", {})
-            locality = address.get("addressLocality", "") if isinstance(address, dict) else ""
-            curr_str = currency if currency else "Non spécifié"
-            loc_str = locality if locality else "Non spécifié"
-            print(f"    - Devise acceptée  : {curr_str}")
-            print(f"    - Localité urbaine : {loc_str}")
-        elif schema_type == "MobileApplication":
-            os_val = data.get("operatingSystem", "")
-            os_str = os_val if os_val else "Non spécifié"
-            print(f"    - Systèmes supportés : {os_str}")
-
     except json.JSONDecodeError as err:
         print(f"  ✗ Erreur de syntaxe JSON dans le bloc #{idx + 1} : {err}")
         errors += 1
@@ -161,7 +234,6 @@ if errors > 0:
       ERRORS=$((ERRORS + 1))
     }
   elif command -v jq &>/dev/null; then
-    # Fallback jq si python3 non disponible
     RAW_JSON=$(echo "$PAGE_HTML" | sed -n '/<script type="application\/ld+json">/,/<\/script>/p' | sed 's/<[^>]*>//g')
     if echo "$RAW_JSON" | jq . > /dev/null 2>&1; then
       echo -e "${GREEN}✓ Bloc JSON-LD validé via jq.${NC}"

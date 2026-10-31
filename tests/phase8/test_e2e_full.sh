@@ -193,14 +193,11 @@ for rule_file in "${EXPECTED_RULES[@]}"; do
 done
 pass "Règles normatives déployées (BRAND.md, PRODUCT.md, PROJECT.md, API.md, LOGO.md)."
 
-# 1.6 Vérification de GEMINI.md et rules.json
+# 1.6 Vérification de GEMINI.md
 if [[ ! -f "${CLIENT_DIR}/.agents/GEMINI.md" ]]; then
   fail "Fichier index maître .agents/GEMINI.md manquant !"
 fi
-if [[ ! -f "${CLIENT_DIR}/.agents/rules.json" ]]; then
-  fail "Spécification .agents/rules.json manquante !"
-fi
-pass "Index maître .agents/GEMINI.md et spécification .agents/rules.json vérifiés."
+pass "Index maître .agents/GEMINI.md vérifié (chargement contextuel natif v2.0 via frontmatters YAML)."
 
 # 1.7 Vérification des permissions d'exécution sur tous les scripts déployés
 SCRIPTS_FOUND=0
@@ -358,11 +355,35 @@ node "${CLI_BIN}" init --global --all --dir="${GLOBAL_TARGET_DIR}" > "${TMP_BASE
   fail "Le déploiement global (--global) a échoué."
 }
 
-GLOBAL_SKILL_COUNT=$(find "${GLOBAL_TARGET_DIR}" -mindepth 1 -maxdepth 1 -type d -name "san_*" | wc -l)
+GLOBAL_SKILL_COUNT=0
+if [[ -d "${GLOBAL_TARGET_DIR}/skills" ]]; then
+  GLOBAL_SKILL_COUNT=$(find "${GLOBAL_TARGET_DIR}/skills" -mindepth 1 -maxdepth 1 -type d -name "san_*" | wc -l)
+else
+  GLOBAL_SKILL_COUNT=$(find "${GLOBAL_TARGET_DIR}" -mindepth 1 -maxdepth 1 -type d -name "san_*" | wc -l)
+fi
+
 if [[ "${GLOBAL_SKILL_COUNT}" -ne 17 ]]; then
   fail "Nombre de compétences déployées globalement incorrect : ${GLOBAL_SKILL_COUNT}/17 !"
 fi
 pass "17 compétences Antigravity déployées dans le répertoire global (${GLOBAL_TARGET_DIR})."
+
+if [[ ! -f "${GLOBAL_TARGET_DIR}/plugin.json" ]]; then
+  fail "Manifeste plugin.json absent dans le répertoire global !"
+fi
+pass "Manifeste plugin.json présent dans le déploiement global v2.0."
+
+if command -v agy >/dev/null 2>&1; then
+  set +e
+  AGY_VAL_OUT=$(agy plugin validate "${GLOBAL_TARGET_DIR}" --strict --json 2>/dev/null)
+  AGY_VAL_EXIT=$?
+  set -e
+  if [[ "${AGY_VAL_EXIT}" -ne 0 ]]; then
+    fail "agy plugin validate --strict --json a échoué avec le code ${AGY_VAL_EXIT} !"
+  fi
+  pass "agy plugin validate --strict --json validé avec succès (exit 0)."
+else
+  pass "agy non trouvé dans PATH, validation sautée."
+fi
 
 GLOBAL_UNEXECUTABLE=0
 while IFS= read -r -d '' script_file; do

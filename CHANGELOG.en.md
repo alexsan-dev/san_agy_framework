@@ -17,6 +17,80 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2.0.0] - 2026-10-31
+
+### Added
+- **4-Layer v2.0 Architecture:**
+  - **Layer 1 (Sovereign Governance):** Deployment of `<root>/AGENTS.md` (no YAML frontmatter, < 4096 bytes, native `always_on` for Antigravity & opencode) and 5 normative rules `.agents/rules/*.md` equipped with official YAML frontmatters (`PROJECT.md`, `PRODUCT.md`, `BRAND.md`, `API.md`, `LOGO.md`).
+  - **Layer 2 (8 Native Specialized Sub-agents):** Creation of agent definitions `.agents/agents/*.md`:
+    - `san-researcher` (`model: "flash"`, read-only exploration and factual mapping);
+    - `san-architect` (`model: "pro"`, 6-month pre-mortem, 2-approach tradeoff without strawmen, domain models);
+    - `san-designer-worker` (`model: "flash"`, HTML/Tailwind mockups, visual archetypes, Gestalt rhythm, headless PNG rendering);
+    - `san-coder-back` (`model: "flash"`, dialectic before commit, atomic transactions, real domain tests);
+    - `san-coder-front` (`model: "flash"`, modules < 220 lines, non-destructive 5-state Stale-While-Revalidate, strict keyboard A11y);
+    - `san-qa-auditor` (`model: "pro"`, read-only skeptical inquisitor, test substance audit, multimodal visual critique on real PNG pixels via `read_file`, binary verdict `LIVRABLE | RETOUR_ATELIER`);
+    - `san-ops-devops` (`model: "flash"`, CI/CD, containers, Nginx, Fail-Closed infrastructure health diagnostics);
+    - `san-growth-legal` (`model: "flash"`, GDPR, app store compliance, SEO/ASO, acquisition loops).
+  - **Layer 3 (Mechanical Lifecycle Guardrails):** Orchestration via `.agents/hooks.json` and 3 deterministic hook scripts:
+    - `SessionStart` (`session_start.mjs`): Automatic detection of active roadmap and `PROJECT_PROFILE`, injecting the orchestration system prompt.
+    - `PreInvocation` (`pre_invocation.mjs`): Ephemeral prompt (< 110 tokens) preventing inline solo-coding and enforcing contradictory doubt before any action.
+    - `PreToolUse` (`pre_tool_guard.mjs`): Interception of `write_file`/`edit_file`, blocking roadmaps archiving with unchecked boxes (`- [ ]`), blocking *Lorem Ipsum*, and respecting user permissions.
+  - **Layer 4 (17 Imperative Skill Runbooks):** Complete overhaul of `SKILL.md` files into condensed directive runbooks ($\le 130$ lines each) with routing tables, intent triggers, and outsourced specialized references.
+- **Doubt Engineering (*Contradictory Reasoning Engine*):**
+  - *Systemic Pre-Mortem*: Simulation of the 3 major causes of failure at 6 months prior to any architectural commitment.
+  - *Dialectic Before Commit*: Mandatory formulation and comparison of 2 viable approaches before committing any implementation.
+  - *Visual Vision Loop*: Playwright headless capture pipeline (`export_png.mjs` with Node ephemeral HTTP server on `127.0.0.1:0`), multimodal inspection of PNG pixels via `read_file` by `san-qa-auditor`, and 1 mandatory refinement pass before delivery.
+  - *QA Inquisition & Presumption of Flaws*: Elimination of first-draft sycophancy, hunting down *Testing Theater*, and uncompromising binary verdicts.
+- **Contextual Project Profiles (`PROJECT_PROFILE`):**
+  - Modular support for 5 profiles in rules and scripts: `emerging_market` (3G resilience, Mobile Money, offline Outbox), `global_saas`, `mobile_consumer`, `cli_devtools`, and `api_platform`.
+- **Official Antigravity Plugin Packaging (`src/plugin/plugin.json`):**
+  - Complete v2.0.0 manifest with vector logo, metadata, and certified compatibility with `agy plugin validate --strict`.
+- **New `doctor` CLI Command:**
+  - Deterministic diagnostic of the 6 health pillars (Governance, Normative rules, Native sub-agents, Lifecycle hooks, 17-skill catalog $\le 130$ lines, Git isolation) with return code `0` or `1`.
+- **Reversible Backups (`.agents/backups/`):**
+  - Replaced destructive deletion of legacy AI configurations with timestamped safe moves to `.agents/backups/legacy-ai-configs/<timestamp>/`.
+
+### Changed
+- **Overhaul of 17 `SKILL.md` into Imperative Runbooks ($\le 130$ lines):**
+  - Drastic reduction of verbose texts (from 300-600 lines down to $\le 130$ direct lines) focused on immediate action and sub-agent delegation.
+- **Root Sovereign Constitution `AGENTS.md`:**
+  - Default deployment at project root of an `AGENTS.md` without YAML frontmatter (< 4096 bytes), ensuring automatic `always_on` loading by Antigravity and `opencode`.
+- **Universal Fail-Closed Mode Across Quality Gates:**
+  - All Quality Gates (`qa_security_gate.sh`, `backend_quality_gate.sh`, `front_quality_gate.sh`, `e2e_verification_gate.sh`) now require real checks and fail (`exit 1`) if no tests ran or if tools are missing.
+- **Expanded Multi-Stack Support:**
+  - `backend_quality_gate.sh` natively supports Node/TypeScript (NestJS, Express, Fastify), Python (`ruff`, `mypy`, `pytest`), Go (`go vet`, `go test`), alongside PHP / Laravel / AdonisJS.
+- **CLI Installer Engine (`src/cli/`):**
+  - `san-framework init --local` deploys all 4 layers with Smart Merge without overwriting customized rules.
+  - `san-framework init --global` bundles the complete official Antigravity Plugin.
+  - `san-framework update` enables seamless instant v1.0 $\rightarrow$ v2.0 migration without touching developer customizations.
+
+### Removed
+- **Formal Removal of `rules.json`:** Obsolete file unrecognized by Antigravity engine permanently deleted.
+- **Eradication of `--passWithNoTests`:** Prohibited empty-pass fake test results in `qa_security_gate.sh`.
+- **Removal of Destructive `rm -rf`:** Elimination of unrecoverable file deletions in `git_ai_hygiene.sh`.
+- **Elimination of Hardcoded Proprietary Domains:** Removed hardcoded `alexsan.pro` references in infrastructure scripts (`infra_health_check.sh`, `verify_tracking_and_seo.sh`) and `.agents/` reference in CI (`DEPLOYMENT_WORKFLOW.yml`).
+
+### Fixed
+- **Resolution of 12 Logical and Technical Vulnerabilities:**
+  1. `useEffect` side-effect memory leaks without cleanup functions detected in `front_quality_gate.sh`.
+  2. Bypassed dependency audit (`|| true`) eliminated in `front_quality_gate.sh`.
+  3. False success `[0/4 checks] -> exit 0` eliminated in `backend_quality_gate.sh`.
+  4. False Bruno static pass in `e2e_verification_gate.sh` requiring actual API test suite execution.
+  5. Detection of monolithic components (> 300 lines) and inaccessible `<div onClick>` elements.
+  6. Detection and blocking of plain-text database credentials in URLs (`postgresql://`, `mysql://`, `mongodb://`, `redis://`).
+  7. Real parsing of spacing, radii, and typography sections in `BRAND.md` within `build_tokens.mjs`, exiting `1` on WCAG contrast failure.
+  8. Unified `CANVAS_SPEC` parser and migration from `file://` to local Node ephemeral HTTP server in `export_png.mjs` resolving CORS font/CSS blocking.
+  9. Fixed duplicated 4 Node arguments in `doc_scraper.sh` and replaced rigid blocking with traced warnings.
+  10. Removed French false positives (`tata`, `toto`, `titi`, `placeholder` attribute) in `check_lorem.sh`.
+  11. Adapted idea scoring `score_idea.py` according to `PROJECT_PROFILE` to prevent wrongful SaaS/CLI disqualification.
+  12. Preserved root `AGENTS.md` during Git hygiene purge operations.
+
+### Security
+- **Extended Secrets Detection:** Hardened regex covering database URLs with passwords, webhook signatures (`whsec_`), third-party API keys, and plain-text sensitive tokens.
+- **Hermetic Git Isolation:** Dual automatic lock `.gitignore` and `.git/info/exclude` ensuring zero internal artifact leaks.
+
+---
+
 ## [1.1.0] - 2026-10-29
 
 ### Added

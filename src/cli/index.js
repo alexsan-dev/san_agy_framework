@@ -2,9 +2,9 @@
 
 /**
  * ==============================================================================
- * CLI UNIVERSEL D'INSTALLATION — FRAMEWORK ANTIGRAVITY (san_*)
+ * CLI UNIVERSEL D'INSTALLATION & GOUVERNANCE — FRAMEWORK ANTIGRAVITY (san_*)
  * Auteur : Alexsan.pro
- * Phase 7 : Moteur d'installation universel CLI sans dépendance externe
+ * Architecture v2.0 : 4 Couches, 8 Sous-Agents, 17 Skills, 3 Hooks, Doctor
  * ==============================================================================
  */
 
@@ -22,6 +22,8 @@ import {
   resolveSkillList,
   installFramework,
   updateFramework,
+  runDoctor,
+  printDoctorReport,
   colors
 } from './installer.js';
 
@@ -29,7 +31,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Lecture de la version dynamique depuis package.json
-let frameworkVersion = '0.5.0';
+let frameworkVersion = '2.0.0';
 try {
   const pkgPath = path.resolve(FRAMEWORK_ROOT, 'package.json');
   if (fs.existsSync(pkgPath)) {
@@ -47,7 +49,7 @@ export function showBanner() {
     const raw = fs.readFileSync(bannerPath, 'utf8');
     console.log(`${colors.brightCyan}${colors.bold}${raw}${colors.reset}\n`);
   } else {
-    console.log(`${colors.brightCyan}${colors.bold}=== ANTIGRAVITY CARTESIAN FRAMEWORK ===${colors.reset}\n`);
+    console.log(`${colors.brightCyan}${colors.bold}=== ANTIGRAVITY CARTESIAN FRAMEWORK v${frameworkVersion} ===${colors.reset}\n`);
   }
 }
 
@@ -62,34 +64,31 @@ export function showHelp() {
   console.log(`  npx @alexsan/agy-framework <commande> [options]`);
   console.log(`  agy-framework <commande> [options]`);
   console.log(`  san-framework <commande> [options]\n`);
-  console.log(`${colors.bold}COMMANDES :${colors.reset}`);
-  console.log(`  ${colors.brightCyan}init${colors.reset}                     Installer le framework dans le projet ou globalement`);
-  console.log(`  ${colors.brightCyan}update${colors.reset}                   Resynchroniser et générer le contexte opencode (AGENTS.md) sur un repo déjà déployé`);
+  console.log(`${colors.bold}COMMANDES OFFICIELLES :${colors.reset}`);
+  console.log(`  ${colors.brightCyan}init${colors.reset}                     Installer le framework v2.0 (local 4 couches ou global plugin)`);
+  console.log(`  ${colors.brightCyan}update${colors.reset}                   Migrer instantanément v1.0 -> v2.0 (Smart Merge frontmatter, 8 agents, 3 hooks)`);
+  console.log(`  ${colors.brightCyan}doctor${colors.reset}                   Contrôler les 6 piliers de santé v2.0 et l'intégrité de l'environnement`);
   console.log(`  ${colors.brightCyan}list${colors.reset}                     Lister l'ensemble des 17 skills du catalogue`);
   console.log(`  ${colors.brightCyan}version, -v, --version${colors.reset}   Afficher la version installée`);
   console.log(`  ${colors.brightCyan}help, -h, --help${colors.reset}         Afficher ce guide d'aide\n`);
-  console.log(`${colors.bold}OPTIONS (pour init) :${colors.reset}`);
+  console.log(`${colors.bold}OPTIONS GÉNÉRALES :${colors.reset}`);
   console.log(`  ${colors.cyan}--local${colors.reset}                  Installer dans le projet local (.agents/) [Défaut en non-interactif]`);
-  console.log(`  ${colors.cyan}--global${colors.reset}                 Installer globalement (~/.gemini/antigravity-cli/skills/)`);
+  console.log(`  ${colors.cyan}--global${colors.reset}                 Installer sous forme de Plugin global Antigravity`);
   console.log(`  ${colors.cyan}--all${colors.reset}                    Installer l'intégralité des 17 skills du catalogue`);
   console.log(`  ${colors.cyan}--skills=<liste>${colors.reset}         Sélection granulaire de skills (ex: --skills=san_init,san_planner)`);
   console.log(`  ${colors.cyan}--dry-run${colors.reset}                Mode simulation (zéro écriture sur le disque)`);
-  console.log(`  ${colors.cyan}--force${colors.reset}                  Forcer la réécriture des skills existants`);
-  console.log(`  ${colors.cyan}--opencode${colors.reset}               Génère aussi le contexte opencode (AGENTS.md + opencode.json)`);
+  console.log(`  ${colors.cyan}--force${colors.reset}                  Forcer la réécriture des composants existants`);
+  console.log(`  ${colors.cyan}--opencode${colors.reset}               Génère également le contexte opencode.json`);
   console.log(`  ${colors.cyan}--dir=<chemin>${colors.reset}            Spécifier manuellement le répertoire cible\n`);
-  console.log(`${colors.bold}EXEMPLES :${colors.reset}`);
-  console.log(`  ${colors.gray}# Initialisation guidée interactive${colors.reset}`);
-  console.log(`  npx @alexsan/agy-framework init\n`);
-  console.log(`  ${colors.gray}# Déploiement complet en local avec isolation Git${colors.reset}`);
-  console.log(`  npx @alexsan/agy-framework init --local --all\n`);
-  console.log(`  ${colors.gray}# Déploiement local + contexte opencode (AGENTS.md + skills.paths)${colors.reset}`);
-  console.log(`  npx @alexsan/agy-framework init --local --all --opencode\n`);
-  console.log(`  ${colors.gray}# Rendre un repo déjà déployé compréhensible par opencode${colors.reset}`);
-  console.log(`  npx @alexsan/agy-framework update\n`);
-  console.log(`  ${colors.gray}# Déploiement granulaire du socle de cadrage${colors.reset}`);
-  console.log(`  npx @alexsan/agy-framework init --skills=san_init,san_brainstorming,san_planner\n`);
-  console.log(`  ${colors.gray}# Installation globale dans l'environnement Antigravity CLI${colors.reset}`);
-  console.log(`  npx @alexsan/agy-framework init --global --all\n`);
+  console.log(`${colors.bold}EXEMPLES D'UTILISATION :${colors.reset}`);
+  console.log(`  ${colors.gray}# 1. Déploiement complet des 4 couches v2.0 dans le projet courant${colors.reset}`);
+  console.log(`  san-framework init --local --all\n`);
+  console.log(`  ${colors.gray}# 2. Vérification de santé et conformité des 6 piliers${colors.reset}`);
+  console.log(`  san-framework doctor\n`);
+  console.log(`  ${colors.gray}# 3. Migration transparente non-destructive d'une v1.0 vers v2.0${colors.reset}`);
+  console.log(`  san-framework update\n`);
+  console.log(`  ${colors.gray}# 4. Packaging Plugin global Antigravity CLI${colors.reset}`);
+  console.log(`  san-framework init --global --all\n`);
 }
 
 /**
@@ -105,7 +104,7 @@ export function showList() {
     console.log(`  ${colors.brightCyan}•${colors.reset} ${colors.bold}${s.padEnd(24)}${colors.reset} : ${desc || colors.gray + '(Description)' + colors.reset}`);
   }
   console.log('');
-  console.log(`${colors.gray}Pour installer ces modules : npx @alexsan/agy-framework init --all${colors.reset}\n`);
+  console.log(`${colors.gray}Pour installer ces modules : san-framework init --all${colors.reset}\n`);
 }
 
 /**
@@ -115,20 +114,20 @@ async function runInteractivePrompt(availableSkills, initialTargetMode = null) {
   const rl = readline.createInterface({ input, output });
 
   try {
-    console.log(`${colors.brightCyan}${colors.bold}--- Assistant Interactif d'Installation Antigravity ---${colors.reset}\n`);
+    console.log(`${colors.brightCyan}${colors.bold}--- Assistant Interactif d'Installation Antigravity v2.0 ---${colors.reset}\n`);
 
     let targetMode = initialTargetMode;
     if (!targetMode) {
       console.log(`${colors.bold}1. Cible d'installation :${colors.reset}`);
-      console.log(`   [1] Projet local (.agents/) ${colors.green}[Recommandé / Défaut]${colors.reset}`);
-      console.log(`   [2] Global Antigravity CLI (~/.gemini/antigravity-cli/skills/)\n`);
+      console.log(`   [1] Projet local (.agents/ + AGENTS.md souverain) ${colors.green}[Recommandé / Défaut]${colors.reset}`);
+      console.log(`   [2] Plugin Global Antigravity CLI (~/.gemini/antigravity-cli/plugins/san-framework/)\n`);
 
       const targetAnswer = (await rl.question(`${colors.cyan}Votre choix [1-2] (défaut: 1) : ${colors.reset}`)).trim();
       targetMode = targetAnswer === '2' ? 'global' : 'local';
     }
 
     console.log(`\n${colors.bold}2. Sélection des compétences (Skills) :${colors.reset}`);
-    console.log(`   [1] Tous les skills ${colors.green}[Recommandé - 17 modules du framework]${colors.reset}`);
+    console.log(`   [1] Tous les skills ${colors.green}[Recommandé - 17 modules du framework v2.0]${colors.reset}`);
     console.log(`   [2] Socle Onboarding & Cadrage (san_init, san_brainstorming, san_planner)`);
     console.log(`   [3] Sélection manuelle personnalisée\n`);
 
@@ -212,7 +211,15 @@ async function main() {
     process.exit(0);
   }
 
-  // 3bis. Commande Update (rend une codebase déjà déployée compréhensible par opencode)
+  // 4. Commande Doctor (contrôle officiel des 6 piliers de santé v2.0)
+  if (command === 'doctor') {
+    showBanner();
+    const report = runDoctor({ targetDir: values.dir });
+    printDoctorReport(report);
+    process.exit(report.allPassed ? 0 : 1);
+  }
+
+  // 5. Commande Update (migration v1.0 -> v2.0 non destructive)
   if (command === 'update') {
     showBanner();
     const availableSkills = getAvailableSkills();
@@ -229,13 +236,14 @@ async function main() {
       targetDir: values.dir,
       skills: skillsToUpdate,
       dryRun: Boolean(values['dry-run']),
-      force: Boolean(values.force)
+      force: Boolean(values.force),
+      opencode: Boolean(values.opencode)
     });
 
     process.exit(0);
   }
 
-  // 4. Commande Init (ou exécution par défaut)
+  // 6. Commande Init (ou exécution par défaut)
   if (command === 'init' || (!command && process.stdin.isTTY)) {
     showBanner();
     const availableSkills = getAvailableSkills();
@@ -281,7 +289,7 @@ async function main() {
   }
 
   console.error(`${colors.red}[ERREUR] Commande inconnue : ${command}${colors.reset}`);
-  console.log(`Tapez "agy-framework --help" pour afficher la liste des commandes disponibles.`);
+  console.log(`Tapez "san-framework --help" pour afficher la liste des commandes disponibles.`);
   process.exit(1);
 }
 

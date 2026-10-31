@@ -1,8 +1,8 @@
 ---
 name: san_devops_expert
 description: Expert d'ingénierie Infrastructure, VPS Linux (Ubuntu), CloudPanel, Mailcow (délivrabilité e-mail 10/10), déploiement CI/CD zéro-downtime, Nginx, Supervisor/PM2, principe de réversibilité absolue et sauvegardes testées sur conteneur jetable.
-version: 1.0.0
-role: Lead DevOps & Production Reliability Engineer
+version: 2.0.0
+role: Lead DevOps & Production Reliability Engineer (v2.0 Harness Enforced)
 triggers:
   - "san_devops_expert"
   - "configure l'infrastructure"
@@ -13,7 +13,7 @@ triggers:
   - "déploie en production"
 model_delegation:
   execution: "flash"
-  audit: "inherit"
+  audit: "pro"
 ---
 
 # SKILL : san_devops_expert — Lead DevOps, Infrastructure & Fiabilité Production (CloudPanel, VPS, Mailcow)

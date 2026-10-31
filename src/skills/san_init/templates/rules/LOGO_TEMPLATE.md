@@ -1,3 +1,8 @@
+---
+trigger: glob
+globs: "*logo*, *icon*, *favicon*, *manifest*, *.svg"
+description: "Master vector logo rules and multi-resolution icon asset guidelines."
+---
 # GUIDE D'UTILISATION DU LOGO & ASSETS DE MARQUE (`LOGO.md`)
 
 > **Source de vérité visuelle :** Ce document consigne l'emplacement, les règles de construction géométrique, les zones d'exclusion et l'inventaire des déclinaisons du logo officiel du projet.
@@ -7,7 +12,7 @@
 ## 1. LOGOS MAÎTRES VECTORIELS (SOURCES OFFICIELLES)
 
 Les fichiers sources vectoriels (SVG) maîtres sont stockés dans le répertoire `logos/` (ou `assets/branding/`) :
-* **Icône Maîtresse (Symbol Mark) :** `logos/logo_icon.svg` (ou `logos/san_framework_icon.svg`)
+* **Icône Maîtresse (Symbol Mark) :** `logos/logo_icon.svg`
 * **Logo Complet Horizontal (Logotype + Symbole) :** `logos/logo_horizontal.svg`
 * **Variante Monochrome Sombre (Dark Canvas) :** `logos/logo_dark.svg`
 * **Variante Monochrome Claire (Light Canvas) :** `logos/logo_light.svg`
@@ -17,14 +22,14 @@ Les fichiers sources vectoriels (SVG) maîtres sont stockés dans le répertoire
 ## 2. RÈGLES DE COMPOSITION & ZONES DE DÉGAGEMENT
 
 * **Zone de Protection Minimale (Clear Space) :**
-  - Une marge de sécurité équivalente à la hauteur de la lettre de référence (ou $0.25 \times \text{hauteur totale}$) doit séparer le logo de tout texte ou élément d'interface contigu.
+  - Une marge de sécurité minimale équivalente à $0.25 \times \text{hauteur totale}$ doit séparer le logo de tout texte ou élément d'interface contigu.
 * **Taille Minimale d'Affichage :**
   - Numérique Web : `24px` de hauteur minimale pour l'icône seule, `32px` pour le logotype complet.
   - Impression physique : `10mm` de hauteur minimale.
 * **Usages Proscrits :**
-  - Ne jamais déformer l'échelle des axes X et Y (respecter impérativement le ratio d'aspect initial).
+  - Ne jamais déformer l'échelle des axes X et Y (respecter le ratio d'aspect initial).
   - Ne jamais appliquer d'ombrage flou (« drop shadow ») ou de contour néon sur le tracé vectoriel.
-  - Ne jamais inverser les couleurs au hasard ou placer le logo sur un fond manquant de contraste (contraste minimal requis : 4.5:1).
+  - Ne jamais placer le logo sur un fond manquant de contraste (contraste minimal requis : 4.5:1).
 
 ---
 

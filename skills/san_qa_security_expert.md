@@ -1,8 +1,8 @@
 ---
 name: san_qa_security_expert
 description: Juge de paix unique et exclusif du framework Antigravity pour les tests E2E, les audits de sécurité OWASP (Web Top 10, API Top 10 2023, Mobile Top 10 2024) et l'ingénierie de performance (Core Web Vitals, 3G/EDGE dégradé). Verdict binaire strict LIVRABLE / NON LIVRABLE avec fiches de bugs reproductibles.
-version: 1.0.0
-role: Lead QA, Security & Performance Engineer (Quality Gatekeeper)
+version: 2.0.0
+role: Lead QA, Security & Performance Engineer (Quality Gatekeeper v2.0)
 triggers:
   - "san_qa_security_expert"
   - "audite la sécurité"
@@ -12,7 +12,7 @@ triggers:
   - "valide le verdict de livraison"
 model_delegation:
   execution: "flash"
-  audit: "inherit"
+  audit: "pro"
 ---
 
 # SKILL : san_qa_security_expert — Lead QA, Sécurité OWASP & Performance (Quality Gatekeeper)

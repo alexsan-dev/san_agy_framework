@@ -10,8 +10,8 @@ routing:
     fallback_1: "gemini-3.1-pro-high"
     fallback_2: "gemini-3.8-flash-high"
   subagents:
-    execution: "flash"
-    audit: "inherit"
+    coder_front: "san-coder-front" # flash
+    auditor: "san-qa-auditor" # pro (fail-closed, WCAG 2.1 AAA, CLS < 0.05)
 triggers:
   - "san_ux_ui_expert"
   - "implémente l'interface"

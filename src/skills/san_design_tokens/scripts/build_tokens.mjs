@@ -30,17 +30,18 @@ ${ANSI.bold}${ANSI.blue}=== Compilateur de Design Tokens Antigravity (build_toke
 
 ${ANSI.bold}USAGE :${ANSI.reset}
   node build_tokens.mjs [options]
-  ./build_tokens.mjs --input <brand.md> --out-dir <dir> --format <css|tailwind|ts|all>
+  ./build_tokens.mjs --input <brand.md> --out-dir <dir> --format <css|tailwind|ts|all> [--strict]
 
 ${ANSI.bold}OPTIONS :${ANSI.reset}
   -i, --input <fichier>      Chemin vers BRAND.md (Défaut: .agents/rules/BRAND.md)
   -o, --out-dir <dossier>    Dossier de destination (Défaut: src/styles/tokens)
   -f, --format <format>      Format généré : css | tailwind | ts | all (Défaut: all)
+  -s, --strict               Exige un contraste minimum WCAG AA (4.5:1) au lieu de 3.0:1
   -h, --help                 Affiche cette aide et termine l'exécution
 
 ${ANSI.bold}EXEMPLES :${ANSI.reset}
   node build_tokens.mjs --input .agents/rules/BRAND.md --out-dir src/theme --format all
-  node build_tokens.mjs -i BRAND.md -o dist/tokens -f css
+  node build_tokens.mjs -i BRAND.md -o dist/tokens -f css --strict
 `);
 }
 
@@ -49,6 +50,7 @@ const rawArgs = process.argv.slice(2);
 let inputPath = '';
 let outDir = '';
 let formatArg = 'all';
+let isStrict = false;
 
 for (let i = 0; i < rawArgs.length; i++) {
   const arg = rawArgs[i];
@@ -61,6 +63,8 @@ for (let i = 0; i < rawArgs.length; i++) {
     outDir = rawArgs[++i] || '';
   } else if (arg === '--format' || arg === '-f') {
     formatArg = rawArgs[++i] || 'all';
+  } else if (arg === '--strict' || arg === '-s') {
+    isStrict = true;
   } else if (arg.startsWith('--input=')) {
     inputPath = arg.split('=')[1];
   } else if (arg.startsWith('--out-dir=')) {
@@ -111,10 +115,14 @@ if (!fs.existsSync(resolvedInput)) {
 }
 
 console.log(`${ANSI.bold}${ANSI.blue}🎨 [san_design_tokens] Lecture de : ${resolvedInput}${ANSI.reset}`);
+if (isStrict) {
+  console.log(`${ANSI.magenta}🔒 Mode Strict actif : seuil de contraste WCAG AA >= 4.5:1 obligatoire.${ANSI.reset}`);
+}
 const brandContent = fs.readFileSync(resolvedInput, 'utf-8');
 
-// 2. Fonctions de Calcul Colorimétrique & WCAG
+// 2. Fonctions de Calcul Colorimétrique & WCAG 2.1 Standard
 function parseHex(hex) {
+  if (!hex || typeof hex !== 'string') return null;
   let clean = hex.replace(/^#/, '').trim();
   if (clean.length === 3) {
     clean = clean.split('').map(c => c + c).join('');
@@ -150,7 +158,7 @@ function cleanTokenKey(key) {
   return key.trim().replace(/^`|`$/g, '').replace(/^color-/, '');
 }
 
-// 3. Extraction Déterministe des Jetons
+// 3. Extraction Déterministe des Jetons Chromatiques
 const colors = {
   dark: {},
   light: {},
@@ -159,40 +167,52 @@ const colors = {
 
 // Extraction des tables Markdown de couleurs
 // Format standard: | `color-name` | #DARK | #LIGHT | Usage |
-// OU format simple: | `color-name` | #HEX | Usage |
+// Colonne 0 : Nom du jeton
+// Colonne 1 : Mode Sombre (Dark)
+// Colonne 2 : Mode Clair (Light)
+// Colonne 3+ : Usage / Commentaires (NE PAS PARSER d'hexadécimaux ici)
 const lines = brandContent.split('\n');
-const hexRegex = /#[0-9A-Fa-f]{3,8}\b/g;
+const singleHexRegex = /#[0-9A-Fa-f]{3,8}\b/;
 
 for (const line of lines) {
   const trimmed = line.trim();
   if (!trimmed.startsWith('|') || trimmed.includes('---')) continue;
-  const columns = trimmed.split('|').map(c => c.trim()).filter((_, idx, arr) => idx > 0 && idx < arr.length - 1);
+  const rawCols = trimmed.split('|').map(c => c.trim());
+  const columns = rawCols.filter((_, idx) => idx > 0 && idx < rawCols.length - 1);
   if (columns.length < 2) continue;
 
   const firstCol = columns[0];
   const tokenMatch = firstCol.match(/`?([a-zA-Z0-9_-]+)`?/);
   if (!tokenMatch) continue;
 
-  const rawKey = tokenMatch[1];
-  const tokenKey = cleanTokenKey(rawKey);
+  const tokenKey = cleanTokenKey(tokenMatch[1]);
+  if (tokenKey.toLowerCase() === 'jeton' || tokenKey.toLowerCase() === 'token') continue;
 
-  // Vérifier si cette ligne contient des valeurs hexadécimales
-  const allHexesInLine = trimmed.match(hexRegex);
-  if (!allHexesInLine || allHexesInLine.length === 0) continue;
-
-  if (columns.length >= 3 && columns[1].match(hexRegex) && columns[2].match(hexRegex)) {
-    // Mode double (Dark / Light)
-    const darkHex = columns[1].match(hexRegex)[0].toUpperCase();
-    const lightHex = columns[2].match(hexRegex)[0].toUpperCase();
-    colors.dark[tokenKey] = darkHex;
-    colors.light[tokenKey] = lightHex;
-    colors.unified[tokenKey] = darkHex;
-  } else if (allHexesInLine.length >= 1) {
-    // Mode unifié
-    const hex = allHexesInLine[0].toUpperCase();
-    colors.unified[tokenKey] = hex;
-    colors.dark[tokenKey] = hex;
-    colors.light[tokenKey] = hex;
+  if (columns.length >= 3) {
+    // Mode double (Dark / Light) : extraction STRICTEMENT isolée aux colonnes 1 et 2
+    const darkMatch = columns[1].match(singleHexRegex);
+    const lightMatch = columns[2].match(singleHexRegex);
+    if (darkMatch && lightMatch) {
+      const darkHex = darkMatch[0].toUpperCase();
+      const lightHex = lightMatch[0].toUpperCase();
+      colors.dark[tokenKey] = darkHex;
+      colors.light[tokenKey] = lightHex;
+      colors.unified[tokenKey] = darkHex;
+    } else if (darkMatch) {
+      const darkHex = darkMatch[0].toUpperCase();
+      colors.dark[tokenKey] = darkHex;
+      colors.light[tokenKey] = darkHex;
+      colors.unified[tokenKey] = darkHex;
+    }
+  } else if (columns.length === 2) {
+    // Mode unifié : extraction strictement isolée à la colonne 1
+    const hexMatch = columns[1].match(singleHexRegex);
+    if (hexMatch) {
+      const hex = hexMatch[0].toUpperCase();
+      colors.unified[tokenKey] = hex;
+      colors.dark[tokenKey] = hex;
+      colors.light[tokenKey] = hex;
+    }
   }
 }
 
@@ -218,12 +238,14 @@ for (const [key, val] of Object.entries(defaultColorPalette)) {
   if (!colors.unified[key]) {
     colors.unified[key] = val;
     colors.dark[key] = colors.dark[key] || val;
-    colors.light[key] = colors.light[key] || (key === 'surface' ? '#FFFFFF' : key === 'background' ? '#F8FAFC' : key === 'on-surface' ? '#0F172A' : val);
+    colors.light[key] = colors.light[key] || (key === 'surface' ? '#FFFFFF' : key === 'background' ? '#F8FAFC' : key === 'on-surface' ? '#0F172A' : key === 'on-surface-muted' ? '#4B5563' : val);
   }
 }
 
-// 4. Extraction de l'échelle d'espacement (Base 4px / 8px)
-const spacing = {
+// 4. Extraction Réelle des Sections Spacing, Radii et Typography avec Fallbacks Propres
+
+// A. Espacement (Base 4px / 8px)
+const defaultSpacing = {
   1: '4px',
   2: '8px',
   3: '12px',
@@ -236,8 +258,24 @@ const spacing = {
   16: '64px'
 };
 
-// Extraction des rayons de courbure
-const radii = {
+const parsedSpacing = {};
+// Recherche dans listes Markdown : `space-1` (4px) ou space-1: 4px
+const spacingListMatches = brandContent.matchAll(/`?(?:space-)?(\d+)`?\s*[:\(]\s*(\d+(?:px|rem|em))/gi);
+for (const match of spacingListMatches) {
+  parsedSpacing[match[1]] = match[2];
+}
+// Recherche dans tables Markdown : | space-1 | 4px |
+const spacingTableMatches = brandContent.matchAll(/\|\s*`?(?:space-)?(\d+)`?\s*\|\s*`?(\d+(?:px|rem|em))`?\s*\|/gi);
+for (const match of spacingTableMatches) {
+  parsedSpacing[match[1]] = match[2];
+}
+
+const spacing = Object.keys(parsedSpacing).length > 0
+  ? { ...defaultSpacing, ...parsedSpacing }
+  : { ...defaultSpacing };
+
+// B. Rayons de Courbure
+const defaultRadii = {
   none: '0px',
   sm: '4px',
   md: '8px',
@@ -246,7 +284,23 @@ const radii = {
   full: '9999px'
 };
 
-// Extraction des ombres
+const parsedRadii = {};
+// Recherche dans listes Markdown : `radius-sm` (4px)
+const radiiListMatches = brandContent.matchAll(/`?(?:radius-)?(none|sm|md|lg|xl|2xl|full|[a-zA-Z0-9]+)`?\s*[:\(]\s*(\d+(?:px|rem|em))/gi);
+for (const match of radiiListMatches) {
+  parsedRadii[match[1]] = match[2];
+}
+// Recherche dans tables Markdown : | radius-sm | 4px |
+const radiiTableMatches = brandContent.matchAll(/\|\s*`?(?:radius-)?(none|sm|md|lg|xl|2xl|full|[a-zA-Z0-9]+)`?\s*\|\s*`?(\d+(?:px|rem|em))`?\s*\|/gi);
+for (const match of radiiTableMatches) {
+  parsedRadii[match[1]] = match[2];
+}
+
+const radii = Object.keys(parsedRadii).length > 0
+  ? { ...defaultRadii, ...parsedRadii }
+  : { ...defaultRadii };
+
+// C. Ombres
 const shadows = {
   none: 'none',
   sm: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
@@ -255,7 +309,7 @@ const shadows = {
   xl: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)'
 };
 
-// Tokens Cinétiques Invariants
+// D. Tokens Cinétiques Invariants
 const motion = {
   duration: {
     fast: '150ms',
@@ -277,8 +331,8 @@ const motion = {
   }
 };
 
-// Typographie
-const typography = {
+// E. Typographie (avec parsing des polices déclarées dans BRAND.md)
+const defaultTypography = {
   fontFamily: {
     sans: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
     display: 'Inter, -apple-system, sans-serif',
@@ -296,44 +350,97 @@ const typography = {
   }
 };
 
-// 5. Rapport d'Accessibilité et Audit WCAG AAA / AA
-console.log(`\n${ANSI.bold}${ANSI.cyan}=== 📊 AUDIT MATHÉMATIQUE DE CONTRASTE WCAG ===${ANSI.reset}`);
+const typography = JSON.parse(JSON.stringify(defaultTypography));
+
+// Parsing des familles typographiques dans BRAND.md
+// ex: * **Titrages & Accroches (Display) :** `Plus Jakarta Sans`, `Inter`, sans-serif
+const displayMatch = brandContent.match(/\*\s*\*\*(?:Titrages|Display)[^*]*\*\*\s*:\s*(.+)/i);
+if (displayMatch) {
+  const cleaned = displayMatch[1].replace(/`|\[Police_Display\]/g, '').trim();
+  if (cleaned.length > 0 && !cleaned.startsWith('[')) {
+    typography.fontFamily.display = cleaned;
+  }
+}
+
+const bodyMatch = brandContent.match(/\*\s*\*\*(?:Texte Courant|Body|UI)[^*]*\*\*\s*:\s*(.+)/i);
+if (bodyMatch) {
+  const cleaned = bodyMatch[1].replace(/`/g, '').trim();
+  if (cleaned.length > 0 && !cleaned.startsWith('[')) {
+    typography.fontFamily.sans = cleaned;
+  }
+}
+
+const monoMatch = brandContent.match(/\*\s*\*\*(?:Chiffres|Mono|Numeric)[^*]*\*\*\s*:\s*(.+)/i);
+if (monoMatch) {
+  const cleaned = monoMatch[1].replace(/`/g, '').trim();
+  if (cleaned.length > 0 && !cleaned.startsWith('[')) {
+    typography.fontFamily.mono = cleaned;
+  }
+}
+
+// 5. Rapport d'Accessibilité et Audit WCAG 2.1 Standard
+console.log(`\n${ANSI.bold}${ANSI.cyan}=== 📊 AUDIT MATHÉMATIQUE DE CONTRASTE WCAG 2.1 ===${ANSI.reset}`);
+
+const minRequiredRatio = isStrict ? 4.5 : 3.0;
+
+// Détermination propre de la couleur de texte du bouton primaire (texte vs fond bouton)
+const buttonTextDark = colors.dark['on-primary'] || '#FFFFFF';
+const buttonTextLight = colors.light['on-primary'] || '#FFFFFF';
+
 const testPairs = [
-  { text: 'on-surface', bg: 'surface', label: 'Texte courant sur Surface (Dark)' },
-  { text: 'on-surface', bg: 'background', label: 'Texte courant sur Fond (Dark)' },
-  { text: 'on-surface-muted', bg: 'surface', label: 'Texte secondaire sur Surface' },
-  { text: 'primary', bg: 'surface', label: 'Bouton primaire sur Surface' },
-  { text: 'error', bg: 'surface', label: 'Statut d\'erreur sur Surface' },
-  { text: 'success', bg: 'surface', label: 'Statut de succès sur Surface' }
+  // Mode Sombre
+  { fg: colors.dark['on-surface'], bg: colors.dark['surface'], label: 'Texte courant sur Surface (Dark)' },
+  { fg: colors.dark['on-surface'], bg: colors.dark['background'], label: 'Texte courant sur Fond (Dark)' },
+  { fg: colors.dark['on-surface-muted'], bg: colors.dark['surface'], label: 'Texte secondaire sur Surface (Dark)' },
+  { fg: buttonTextDark, bg: colors.dark['primary'], label: 'Bouton primaire : texte vs fond (Dark)' },
+
+  // Mode Clair
+  { fg: colors.light['on-surface'], bg: colors.light['surface'], label: 'Texte courant sur Surface (Light)' },
+  { fg: colors.light['on-surface'], bg: colors.light['background'], label: 'Texte courant sur Fond (Light)' },
+  { fg: colors.light['on-surface-muted'], bg: colors.light['surface'], label: 'Texte secondaire sur Surface (Light)' },
+  { fg: buttonTextLight, bg: colors.light['primary'], label: 'Bouton primaire : texte vs fond (Light)' }
 ];
 
 let allContrastPass = true;
+const contrastFailures = [];
 
 for (const pair of testPairs) {
-  const fgColor = colors.dark[pair.text] || colors.unified[pair.text];
-  const bgColor = colors.dark[pair.bg] || colors.unified[pair.bg];
-  if (!fgColor || !bgColor) continue;
+  if (!pair.fg || !pair.bg) continue;
 
-  const ratio = calculateContrastRatio(fgColor, bgColor);
+  const ratio = calculateContrastRatio(pair.fg, pair.bg);
   let statusBadge = '';
+  const passed = ratio >= minRequiredRatio;
+
   if (ratio >= 7.0) {
-    statusBadge = `${ANSI.green}${ANSI.bold}✓ WCAG AAA (${ratio.toFixed(2)}:1 - Plein Soleil)${ANSI.reset}`;
+    statusBadge = `${ANSI.green}${ANSI.bold}✓ WCAG AAA (${ratio.toFixed(2)}:1)${ANSI.reset}`;
   } else if (ratio >= 4.5) {
-    statusBadge = `${ANSI.cyan}${ANSI.bold}✓ WCAG AA (${ratio.toFixed(2)}:1 - Conforme)${ANSI.reset}`;
+    statusBadge = `${ANSI.cyan}${ANSI.bold}✓ WCAG AA (${ratio.toFixed(2)}:1)${ANSI.reset}`;
   } else if (ratio >= 3.0) {
-    statusBadge = `${ANSI.yellow}${ANSI.bold}⚠️ WCAG AA Large (${ratio.toFixed(2)}:1 - Titres/Composants)${ANSI.reset}`;
+    if (isStrict) {
+      statusBadge = `${ANSI.red}${ANSI.bold}✗ ÉCHEC STRICT (< 4.5:1 : ${ratio.toFixed(2)}:1)${ANSI.reset}`;
+      allContrastPass = false;
+      contrastFailures.push({ label: pair.label, ratio, fg: pair.fg, bg: pair.bg, expected: 4.5 });
+    } else {
+      statusBadge = `${ANSI.yellow}${ANSI.bold}⚠️ WCAG AA Large (${ratio.toFixed(2)}:1)${ANSI.reset}`;
+    }
   } else {
-    statusBadge = `${ANSI.red}${ANSI.bold}✗ ÉCHEC (< 3:1 : ${ratio.toFixed(2)}:1)${ANSI.reset}`;
+    statusBadge = `${ANSI.red}${ANSI.bold}✗ ÉCHEC CRITIQUE (< 3.0:1 : ${ratio.toFixed(2)}:1)${ANSI.reset}`;
     allContrastPass = false;
+    contrastFailures.push({ label: pair.label, ratio, fg: pair.fg, bg: pair.bg, expected: minRequiredRatio });
   }
 
-  console.log(`  ${pair.label.padEnd(38)} : ${statusBadge} ${ANSI.gray}[${fgColor} / ${bgColor}]${ANSI.reset}`);
+  console.log(`  ${pair.label.padEnd(44)} : ${statusBadge} ${ANSI.gray}[${pair.fg} / ${pair.bg}]${ANSI.reset}`);
 }
 
 if (!allContrastPass) {
-  console.warn(`\n${ANSI.yellow}⚠️ Attention : Certains couples présentent un contraste restreint. Réajustez BRAND.md pour le plein soleil.${ANSI.reset}`);
+  console.error(`\n${ANSI.bold}${ANSI.red}🚨 [ÉCHEC WCAG] ${contrastFailures.length} couple(s) enfreignent le ratio de contraste minimal (${minRequiredRatio}:1) :${ANSI.reset}`);
+  for (const failure of contrastFailures) {
+    console.error(`  ${ANSI.red}✗ ${failure.label} : ${failure.ratio.toFixed(2)}:1 (Attendu: >= ${failure.expected}:1) [${failure.fg} sur ${failure.bg}]${ANSI.reset}`);
+  }
+  console.error(`\n${ANSI.yellow}💡 Solution : Réajustez les couleurs dans ${path.relative(process.cwd(), resolvedInput)} pour garantir une lisibilité absolue.${ANSI.reset}`);
+  process.exit(1);
 } else {
-  console.log(`\n${ANSI.green}✨ Tous les couples critiques satisfont les exigences d'accessibilité WCAG.${ANSI.reset}`);
+  console.log(`\n${ANSI.green}${ANSI.bold}✨ Tous les couples critiques satisfont les exigences d'accessibilité WCAG (seuil: ${minRequiredRatio}:1).${ANSI.reset}`);
 }
 
 // 6. Génération des Fichiers de Sortie
@@ -352,7 +459,7 @@ if (selectedFormat === 'css' || selectedFormat === 'all') {
     css += `  --color-${key}: ${val};\n`;
   }
 
-  css += `\n  /* --- Échelle d'Espacement Déterministe (Base 4px) --- */\n`;
+  css += `\n  /* --- Échelle d'Espacement Déterministe --- */\n`;
   for (const [key, val] of Object.entries(spacing)) {
     css += `  --space-${key}: ${val};\n`;
   }
@@ -455,32 +562,32 @@ if (selectedFormat === 'ts' || selectedFormat === 'all') {
   const tsPath = path.join(resolvedOutDir, 'tokens.ts');
   let ts = `/**\n * DESIGN TOKENS IMMUABLES TYPESCRIPT (san_*)\n * SOURCE : ${path.relative(process.cwd(), resolvedInput)}\n * COMPATIBILITÉ : React, Next.js, React Native / Expo\n */\n\n`;
 
+  const tsSpacing = {};
+  for (const [k, v] of Object.entries(spacing)) {
+    const num = parseInt(String(v).replace(/[^\d]/g, ''), 10);
+    tsSpacing[k] = isNaN(num) ? v : num;
+  }
+
+  const tsRadii = {};
+  for (const [k, v] of Object.entries(radii)) {
+    if (k === 'none') {
+      tsRadii[k] = 0;
+    } else if (k === 'full') {
+      tsRadii[k] = 9999;
+    } else {
+      const num = parseInt(String(v).replace(/[^\d]/g, ''), 10);
+      tsRadii[k] = isNaN(num) ? v : num;
+    }
+  }
+
   const tokensPayload = {
     colors: {
       dark: colors.dark,
       light: colors.light,
       raw: colors.unified
     },
-    spacing: {
-      1: 4,
-      2: 8,
-      3: 12,
-      4: 16,
-      5: 20,
-      6: 24,
-      8: 32,
-      10: 40,
-      12: 48,
-      16: 64
-    },
-    radii: {
-      none: 0,
-      sm: 4,
-      md: 8,
-      lg: 12,
-      xl: 16,
-      full: 9999
-    },
+    spacing: tsSpacing,
+    radii: tsRadii,
     shadows,
     motion: {
       duration: motion.durationMs,

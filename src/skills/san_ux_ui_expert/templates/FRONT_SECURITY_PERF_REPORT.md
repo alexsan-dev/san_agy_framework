@@ -94,7 +94,7 @@
 
 ## 4. VERDICT OFFICIEL ET DÉCISION
 
-* [ ] **APPROUVÉ :** Le score consolidé est de **[XX] / 100** et aucune anomalie bloquante n'est présente. Le code est certifié pour la transmission à [`san_qa_security_expert`](../../skills/san_qa_security_expert.md).
+* [ ] **APPROUVÉ :** Le score consolidé est de **[XX] / 100** et aucune anomalie bloquante n'est présente. Le code est certifié pour la transmission à [`san_qa_security_expert`](../../san_qa_security_expert/SKILL.md).
 * [ ] **REJETÉ :** Le score est inférieur à 85/100 ou au moins une anomalie `BLOQUANT` a été relevée. Retour immédiat à l'étape d'ingénierie.
 
 **Signature Lead Frontend :** `san_ux_ui_expert`  

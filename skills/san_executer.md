@@ -11,8 +11,9 @@ routing:
     fallback_1: "gemini-3.1-pro-high"
     fallback_2: "gemini-3.8-flash-high"
   subagents:
-    e2e_audit_and_integration: "inherit"
-    code_implementation: "flash"
+    coder_back: "san-coder-back" # flash ou pro/inherit (modèles complexes/migrations)
+    coder_front: "san-coder-front" # flash
+    auditor: "san-qa-auditor" # pro (fail-closed, inquisiteur sceptique)
 ---
 
 # `san_executer` — Chef d'Orchestre d'Implémentation Full-Stack et Moteur d'Exécution Principal
@@ -47,12 +48,12 @@ routing:
    - Verrouillage atomique des requêtes via `Idempotency-Key` sur Redis (TTL 24h).
    - Retry exponentiel avec jitter aléatoire pour les appels réseaux dégradés.
    - File d'attente Outbox locale (SQLite / MMKV / IndexedDB) pour l'écriture hors-ligne avec synchronisation transparente.
-5. **Délégation Stricte et Routage des Modèles :**
-   - Délègue tout le code à des sous-agents propulsés par **`Model: 'flash'`** pour une vélocité maximale.
-   - Délègue les audits, la QA et l'intégration croisée à des sous-agents propulsés par **`Model: 'inherit'`**.
-6. **Entonnoir d'Audit Consolidé en 2 Étages :**
-   - **Étage 1 (Scripté Déterministe) :** Lancement du script `scripts/e2e_verification_gate.sh` (builds, linters, tests unitaires et intégration Front + Back). Arrêt immédiat sans LLM si un test échoue.
-   - **Étage 2 (Qualitatif LLM & Pentest) :** Consolidation des rapports de sécurité OWASP et de performance via [san_qa_security_expert](san_qa_security_expert.md).
+5. **Délégation Stricte et Dialectique des 2 Approches :**
+   - Délègue chaque tâche atomique à `san-coder-back` ou `san-coder-front` (`Model: 'flash'`, avec autorisation d'invoquer `Model: 'pro'` / `'inherit'` pour les modèles de domaine complexes et migrations critiques).
+   - Obligation formelle d'inclure dans leur prompt la clause de **Dialectique 2 Approches** (Approche A conservatrice vs Approche B optimale/performante).
+6. **Entonnoir d'Audit Consolidé en 2 Étages (Boucle QA Inquisitrice) :**
+   - **Étage 1 (Scripté Déterministe Fail-Closed) :** Lancement de `scripts/e2e_verification_gate.sh`, `backend_quality_gate.sh` ou `front_quality_gate.sh`. Arrêt immédiat sans LLM si un test échoue.
+   - **Étage 2 (Inquisiteur Sceptique QA) :** Spawner `san-qa-auditor` (`Model: 'pro'`) avec présomption d'anomalies. Si `RETOUR_ATELIER`, itération avec le codeur atomique jusqu'au verdict `LIVRABLE`.
 7. **Fast-Track d'Hygiène Orchestrateur :** Vérifie le code réel avant de cocher les cases `- [x]`, met à jour `CHANGELOG.md` et exécute `scripts/archive_roadmap.sh`.
 
 ### Ce qu'il NE FAIT PAS :

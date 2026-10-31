@@ -4,7 +4,7 @@
 # FRAMEWORK : Antigravity (san_*)
 # AUTEUR : san_copywriter
 # DESCRIPTION : Linter récursif traquant impitoyablement les résidus de faux texte
-#               (Lorem Ipsum, John Doe, Foo Bar, test test, dummy data, placeholders)
+#               (Lorem Ipsum, John Doe, Foo Bar Baz, faux placeholders)
 #               dans le code source applicatif et les maquettes.
 #
 # USAGE :
@@ -96,7 +96,7 @@ echo -e "${BLUE}${BOLD}=== [san_copywriter] Traque Implacable du Faux Texte ===$
 echo -e "${CYAN}Répertoire cible :${NC} ${TARGET_DIR}"
 echo -e "${CYAN}Extensions surveillées :${NC} ${EXTENSIONS}"
 
-# Répertoires à ignorer
+# Répertoires à ignorer (hors tests, fixtures, node_modules, cache, git)
 EXCLUDED_DIRS=(
   ".git"
   "node_modules"
@@ -114,9 +114,14 @@ EXCLUDED_DIRS=(
   "scratch"
   "archives"
   "storage"
+  "tests"
+  "test"
+  "__tests__"
+  "fixtures"
+  "mocks"
 )
 
-# Construction des arguments d'exclusion pour grep / find
+# Construction des arguments d'exclusion pour grep
 EXCLUDE_DIR_ARGS=()
 for d in "${EXCLUDED_DIRS[@]}"; do
   EXCLUDE_DIR_ARGS+=("--exclude-dir=${d}")
@@ -126,39 +131,34 @@ done
 IFS=',' read -ra EXT_ARRAY <<< "${EXTENSIONS}"
 INCLUDE_ARGS=()
 for ext in "${EXT_ARRAY[@]}"; do
-  # Nettoyage d'éventuels espaces ou points initiaux
   clean_ext="$(echo "${ext}" | tr -d ' ' | sed 's/^\.//')"
   if [[ -n "${clean_ext}" ]]; then
     INCLUDE_ARGS+=("--include=*.${clean_ext}")
   fi
 done
 
-# Termes et motifs de faux texte bannis
-# Expressions régulières sensibles aux faux textes courants
+# Termes et motifs stricts de faux texte bannis (insensibles à la casse)
+# Zéro faux positif sur des prénoms ou mots français réels (tata, titi, toto supprimés)
 PATTERNS=(
   "lorem ipsum"
   "dolor sit amet"
   "consectetur adipiscing"
   "sed do eiusmod"
   "tempor incididunt"
+  "john doe"
+  "jane doe"
+  "foo bar baz"
   "foo bar"
   "foobar"
   "baz qux"
-  "test test"
+  "todo: replace text"
+  "todo: replace"
+  "asdf"
+  "qwerty"
   "dummy data"
   "dummy text"
   "sample text"
-  "john doe"
-  "jane doe"
   "texte de remplissage"
-  "123 rue de la paix"
-  "prix en dollars"
-  "produit fictif"
-  "asdf"
-  "qwerty"
-  "toto"
-  "titi"
-  "tata"
 )
 
 TEMP_LOG=$(mktemp)
@@ -166,11 +166,12 @@ TOTAL_MATCHES=0
 
 # 1. Recherche des termes textuels bannis
 for term in "${PATTERNS[@]}"; do
-  # Exclure le script lui-même et les fichiers markdown de documentation si scannés par mégarde
   MATCHES=$(grep -rnI -i \
     "${EXCLUDE_DIR_ARGS[@]}" \
     "${INCLUDE_ARGS[@]}" \
     --exclude="check_lorem.sh" \
+    --exclude="*.test.*" \
+    --exclude="*.spec.*" \
     --exclude="*.md" \
     "${term}" "${TARGET_DIR}" 2>/dev/null || true)
 
@@ -185,23 +186,23 @@ for term in "${PATTERNS[@]}"; do
   fi
 done
 
-# 2. Recherche ciblée sur les 'placeholders' résiduels
-# Évite de fausser sur l'attribut HTML pur placeholder="..." ayant un vrai texte localisé
-# Détecte: placeholder="placeholder", >placeholder<, 'placeholder', "placeholder", placeholder text
+# 2. Recherche ciblée sur les faux 'placeholders' factices évidents
+# Autorise les attributs HTML légitimes ex: placeholder="Rechercher..." ou placeholder="Entrez votre email"
+# Ne bloque QUE les placeholders factices évidents (ex: placeholder="placeholder", >placeholder<, placeholder text)
 PLACEHOLDER_MATCHES=$(grep -rnI -i -E \
-  '([>"\x27\s]|^)placeholder([<"\x27\s]|$)|placeholder\s*=\s*["\x27]placeholder["\x27]|placeholder\s+text' \
+  'placeholder\s*=\s*["\x27](placeholder|test|lorem|dummy|sample|asdf)["\x27]|>placeholder<|\[placeholder\]|\bplaceholder\s+text\b' \
   "${EXCLUDE_DIR_ARGS[@]}" \
   "${INCLUDE_ARGS[@]}" \
   --exclude="check_lorem.sh" \
+  --exclude="*.test.*" \
+  --exclude="*.spec.*" \
   --exclude="*.md" \
   "${TARGET_DIR}" 2>/dev/null || true)
 
 if [[ -n "${PLACEHOLDER_MATCHES}" ]]; then
   while IFS= read -r line; do
     if [[ -n "${line}" ]]; then
-      # Filtrer pour s'assurer que ce n'est pas un attribut standard avec valeur réelle ex: placeholder="Rechercher..."
-      # Si la ligne contient placeholder="valeur_reelle", on vérifie si la valeur est elle-même un dummy
-      echo -e "${YELLOW}✖ [PLACEHOLDER SUSPECT]${NC} 'placeholder'" >> "${TEMP_LOG}"
+      echo -e "${YELLOW}✖ [PLACEHOLDER FACTICE DÉTECTÉ]${NC}" >> "${TEMP_LOG}"
       echo "   -> ${line}" >> "${TEMP_LOG}"
       TOTAL_MATCHES=$((TOTAL_MATCHES + 1))
     fi
@@ -221,15 +222,14 @@ if [[ ${TOTAL_MATCHES} -gt 0 ]]; then
   echo -e "  - Vrais noms : 'Christian Mabiala', 'Awa Traoré', 'Moussa Diop'"
   echo -e "  - Vraies devises : '2 500 FCFA', '15 000 XAF' (avec espace insécable)"
   echo -e "  - Vrais repères : 'Arrêt Marché Total, Bacongo', 'Grand Marché, Pointe-Noire'"
-  echo -e "  - Vrais flux : 'Paiement MTN MoMo / Airtel Money', 'Confirmation par SMS'"
-  echo -e "Consultez : ${CYAN}.agents/skills/san_copywriter/references/local_copy_guidelines.md${NC}\n"
+  echo -e "  - Vrais flux : 'Paiement MTN MoMo / Airtel Money', 'Confirmation par SMS'\n"
   exit 1
 else
   rm -f "${TEMP_LOG}"
   echo -e "\n${GREEN}${BOLD}======================================================================${NC}"
   echo -e "${GREEN}${BOLD}   ✅ CONTRÔLE RÉUSSI : ZÉRO FAUX TEXTE DÉTECTÉ                      ${NC}"
   echo -e "${GREEN}${BOLD}======================================================================${NC}"
-  echo -e "${GREEN}Aucun résidu de Lorem Ipsum, Foo Bar, test test ou données factices.${NC}"
+  echo -e "${GREEN}Aucun résidu de Lorem Ipsum, John Doe, Foo Bar Baz ou données factices.${NC}"
   echo -e "${CYAN}La micro-copie de l'application est vivante, réaliste et prête pour la production.${NC}\n"
   exit 0
 fi

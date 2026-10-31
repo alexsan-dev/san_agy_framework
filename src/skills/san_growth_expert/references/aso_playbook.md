@@ -62,7 +62,7 @@ Pour le champ `Keywords` d'Apple App Store (limite stricte de 100 caractères) :
 
 ## 4. STORYBOARD NARRATIF DE CONVERSION EN 5 SCÈNES (SCREENSHOTS)
 
-Les captures d'écran représentent plus de 70% de la décision de téléchargement. Le brief fourni à [`san_designer`](../san_designer/SKILL.md) respecte la séquence psychologique :
+Les captures d'écran représentent plus de 70% de la décision de téléchargement. Le brief fourni à [`san_designer`](../../san_designer/SKILL.md) respecte la séquence psychologique :
 
 ```mermaid
 flowchart LR

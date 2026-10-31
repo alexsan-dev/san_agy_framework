@@ -1,9 +1,9 @@
 ---
 name: san_copywriter
 title: Artisan Plume UX, Rédaction Réaliste & Localisation Émotionnelle
-version: 1.0.0
+version: 2.0.0
 type: sub_skill
-role: UX Copywriter & Cultural Localization Craftsman
+role: UX Copywriter & Cultural Localization Craftsman (v2.0 Harness Enforced)
 harness: google_antigravity_cli
 routing:
   orchestrator:
@@ -11,7 +11,7 @@ routing:
     fallback_1: "gemini-3.1-pro-high"
     fallback_2: "gemini-3.8-flash-high"
   subagents:
-    strategy_and_tone: "inherit"
+    strategy_and_tone: "pro"
     copy_generation_and_dictionaries: "flash"
 triggers:
   - "san_copywriter"

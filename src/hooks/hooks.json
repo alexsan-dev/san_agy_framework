@@ -1,0 +1,27 @@
+{
+  "san-lifecycle-enforcer": {
+    "SessionStart": [
+      {
+        "command": "node ./hooks/scripts/session_start.mjs",
+        "timeout": 5
+      }
+    ],
+    "PreInvocation": [
+      {
+        "command": "node ./hooks/scripts/pre_invocation.mjs",
+        "timeout": 5
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "write_file|edit_file",
+        "hooks": [
+          {
+            "command": "node ./hooks/scripts/pre_tool_guard.mjs",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -10,8 +10,8 @@ routing:
     fallback_1: "gemini-3.1-pro-high"
     fallback_2: "gemini-3.8-flash-high"
   subagents:
-    execution: "flash"
-    audit: "inherit"
+    coder_back: "san-coder-back" # flash ou pro/inherit (modèles critiques)
+    auditor: "san-qa-auditor" # pro (fail-closed, OWASP API Top 10)
 triggers:
   - "san_backend_expert"
   - "conçois l'API"

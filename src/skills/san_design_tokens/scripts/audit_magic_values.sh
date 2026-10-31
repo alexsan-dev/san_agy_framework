@@ -83,11 +83,11 @@ if [[ ! -d "${TARGET_DIR}" ]]; then
 fi
 
 echo -e "${ANSI_BOLD}${ANSI_BLUE}🔍 [san_design_tokens] Scan anti-valeurs magiques dans : ${ANSI_CYAN}${TARGET_DIR}${ANSI_RESET}"
-echo -e "${ANSI_GRAY}Recherche de couleurs hexadécimales en dur, formats rgb/hsl bruts et espacements arbitraires...${ANSI_RESET}\n"
+echo -e "${ANSI_GRAY}Recherche de couleurs arbitraires, palettes non autorisées et espacements hors échelle...${ANSI_RESET}\n"
 
 TOTAL_VIOLATIONS=0
 
-# Fichiers et dossiers à exclure
+# Fichiers et dossiers à exclure (préservant maquettes design et tests autorisés)
 EXCLUDE_DIRS=(
   --exclude-dir="node_modules"
   --exclude-dir=".git"
@@ -101,9 +101,17 @@ EXCLUDE_DIRS=(
   --exclude-dir="brain"
   --exclude-dir=".system_generated"
   --exclude-dir="sub-skills"
+  --exclude-dir="design"
+  --exclude-dir="tests"
+  --exclude-dir="test"
+  --exclude-dir="__tests__"
+  --exclude-dir="fixtures"
+  --exclude-dir="mockups"
+  --exclude-dir="templates"
 )
 
 EXCLUDE_FILES=(
+  --exclude="audit_magic_values.sh"
   --exclude="tokens.*"
   --exclude="tailwind.tokens.*"
   --exclude="tailwind.config.*"
@@ -114,6 +122,8 @@ EXCLUDE_FILES=(
   --exclude="*.lock"
   --exclude="pnpm-lock.yaml"
   --exclude="package-lock.json"
+  --exclude="*.test.*"
+  --exclude="*.spec.*"
 )
 
 INCLUDE_EXTENSIONS=(
@@ -146,16 +156,23 @@ if [[ -n "${ARBITRARY_TW_COLORS}" ]]; then
 fi
 
 # 2. Traque des espacements arbitraires hors échelle (ex: p-[13px], mt-[7px], w-[23px])
-ARBITRARY_TW_SPACING=$(grep -rnE \
+# Note : Les dimensions structurelles légitimes d'accessibilité WCAG tactile (min-h-[44px], min-w-[44px], h-[44px], w-[44px]) sont expressément autorisées.
+RAW_SPACING=$(grep -rnE \
   "${EXCLUDE_DIRS[@]}" "${EXCLUDE_FILES[@]}" "${INCLUDE_EXTENSIONS[@]}" \
-  '(p|px|py|pt|pb|pl|pr|m|mx|my|mt|mb|ml|mr|gap|w|h)-\[[0-9]+px\]' \
+  '(p|px|py|pt|pb|pl|pr|m|mx|my|mt|mb|ml|mr|gap|w|h|min-w|min-h)-\[[0-9]+px\]' \
   "${TARGET_DIR}" 2>/dev/null || true)
+
+ARBITRARY_TW_SPACING=""
+if [[ -n "${RAW_SPACING}" ]]; then
+  # On exclut les dimensions structurelles d'accessibilité (44px)
+  ARBITRARY_TW_SPACING=$(echo "${RAW_SPACING}" | grep -vE '(min-h|min-w|h|w)-\[44px\]' || true)
+fi
 
 if [[ -n "${ARBITRARY_TW_SPACING}" ]]; then
   COUNT=$(echo "${ARBITRARY_TW_SPACING}" | wc -l)
   TOTAL_VIOLATIONS=$((TOTAL_VIOLATIONS + COUNT))
   echo -e "${ANSI_RED}${ANSI_BOLD}❌ [VIOLATION] ${COUNT} espacement(s) arbitraire(s) hors échelle de base 4px :${ANSI_RESET}"
-  echo -e "${ANSI_YELLOW}Règle : Utilisez l'échelle standard (ex: p-2 [8px], mt-4 [16px], gap-6 [24px])${ANSI_RESET}"
+  echo -e "${ANSI_YELLOW}Règle : Utilisez l'échelle standard (ex: p-2 [8px], mt-4 [16px], gap-6 [24px]). Les cibles tactiles 44px d'accessibilité sont exemptées.${ANSI_RESET}"
   echo "${ARBITRARY_TW_SPACING}" | while read -r line; do
     echo -e "  ${ANSI_GRAY}→${ANSI_RESET} ${line}"
   done
@@ -196,9 +213,43 @@ if [[ -n "${RAW_CSS_COLORS}" ]]; then
   echo ""
 fi
 
+# 5. Traque des classes Tailwind de couleurs génériques arbitraires hors tokens (anti-AI taste)
+GENERIC_TW_COLORS=$(grep -rnE \
+  "${EXCLUDE_DIRS[@]}" "${EXCLUDE_FILES[@]}" "${INCLUDE_EXTENSIONS[@]}" \
+  '\b(bg|text|border|ring|stroke|fill|from|via|to)-(purple|indigo|fuchsia|violet)-[0-9]{2,3}\b' \
+  "${TARGET_DIR}" 2>/dev/null || true)
+
+if [[ -n "${GENERIC_TW_COLORS}" ]]; then
+  COUNT=$(echo "${GENERIC_TW_COLORS}" | wc -l)
+  TOTAL_VIOLATIONS=$((TOTAL_VIOLATIONS + COUNT))
+  echo -e "${ANSI_RED}${ANSI_BOLD}❌ [VIOLATION] ${COUNT} classe(s) Tailwind de palette générique arbitraire (violet/indigo) :${ANSI_RESET}"
+  echo -e "${ANSI_YELLOW}Règle : Proscription des dégradés et couleurs violets/indigo stéréotypés. Utilisez les tokens canoniques (ex: bg-primary, text-on-surface)${ANSI_RESET}"
+  echo "${GENERIC_TW_COLORS}" | while read -r line; do
+    echo -e "  ${ANSI_GRAY}→${ANSI_RESET} ${line}"
+  done
+  echo ""
+fi
+
+# 6. Traque des z-index arbitraires démesurés (z-[999*])
+ARBITRARY_Z_INDEX=$(grep -rnE \
+  "${EXCLUDE_DIRS[@]}" "${EXCLUDE_FILES[@]}" "${INCLUDE_EXTENSIONS[@]}" \
+  '\bz-\[999[0-9]*\]' \
+  "${TARGET_DIR}" 2>/dev/null || true)
+
+if [[ -n "${ARBITRARY_Z_INDEX}" ]]; then
+  COUNT=$(echo "${ARBITRARY_Z_INDEX}" | wc -l)
+  TOTAL_VIOLATIONS=$((TOTAL_VIOLATIONS + COUNT))
+  echo -e "${ANSI_RED}${ANSI_BOLD}❌ [VIOLATION] ${COUNT} z-index arbitraire(s) démesuré(s) (z-[999*]) :${ANSI_RESET}"
+  echo -e "${ANSI_YELLOW}Règle : Utilisez une échelle de plans ordonnée (z-10, z-20, z-50) au lieu de z-index sauvages.${ANSI_RESET}"
+  echo "${ARBITRARY_Z_INDEX}" | while read -r line; do
+    echo -e "  ${ANSI_GRAY}→${ANSI_RESET} ${line}"
+  done
+  echo ""
+fi
+
 # Synthèse et code de sortie
 if [[ ${TOTAL_VIOLATIONS} -gt 0 ]]; then
-  echo -e "${ANSI_BOLD}${ANSI_RED}🚨 [AUDIT ÉCHOUÉ] ${TOTAL_VIOLATIONS} valeur(s) magique(s) détectée(s) dans la codebase.${ANSI_RESET}"
+  echo -e "${ANSI_BOLD}${ANSI_RED}🚨 [AUDIT ÉCHOUÉ] ${TOTAL_VIOLATIONS} valeur(s) magique(s) ou interdite(s) détectée(s) dans la codebase.${ANSI_RESET}"
   echo -e "${ANSI_YELLOW}Refactorisez ces valeurs vers la source de vérité BRAND.md via build_tokens.mjs.${ANSI_RESET}"
   exit 1
 else

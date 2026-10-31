@@ -1,7 +1,7 @@
 ---
 name: san_design_tokens
 title: Gardien des Design Tokens, de la Vérité BRAND.md & de la Signature Cinétique
-version: 1.0.0
+version: 2.0.0
 type: sub_skill
 role: Design Tokens Architect & Motion Signature Keeper
 harness: google_antigravity_cli
@@ -11,8 +11,8 @@ routing:
     fallback_1: "gemini-3.1-pro-high"
     fallback_2: "gemini-3.8-flash-high"
   subagents:
-    token_architecture_and_contrast: "inherit"
-    compilation_and_audit_scripts: "flash"
+    worker: "san-coder-front" # flash
+    auditor: "san-qa-auditor" # pro (contrastes WCAG AAA & zero magic values)
 triggers:
   - "san_design_tokens"
   - "synchronise les tokens"

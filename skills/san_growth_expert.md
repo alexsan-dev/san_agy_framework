@@ -1,8 +1,8 @@
 ---
 name: san_growth_expert
 description: Expert en croissance organique, SEO local Afrique/Congo (Brazzaville, Pointe-Noire, Kinshasa, devises FCFA/XAF/USD), ASO fiches stores (Google Play, App Store), données structurées Schema.org JSON-LD, plan de taggage analytique unifié en snake_case (Firebase, GA4, Meta Pixel, Sentry) et éthique stricte White-Hat.
-version: 1.0.0
-role: Lead Growth, Local SEO & Tracking Analytics Architect
+version: 2.0.0
+role: Lead Growth, Local SEO & Tracking Analytics Architect (v2.0 Harness Enforced)
 triggers:
   - "san_growth_expert"
   - "optimise le SEO local"
@@ -12,7 +12,7 @@ triggers:
   - "vérifie les tags analytics"
 model_delegation:
   execution: "flash"
-  audit: "inherit"
+  audit: "pro"
 ---
 
 # SKILL : san_growth_expert — Lead Growth, SEO Local (Congo / Afrique) & Architecture Analytique

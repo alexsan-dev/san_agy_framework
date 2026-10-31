@@ -37,10 +37,10 @@ routing:
 
 ### Ce qu'il FAIT :
 1. **Évaluation de Clarté Amont (Garde-Fou) :** Vérifie que la spécification soumise est suffisamment claire et mature ; si elle est ambiguë ou incomplète, il passe obligatoirement le relais à [san_brainstorming](san_brainstorming.md) avant d'écrire la moindre ligne de roadmap.
-2. **Double Diagnostic Approfondi :** Déploie en parallèle deux sous-agents d'audit spécialisés propulsés par **`Model: 'inherit'`** :
-   - `psychologist_market_expert` : Analyse UX/UI, psychologie cognitive, parcours utilisateur, modèle économique et frictions marché.
-   - `technical_market_expert` : Analyse codebase, Clean Code (DRY, SOLID), risques de sécurité, goulets d'étranglement de performance et maintenabilité.
-3. **Calcul du Chemin Critique (CPM) :** Découpe l'effort en 6 phases séquentielles étanches, identifie les dépendances bloquantes et fige l'ordre chronologique d'exécution.
+2. **Cartographie Factuelle & Mini-ADR Pre-Mortem :** Déploie le tandem d'excellence v2.0 :
+   - `san-researcher` (`Model: 'flash'`) : Audit de l'état réel de la codebase, schémas de BDD, routes et état des tests.
+   - `san-architect` (`Model: 'pro'`) : Conçoit le **mini-ADR (confrontation de 2 architectures viables)** et le **Pre-Mortem (anticipation des 3 risques majeurs d'échec)** gravés en **Section 0** de la roadmap.
+3. **Calcul du Chemin Critique (CPM) Adapté au Profil :** Découpe l'effort en 6 phases séquentielles étanches, adaptées au `PROJECT_PROFILE` (tranches verticales *Tracer Bullet* permises sur `cli_devtools`, renfort 3G/MoMo sur `emerging_market`).
 4. **Politique de Tests Obligatoire par Stack :** Intègre les suites d'assurance qualité adaptées à la technologie hôte (Jest, Vitest, Pest, PHPUnit, Japa, Go test, Pytest, Playwright et collections Bruno).
 5. **Génération de la Roadmap Standardisée :** Rédige le document `/roadmaps/[PHASE]_[PROBLEMATIQUE]_[JJMMAAAA].md` selon le gabarit `ROADMAP_TEMPLATE.md`.
 6. **Mise à Disposition du Script d'Archivage :** Fournit et exécute le script `scripts/archive_roadmap.sh` validant l'absence totale de cases orphelines avant archivage.
@@ -346,14 +346,13 @@ flowchart TD
 - Examiner la demande. Si le périmètre est indéterminé ou si des questions de monétisation ou de choix d'architecture restent ouvertes, déléguer immédiatement à [san_brainstorming](san_brainstorming.md).
 - Si la demande s'appuie sur une fiche `/roadmaps/ideas/*.md` validée ou un cahier des charges clair, engager l'Étape 1.
 
-### Étape 1 : Double Diagnostic Parallèle (`Model: 'inherit'`)
-- Déployer simultanément `psychologist_market_expert` (parcours utilisateur, fluidité cognitive, rétention) et `technical_market_expert` (dette technique, sécurité, requêtes N+1, architecture).
-- Extraire les contraintes non négociables.
+### Étape 1 : Cartographie Factuelle via `san-researcher`
+- Déployer `san-researcher` (`Model: 'flash'`, sandbox) pour inspecter les modèles BDD, migrations, routes et commandes de tests réelles.
 
-### Étape 2 : Veille & Pinning de Versions (via `san_searcher`)
-- Vérifier les documentations officielles des dépendances pour proscrire l'usage de fonctions dépréciées.
+### Étape 2 : Mini-ADR & Pre-Mortem via `san-architect` (`Model: 'pro'`)
+- Déployer `san-architect` pour arbitrer entre 2 architectures viables (sans option C épouvantail) et rédiger le Pre-Mortem des 3 causes de rupture systémique pour la **Section 0** de la roadmap.
 
-### Étape 3 : Calcul du Chemin Critique & Découpage en 6 Phases
+### Étape 3 : Calcul du Chemin Critique & Découpage en 6 Phases Adapté au Profil
 - Établir les dépendances strictes : Contrats $\rightarrow$ Backend Core $\rightarrow$ Frontend UI $\rightarrow$ E2E Dégradé $\rightarrow$ Audits $\rightarrow$ Clôture.
 
 ### Étape 4 : Rédaction Normative de la Roadmap

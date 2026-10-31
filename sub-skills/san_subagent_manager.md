@@ -1,9 +1,9 @@
 ---
 name: san_subagent_manager
 title: Usine de Conception, Calibrage et Supervision de Sous-Agents Chirurgicaux
-version: 1.0.0
+version: 2.0.0
 type: sub_skill
-role: Subagent Architect & Task Metrologist
+role: Subagent Architect & Task Metrologist (v2.0 Harness Enforced)
 harness: google_antigravity_cli
 routing:
   orchestrator:
@@ -20,7 +20,7 @@ triggers:
   - "lance un sous-agent"
   - "calibre le prompt système"
   - "supervise l'agent éphémère"
-description: "Moteur cartésien de conception, calibrage, supervision et clôture de sous-agents éphémères spécialisés pour Antigravity CLI. Configure les rôles chirurgicaux, assemble des prompts système hermétiques et fermés (Role, Mission, Inputs, Outputs, Constraints, Toolset minimal sans outils récursifs), applique la matrice d'allocation stricte (flash pour l'implémentation atomique / code vs inherit pour les audits et réflexions) et verrouille le protocole de reddition par send_message avec contrôle anti-hallucination."
+description: "Moteur cartésien de conception, calibrage, supervision et clôture de sous-agents éphémères spécialisés pour Antigravity CLI v2.0. Configure les rôles chirurgicaux, assemble des prompts système hermétiques et fermés intégrant la Dialectique Avant Frappe (comparaison de 2 approches viables) pour les bâtisseurs et la Présomption de Défaut (verdict binaire LIVRABLE | RETOUR_ATELIER) pour les auditeurs, applique la matrice d'allocation stricte (flash vs inherit/pro) et verrouille le protocole de reddition par send_message."
 ---
 
 # `san_subagent_manager` — Usine de Conception, Calibrage et Supervision de Sous-Agents Chirurgicaux
@@ -107,7 +107,7 @@ Lors du déploiement au sein d'une codebase sous Antigravity CLI, le sous-skill 
 .agents/skills/san_subagent_manager/
 ├── SKILL.md                                 # Manifeste de gouvernance, règles de calibrage et prompts types
 ├── references/
-│   ├── subagent_archetypes.md               # Catalogue exhaustif des 5 archétypes de sous-agents
+│   ├── subagent_archetypes.md               # Catalogue exhaustif des 8 archétypes de sous-agents
 │   ├── prompt_engineering_standards.md      # Directives de rédaction hermétique et techniques anti-hallucination
 │   └── least_privilege_matrix.md            # Matrice d'attribution des outils Antigravity selon la mission
 ├── templates/

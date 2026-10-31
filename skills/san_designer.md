@@ -10,8 +10,8 @@ routing:
     fallback_1: "gemini-3.1-pro-high"
     fallback_2: "gemini-3.8-flash-high"
   subagents:
-    execution: "flash"
-    ux_scan_auditors: "inherit"
+    worker: "san-designer-worker" # flash
+    auditor: "san-qa-auditor" # pro (inspection multimodale read_file .png)
 triggers:
   - "/ux-scan"
   - "san_designer"
@@ -206,47 +206,42 @@ flowchart TD
 
 ---
 
-## 7. LE WORKFLOW D'AUDIT CONSOLIDÉ `/ux-scan`
+## 7. LA BOUCLE VISUELLE MULTIMODALE & WORKFLOW D'AUDIT `/ux-scan` (v2.0)
 
-Le workflow `/ux-scan` est un protocole d'assurance qualité visuelle et cognitive opérant en entonnoir étanche à deux étages :
+Le workflow `/ux-scan` et la génération d'écrans reposent sur la **Boucle Visuelle Multimodale Obligatoire** :
 
 ```mermaid
 flowchart TD
-    A["1. Code HTML/Tailwind généré par l'exécuteur (Model: 'flash')"] --> B["2. Étage 1 : Quality Gate Statique Déterministe (0 Token LLM)"]
-    B -- "Erreur CDN / Format non conforme / Classe hors BRAND.md" --> C["Rejet immédiat & Correction par sous-agent flash"]
-    C --> B
-    B -- "100% Validé" --> D["3. Étage 2 : Déploiement des 3 Auditeurs Cognitifs (Model: 'inherit')"]
-    
-    subgraph Etage2["Étage 2 : 3 Auditeurs Parallèles Spécialisés"]
-        D1["ux_psychology_auditor\n(Lois de Hick, Fitts, Miller, Jakob)"]
-        D2["ux_context_auditor\n(Plein soleil, 3G, Repères locaux, MoMo)"]
-        D3["ui_design_system_auditor\n(Fidélité BRAND.md, Cinétique, Anti-AI)"]
-    end
-
-    D --> D1
-    D --> D2
-    D --> D3
-
-    D1 --> E["4. Matrice de Consolidation /ux-scan"]
-    D2 --> E
-    D3 --> E
-
-    E -- "Score < 8.5/10 OU Présence d'un statut BLOQUANT" --> F["Boucle de correction ciblée (Max 5 itérations)"]
-    F --> A
-    E -- "Tous scores >= 8.5/10 ET Zéro BLOQUANT" --> G["5. Feu Vert & Export PNG via Playwright (export_png.mjs)"]
-    G --> H["Fast-Track de clôture & Archivage dans la Roadmap"]
+    A["1. san-designer-worker\nGénération HTML5/Tailwind local autonome"] --> B["2. Export PNG Déterministe\n(export_png.mjs via serveur HTTP local éphémère)"]
+    B --> C["3. san-qa-auditor (model: 'pro')\nDoute Visuel Multimodal (read_file .png)"]
+    C --> D{"3 axes d'élévation visuelle\nidentifiés ?"}
+    D -->|"Axes identifiés"| E["4. Passe de Raffinement Obligatoire\n(san-designer-worker réajuste l'écran)"]
+    E --> F["5. Re-export PNG & Contrôle /ux-scan\n(Score >= 8.5/10, zéro BLOQUANT)"]
+    F --> G["6. Livraison & Archivage certifié"]
 ```
 
-### Étage 1 : Contrôle Technique Statique (Zéro Token LLM)
-Avant d'engager le moindre token d'audit qualitatif, une vérification programmatique immédiate valide :
-- [ ] **Autonomie Totale :** Absence stricte de références distantes (`fonts.googleapis.com`, `cdnjs.cloudflare.com`, `cdn.tailwindcss.com`).
-- [ ] **Polices Locales :** Polices déclarées en local ou fontes système pérennes.
-- [ ] **Présence du tag de canvas :** `<!-- CANVAS_SPEC: ... -->` présent et dimensions cohérentes.
-- [ ] **Conformité des Tokens :** Vérification que les couleurs utilisées correspondent aux hexadécimaux arrêtés dans `.agents/rules/BRAND.md`.
-> **Garde-fou anti-gaspillage :** Si l'Étage 1 relève une anomalie, la chaîne s'interrompt instantanément. Le sous-agent de code (`Model: 'flash'`) corrige. Aucun token de modèle de raisonnement n'est gaspillé sur un fichier syntaxiquement ou structurellement invalide.
+### Étape 1 : Génération Haute Fidélité (`san-designer-worker`)
+Le sous-agent `san-designer-worker` produit la maquette HTML/Tailwind :
+- **Autonomie Totale :** Absence stricte de références distantes (`fonts.googleapis.com`, `cdnjs.cloudflare.com`, `cdn.tailwindcss.com`).
+- **Polices Locales :** Polices déclarées en local ou fontes système pérennes (`.woff2`).
+- **Présence du tag de canvas :** `<!-- CANVAS_SPEC: ... -->` présent et dimensions cohérentes.
+- **Conformité des Tokens :** Couleurs et typographies strictement fidèles à `.agents/rules/BRAND.md`.
+- **Thumb Zone :** Actions primaires dans les 40% inférieurs, cibles $\ge 44\text{px}$.
 
-### Étage 2 : Déploiement des 3 Auditeurs Parallèles (`Model: 'inherit'`)
-Propulsés par le modèle maître Argon/Pro via **`Model: 'inherit'`**, trois spécialistes indépendants inspectent le mockup sous trois angles distincts :
+### Étape 2 : Export PNG via Serveur Éphémère Playwright
+Génération déterministe haute résolution via `export_png.mjs`, servant la maquette sur un serveur HTTP éphémère local avec attente de `document.fonts.ready` et `networkidle`.
+
+### Étape 3 : Étape de Doute Visuel Multimodal (`san-qa-auditor`, `model: "pro"`)
+L'orchestrateur spawne impérativement `san-qa-auditor` (`Model: 'pro'`) :
+1. **Inspection Visuelle Réelle :** L'auditeur lit directement le fichier `.png` généré via `read_file`.
+2. **Identification de 3 Axes d'Élévation :**
+   - Équilibre des masses & aération spatiale.
+   - Contraste typographique et lisibilité plein soleil ($CR \ge 7:1$).
+   - Anti-platitude (*Anti-AI Taste*) : destruction des clichés génériques au profit d'un craft singulier.
+3. **Passe de Raffinement Immédiate :** `san-designer-worker` applique les ajustements avant la validation finale.
+
+### Étage 2 Approfondi : Critères d'Audit Détaillés (/ux-scan)
+Quand l'écran nécessite une revue cognitive exhaustive, l'inquisiteur inspecte 3 domaines :
 
 #### 1. `ux_psychology_auditor` (Psychologie Cognitive & Lois Ergonomiques)
 - **Loi de Hick :** Le temps pour prendre une décision augmente logarithmiquement avec le nombre de choix. L'écran minimise-t-il les choix concurrents ?

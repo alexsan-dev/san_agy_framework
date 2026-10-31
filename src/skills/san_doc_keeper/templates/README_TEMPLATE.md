@@ -68,7 +68,7 @@ bash .agents/skills/san_copywriter/scripts/check_lorem.sh
 Ce projet est piloté avec l'orchestration cognitive **Google Antigravity CLI** :
 - **Règles d'ingénierie :** `.agents/rules/` (`PROJECT.md`, `API.md`, `BRAND.md`)
 - **Feuilles de route :** `roadmaps/` (actives) et `roadmaps/archives/` (clôturées à 100%)
-- **Journal des modifications :** Suivi strict sous [CHANGELOG.md](CHANGELOG.md) selon [Keep a Changelog 1.1.0](https://keepachangelog.com/fr/1.1.0/) et [SemVer 2.0.0](https://semver.org/lang/fr/).
+- **Journal des modifications :** Suivi strict sous `CHANGELOG.md` selon [Keep a Changelog 1.1.0](https://keepachangelog.com/fr/1.1.0/) et [SemVer 2.0.0](https://semver.org/lang/fr/).
 
 ---
 

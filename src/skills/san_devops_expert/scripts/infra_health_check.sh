@@ -2,7 +2,7 @@
 # ==============================================================================
 # SCRIPT OFFICIEL ANTIGRAVITY : INFRASTRUCTURE HEALTH CHECK (san_devops_expert)
 # Diagnostic Déterministe d'Infrastructure : SSL, DNS, Ports, Disque, Services
-# Framework : Google Antigravity (san_*) — alexsan.pro
+# Framework : Google Antigravity (san_*) v2.0
 # ==============================================================================
 set -euo pipefail
 
@@ -18,25 +18,61 @@ NC='\033[0m' # No Color
 ERRORS=0
 WARNINGS=0
 MODE_LOCAL=0
+WITH_MAIL=0
+TARGET_ARG=""
 
-# Analyse des arguments
-TARGET_ARG="${1:-alexsan.pro}"
-if [ "$TARGET_ARG" = "--local" ] || [ "${2:-}" = "--local" ]; then
+# Analyse des arguments de la ligne de commande
+for arg in "$@"; do
+  case "$arg" in
+    --local)
+      MODE_LOCAL=1
+      ;;
+    --with-mail)
+      WITH_MAIL=1
+      ;;
+    -*)
+      # Options supplémentaires ignorées
+      ;;
+    *)
+      if [ -z "$TARGET_ARG" ]; then
+        TARGET_ARG="$arg"
+      fi
+      ;;
+  esac
+done
+
+# Détection via variable d'environnement si non fourni en argument
+if [ -z "$TARGET_ARG" ]; then
+  TARGET_ARG="${TARGET_URL:-${TARGET_DOMAIN:-}}"
+fi
+
+# Résolution intelligente de la cible (fallback local par défaut sans domaine propriétaire codé en dur)
+if [ -z "$TARGET_ARG" ] || [ "$TARGET_ARG" = "--local" ]; then
   MODE_LOCAL=1
   DOMAIN="localhost"
-  MAIL_HOST="localhost"
   HEALTH_URL="http://localhost:3000/api/health"
 else
-  DOMAIN="$TARGET_ARG"
-  MAIL_HOST="${2:-mail.$DOMAIN}"
-  HEALTH_URL="https://$DOMAIN/api/health"
+  # Suppression du schéma protocolaire et des chemins résiduels
+  CLEAN_TARGET=$(echo "$TARGET_ARG" | sed -E 's|^https?://||; s|/.*$||')
+  if [ "$CLEAN_TARGET" = "localhost" ] || [ "$CLEAN_TARGET" = "127.0.0.1" ]; then
+    MODE_LOCAL=1
+    DOMAIN="localhost"
+    HEALTH_URL="http://localhost:3000/api/health"
+  else
+    DOMAIN="$CLEAN_TARGET"
+    HEALTH_URL="https://$DOMAIN/api/health"
+  fi
 fi
+
+MAIL_HOST="mail.$DOMAIN"
 
 echo -e "${BLUE}==================================================================${NC}"
 if [ "$MODE_LOCAL" -eq 1 ]; then
   echo -e "${BOLD}${BLUE}   ANTIGRAVITY INFRASTRUCTURE HEALTH CHECK [MODE LOCAL]           ${NC}"
+  echo -e "${CYAN}   Cible : ${HEALTH_URL}${NC}"
 else
   echo -e "${BOLD}${BLUE}   ANTIGRAVITY INFRASTRUCTURE HEALTH CHECK : ${DOMAIN}           ${NC}"
+  echo -e "${CYAN}   Cible : ${HEALTH_URL}${NC}"
 fi
 echo -e "${BLUE}==================================================================${NC}"
 
@@ -115,12 +151,15 @@ else
 fi
 
 # ------------------------------------------------------------------------------
-# 3. CONTRÔLE DNS & DÉLIVRABILITÉ E-MAIL (SPF / DKIM / DMARC / MX)
+# 3. CONTRÔLE DNS & DÉLIVRABILITÉ E-MAIL / MAILCOW (CONDITIONNÉ PAR --with-mail)
 # ------------------------------------------------------------------------------
 echo -e "\n${BLUE}[3/6] Contrôle DNS & Délivrabilité E-mail (SPF / DMARC / MX)...${NC}"
 if [ "$MODE_LOCAL" -eq 1 ]; then
   echo -e "${CYAN}ℹ [LOCAL] Contrôle DNS distant ignoré en mode local.${NC}"
+elif [ "$WITH_MAIL" -eq 0 ]; then
+  echo -e "${CYAN}ℹ Contrôle E-mail / Mailcow ignoré par défaut (fournir le flag --with-mail pour l'activer).${NC}"
 else
+  echo -e "${CYAN}ℹ Option --with-mail active : audit complet des enregistrements MX/SPF/DMARC et Mailcow...${NC}"
   if check_tool dig; then
     # SPF Check
     SPF_REC=$(dig TXT "$DOMAIN" +short 2>/dev/null | grep "v=spf1" || true)
@@ -153,6 +192,16 @@ else
     else
       echo -e "${RED}✖ Aucun enregistrement MX configuré pour ${DOMAIN} !${NC}"
       ERRORS=$((ERRORS + 1))
+    fi
+  fi
+
+  # Vérification conteneur Mailcow si Docker est présent
+  if command -v docker &>/dev/null; then
+    if docker ps --format '{{.Names}}' 2>/dev/null | grep -qi "mailcow"; then
+      echo -e "${GREEN}✔ Pile Mailcow détectée et active sous Docker.${NC}"
+    else
+      echo -e "${YELLOW}⚠ Aucun conteneur Docker Mailcow actif détecté.${NC}"
+      WARNINGS=$((WARNINGS + 1))
     fi
   fi
 fi
@@ -238,12 +287,23 @@ fi
 # ------------------------------------------------------------------------------
 echo -e "\n${BLUE}[6/6] Sonde HTTP Health Check (${HEALTH_URL})...${NC}"
 if check_tool curl; then
-  HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$HEALTH_URL" --max-time 5 2>/dev/null || true)
+  HTTP_CODE=$(curl -s -k -o /dev/null -w "%{http_code}" "$HEALTH_URL" --max-time 5 2>/dev/null || true)
   if [ "$HTTP_CODE" = "200" ]; then
     echo -e "${GREEN}✔ Endpoint de santé opérationnel (HTTP 200 OK sur ${HEALTH_URL}).${NC}"
   else
     if [ "$MODE_LOCAL" -eq 1 ]; then
-      echo -e "${CYAN}ℹ [LOCAL] Serveur HTTP local non démarré (code: ${HTTP_CODE:-injoignable}).${NC}"
+      # Fallback intelligent : si des artefacts statiques locaux existent, signaler sans bloquer
+      STATIC_FOUND=0
+      for static_dir in "dist" "out" "public" "build"; do
+        if [ -d "$static_dir" ]; then
+          echo -e "${CYAN}ℹ [LOCAL] Dossier statique local détecté ('${static_dir}/'). Serveur HTTP optionnel.${NC}"
+          STATIC_FOUND=1
+          break
+        fi
+      done
+      if [ "$STATIC_FOUND" -eq 0 ]; then
+        echo -e "${CYAN}ℹ [LOCAL] Serveur HTTP local non démarré (code: ${HTTP_CODE:-injoignable}).${NC}"
+      fi
     else
       echo -e "${RED}✖ Endpoint de santé en anomalie : code HTTP ${HTTP_CODE} reçu sur ${HEALTH_URL} !${NC}"
       ERRORS=$((ERRORS + 1))

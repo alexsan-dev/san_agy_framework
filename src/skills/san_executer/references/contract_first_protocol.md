@@ -269,7 +269,7 @@ Dès détection du rétablissement réseau (`online`), un worker dédié dépile
 
 ## 6. CHECKLIST DE CONTRÔLE CONTRACT-FIRST (AVANT DÉBLOCAGE DU FRONT)
 
-Avant d'autoriser le sous-agent [san_ux_ui_expert](san_ux_ui_expert.md) à écrire le moindre composant graphique :
+Avant d'autoriser le sous-agent [san_ux_ui_expert](../../san_ux_ui_expert/SKILL.md) à écrire le moindre composant graphique :
 
 - [ ] **Spécification validée :** Le fichier `.agents/rules/technicals/endpoints/[domaine]_[action].md` existe et définit URI, méthode, en-têtes et schémas d'erreur.
 - [ ] **Types partagés exportés :** Les schémas Zod et types TypeScript sont compilés sans erreur (`tsc --noEmit`).

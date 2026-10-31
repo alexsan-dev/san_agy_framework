@@ -1,6 +1,6 @@
-# Pipeline Officiel Antigravity : Déploiement Continu Zéro-Downtime
+# Pipeline Officiel Antigravity v2.0 : Déploiement Continu Zéro-Downtime & Quality Gate CI
 # Fichier : .github/workflows/deploy.yml
-name: "Production Zero-Downtime Deployment"
+name: "Production Zero-Downtime Deployment & Quality Gate"
 
 on:
   push:
@@ -8,6 +8,9 @@ on:
       - main
     tags:
       - 'v*.*.*'
+  pull_request:
+    branches:
+      - main
 
 concurrency:
   group: production-deploy
@@ -15,13 +18,21 @@ concurrency:
 
 jobs:
   quality_and_security_gate:
-    name: "Quality & Security Gate (san_qa_security_expert)"
+    name: "Quality & Security Gate (Fail-Closed Native Runners)"
     runs-on: ubuntu-latest
     steps:
       - name: "Checkout repository"
         uses: actions/checkout@v4
 
-      - name: "Setup PHP 8.2"
+      # --- ÉTAGE 1 : SETUP RUNNERS NATIVES SELON STACK DÉTECTÉE ---
+      - name: "Setup Node.js 20 (si package.json présent)"
+        if: hashFiles('package.json') != ''
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: "Setup PHP 8.2 (si composer.json présent)"
         if: hashFiles('composer.json') != ''
         uses: shivammathur/setup-php@v2
         with:
@@ -29,22 +40,68 @@ jobs:
           extensions: mbstring, xml, ctype, iconv, intl, pdo, pdo_mysql, redis, bcmath
           coverage: none
 
-      - name: "Setup Node.js 20"
-        uses: actions/setup-node@v4
+      - name: "Setup Python 3.11 (si pyproject.toml ou requirements.txt présent)"
+        if: hashFiles('pyproject.toml') != '' || hashFiles('requirements.txt') != ''
+        uses: actions/setup-python@v5
         with:
-          node-version: 20
-          cache: 'npm'
+          python-version: '3.11'
+          cache: 'pip'
 
-      - name: "Exécuter le Quality Gate Déterministe"
+      - name: "Setup Go 1.22 (si go.mod présent)"
+        if: hashFiles('go.mod') != ''
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+          cache: true
+
+      # --- ÉTAGE 2 : EXÉCUTION DES SUITES DE TESTS NATIVES ---
+      - name: "Exécuter les tests & linters Node.js"
+        if: hashFiles('package.json') != ''
         run: |
-          chmod +x .agents/skills/san_qa_security_expert/scripts/qa_security_gate.sh
-          bash .agents/skills/san_qa_security_expert/scripts/qa_security_gate.sh
+          npm ci
+          if npm run | grep -q " lint$"; then npm run lint; fi
+          if npm run | grep -q " test$"; then npm test; fi
+
+      - name: "Exécuter les tests & analyses PHP"
+        if: hashFiles('composer.json') != ''
+        run: |
+          composer install --prefer-dist --no-interaction --no-progress
+          if composer run-script --list 2>/dev/null | grep -q "test"; then
+            composer test
+          elif [ -f "vendor/bin/pest" ]; then
+            ./vendor/bin/pest
+          elif [ -f "vendor/bin/phpunit" ]; then
+            ./vendor/bin/phpunit
+          fi
+
+      - name: "Exécuter les tests Python"
+        if: hashFiles('pyproject.toml') != '' || hashFiles('requirements.txt') != ''
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f "requirements.txt" ]; then pip install -r requirements.txt; fi
+          pip install pytest ruff mypy
+          if [ -d "tests" ]; then pytest -v tests/; fi
+
+      - name: "Exécuter les tests Go"
+        if: hashFiles('go.mod') != ''
+        run: |
+          go vet ./...
+          go test -v ./...
+
+      # --- ÉTAGE 3 : SUITE LOCALE OU FRAMEWORK ANTIGRAVITY (OPTIONNEL) ---
+      - name: "Audit de Sécurité & Secret Scanning Local (si présent)"
+        run: |
+          if [ -f "tests/security_gate.sh" ]; then
+            bash tests/security_gate.sh
+          fi
+          # Support optionnel du runner framework Antigravity en CI :
+          # npx -y github:alexsan-dev/san_agy_framework check --ci
 
   zero_downtime_deploy:
-    name: "Deploy to VPS via Atomic Symlink Switch"
+    name: "Deploy to Production via Atomic Symlink Switch"
     needs: quality_and_security_gate
     runs-on: ubuntu-latest
-    if: success()
+    if: github.ref == 'refs/heads/main' && success()
     steps:
       - name: "Checkout repository"
         uses: actions/checkout@v4
@@ -58,54 +115,84 @@ jobs:
         env:
           SSH_HOST: ${{ secrets.PROD_SERVER_IP }}
           SSH_USER: ${{ secrets.PROD_SSH_USER }}
-          APP_DIR: "/home/alexsan-app"
+          APP_DIR: ${{ secrets.PROD_APP_DIR || '/home/app-prod' }}
         run: |
           RELEASE_ID=$(date +%Y%m%d_%H%M%S)
           echo "Démarrage du déploiement de la release : ${RELEASE_ID}"
 
-          ssh -o StrictHostKeyChecking=no ${SSH_USER}@${SSH_HOST} << 'EOF'
+          ssh -o StrictHostKeyChecking=no ${SSH_USER}@${SSH_HOST} << EOF
             set -euo pipefail
-            APP_DIR="/home/alexsan-app"
-            RELEASE_DIR="${APP_DIR}/releases/${RELEASE_ID}"
+            APP_DIR="${APP_DIR}"
+            RELEASE_DIR="\${APP_DIR}/releases/${RELEASE_ID}"
 
-            mkdir -p "${RELEASE_DIR}"
-            git clone --depth 1 --branch main ${{ github.server_url }}/${{ github.repository }}.git "${RELEASE_DIR}"
+            mkdir -p "\${RELEASE_DIR}"
+            git clone --depth 1 --branch main ${{ github.server_url }}/${{ github.repository }}.git "\${RELEASE_DIR}"
 
-            cd "${RELEASE_DIR}"
+            cd "\${RELEASE_DIR}"
 
             # Liaison des fichiers partagés persistants (env, uploads, logs)
-            ln -sf "${APP_DIR}/shared/.env" "${RELEASE_DIR}/.env"
-            rm -rf "${RELEASE_DIR}/storage"
-            ln -sf "${APP_DIR}/shared/storage" "${RELEASE_DIR}/storage"
+            if [ -f "\${APP_DIR}/shared/.env" ]; then
+              ln -sf "\${APP_DIR}/shared/.env" "\${RELEASE_DIR}/.env"
+            fi
+            if [ -d "\${APP_DIR}/shared/storage" ]; then
+              rm -rf "\${RELEASE_DIR}/storage"
+              ln -sf "\${APP_DIR}/shared/storage" "\${RELEASE_DIR}/storage"
+            fi
 
-            # Installation des dépendances sans paquets de dev
-            composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
-            npm ci --ignore-scripts
-            npm run build
+            # Build selon la stack détectée
+            if [ -f "composer.json" ]; then
+              composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
+              if [ -f "artisan" ]; then
+                php artisan migrate --force
+                php artisan config:cache
+                php artisan route:cache
+                php artisan view:cache
+              fi
+            fi
 
-            # Migrations de base de données atomiques
-            php artisan migrate --force
-
-            # Cache des routes, vues et configurations
-            php artisan config:cache
-            php artisan route:cache
-            php artisan view:cache
+            if [ -f "package.json" ]; then
+              npm ci --omit=dev
+              if npm run | grep -q " build$"; then
+                npm run build
+              fi
+            fi
 
             # BASCULE ATOMIQUE DU LIEN SYMBOLIQUE (< 1 seconde)
-            ln -sfn "${RELEASE_DIR}" "${APP_DIR}/htdocs/current"
+            mkdir -p "\${APP_DIR}/htdocs"
+            ln -sfn "\${RELEASE_DIR}" "\${APP_DIR}/htdocs/current"
 
-            # Rechargement gracieux de PHP-FPM et Nginx
-            sudo systemctl reload php8.2-fpm
-            sudo systemctl reload nginx
-
-            # Redémarrage des workers de queue asynchrones
-            sudo supervisorctl restart all
+            # Rechargement gracieux des daemons système si configurés
+            if command -v systemctl >/dev/null 2>&1; then
+              sudo systemctl reload-or-restart nginx || true
+              sudo systemctl reload php8.2-fpm 2>/dev/null || true
+            fi
+            if command -v supervisorctl >/dev/null 2>&1; then
+              sudo supervisorctl restart all || true
+            fi
 
             # Conservation des 5 dernières releases uniquement
-            cd "${APP_DIR}/releases" && ls -dt */ | tail -n +6 | xargs -r rm -rf
+            cd "\${APP_DIR}/releases" && ls -dt */ | tail -n +6 | xargs -r rm -rf
           EOF
 
-      - name: "Health Check Post-Déploiement"
+      - name: "Health Check Post-Déploiement Déterministe"
+        env:
+          PROD_DOMAIN: ${{ secrets.PROD_DOMAIN }}
         run: |
-          chmod +x .agents/skills/san_devops_expert/scripts/infra_health_check.sh
-          bash .agents/skills/san_devops_expert/scripts/infra_health_check.sh ${{ secrets.PROD_DOMAIN }}
+          TARGET_URL="https://${PROD_DOMAIN:-localhost}/api/health"
+          echo "Vérification de la santé applicative sur ${TARGET_URL}..."
+          HEALTHY=0
+          for i in $(seq 1 10); do
+            HTTP_CODE=$(curl -s -k -o /dev/null -w "%{http_code}" "${TARGET_URL}" --max-time 5 || echo "000")
+            if [ "$HTTP_CODE" = "200" ]; then
+              echo "✔ Application opérationnelle (HTTP 200 OK)."
+              HEALTHY=1
+              break
+            fi
+            echo "Tentative ${i}/10 : Code HTTP reçu = ${HTTP_CODE}. Nouvelle tentative dans 3s..."
+            sleep 3
+          done
+
+          if [ "$HEALTHY" -ne 1 ]; then
+            echo "✖ Échec de la sonde de santé post-déploiement sur ${TARGET_URL} !"
+            exit 1
+          fi

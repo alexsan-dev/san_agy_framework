@@ -17,6 +17,80 @@ et ce projet adhère à [Semantic Versioning](https://semver.org/lang/fr/).
 
 ---
 
+## [2.0.0] - 2026-10-31
+
+### Added
+- **Architecture v2.0 à 4 Couches :**
+  - **Couche 1 (Gouvernance Souveraine) :** Déploiement de `<root>/AGENTS.md` (sans frontmatter YAML, < 4096 octets, compatible `always_on` Antigravity & opencode) et des 5 règles normatives `.agents/rules/*.md` dotées des frontmatters YAML officiels (`PROJECT.md`, `PRODUCT.md`, `BRAND.md`, `API.md`, `LOGO.md`).
+  - **Couche 2 (8 Sous-Agents Natifs et Spécialisés) :** Création des définitions d'agents `.agents/agents/*.md` :
+    - `san-researcher` (`model: "flash"`, lecture seule, exploration et cartographie factuelle) ;
+    - `san-architect` (`model: "pro"`, Pre-Mortem à 6 mois, arbitrage 2-approches sans épouvantail, modèles de domaine) ;
+    - `san-designer-worker` (`model: "flash"`, maquettes HTML/Tailwind, archétypes visuels, rythme Gestalt, rendu headless PNG) ;
+    - `san-coder-back` (`model: "flash"`, dialectique avant frappe, transactions atomiques, vrais tests de domaine) ;
+    - `san-coder-front` (`model: "flash"`, modules < 220 lignes, 5 états Stale-While-Revalidate non destructifs, A11y clavier stricte) ;
+    - `san-qa-auditor` (`model: "pro"`, inquisiteur sceptique en lecture seule, audit de substance des tests, critique visuelle multimodale sur pixels réels PNG via `read_file`, verdict binaire `LIVRABLE | RETOUR_ATELIER`) ;
+    - `san-ops-devops` (`model: "flash"`, CI/CD, conteneurs, Nginx, diagnostics d'infrastructure Fail-Closed) ;
+    - `san-growth-legal` (`model: "flash"`, RGPD, conformité des stores, SEO/ASO, boucles d'acquisition).
+  - **Couche 3 (Garde-fous Mécaniques du Cycle de Vie) :** Orchestration via `.agents/hooks.json` et 3 scripts de hooks déterministes :
+    - `SessionStart` (`session_start.mjs`) : Détection automatique de la roadmap active et du `PROJECT_PROFILE`, injection du prompt système d'orchestration.
+    - `PreInvocation` (`pre_invocation.mjs`) : Rappel éphémère (< 110 tokens) interdisant le solo-coding et imposant le doute contradictoire avant toute frappe.
+    - `PreToolUse` (`pre_tool_guard.mjs`) : Interception de `write_file`/`edit_file`, blocage de l'archivage de roadmaps incomplètes (`- [ ]`), blocage du *Lorem Ipsum*, et respect des permissions utilisateur.
+  - **Couche 4 (17 Runbooks Impératifs de Compétences) :** Refonte intégrale des `SKILL.md` en runbooks directifs condensés ($\le 130$ lignes chacun) avec tables de routage, triggers d'intention et références spécialisées déportées.
+- **Ingénierie du Doute Contradictoire (*Doubt Engineering*) :**
+  - *Pre-Mortem Systémique* : Simulation des 3 causes majeures d'échec à 6 mois avant tout engagement architectural.
+  - *Dialectique Avant Frappe* : Formulation et comparaison obligatoire de 2 approches viables avant tout commit d'implémentation.
+  - *Visual Vision Loop* : Pipeline de capture headless Playwright (`export_png.mjs` avec micro-serveur HTTP éphémère Node sur `127.0.0.1:0`), inspection multimodale des pixels PNG via `read_file` par `san-qa-auditor`, et 1 passe de raffinement obligatoire avant livraison.
+  - *Inquisition QA & Présomption de Défaut* : Éradication de la complaisance du premier jet (*first-draft sycophancy*), traque du *Testing Theater*, et verdict binaire sans compromis.
+- **Profils Contextuels de Projet (`PROJECT_PROFILE`) :**
+  - Prise en charge modulaire de 5 profils dans les règles et scripts : `emerging_market` (résilience 3G, Mobile Money, Outbox offline), `global_saas`, `mobile_consumer`, `cli_devtools`, et `api_platform`.
+- **Packaging Plugin Officiel Antigravity (`src/plugin/plugin.json`) :**
+  - Manifeste v2.0.0 complet avec logo vectoriel, métadonnées, et compatibilité certifiée `agy plugin validate --strict`.
+- **Nouvelle Commande CLI `doctor` :**
+  - Diagnostic déterministe des 6 piliers de santé (Gouvernance, Règles normatives, Sous-agents natifs, Hooks de cycle de vie, Catalogue des 17 skills $\le 130$ lignes, Étanchéité Git) avec code retour `0` ou `1`.
+- **Sauvegarde Réversible (`.agents/backups/`) :**
+  - Remplacement de la suppression destructrice des anciennes configurations IA concurrentes par un déplacement horodaté dans `.agents/backups/legacy-ai-configs/<timestamp>/`.
+
+### Changed
+- **Refonte des 17 `SKILL.md` en Runbooks Impératifs ($\le 130$ lignes) :**
+  - Réduction drastique des pavés verbeux (de 300-600 lignes à $\le 130$ lignes directes) orientés passage à l'action immédiat et délégation aux sous-agents.
+- **Constitution Racine `AGENTS.md` Souveraine :**
+  - Déploiement par défaut à la racine du projet d'un `AGENTS.md` sans frontmatter YAML (< 4096 octets), assurant un chargement `always_on` automatique par le moteur Antigravity et `opencode`.
+- **Basculement Universel en Mode Fail-Closed :**
+  - Tous les Quality Gates (`qa_security_gate.sh`, `backend_quality_gate.sh`, `front_quality_gate.sh`, `e2e_verification_gate.sh`) exigent désormais des vérifications réelles et échouent (`exit 1`) si aucun test n'a tourné ou si un outil est manquant.
+- **Support Multi-Stack Élargi :**
+  - `backend_quality_gate.sh` prend en charge nativement Node/TypeScript (NestJS, Express, Fastify), Python (`ruff`, `mypy`, `pytest`), Go (`go vet`, `go test`), en plus de PHP / Laravel / AdonisJS.
+- **Moteur CLI (`src/cli/`) :**
+  - `san-framework init --local` déploie les 4 couches complètes avec Smart Merge sans écraser les règles personnalisées.
+  - `san-framework init --global` assemble le Plugin officiel Antigravity complet.
+  - `san-framework update` permet une migration instantanée v1.0 $\rightarrow$ v2.0 sans écraser les personnalisations du développeur.
+
+### Removed
+- **Suppression Formelle de `rules.json` :** Fichier obsolète et non reconnu par le moteur Antigravity définitivement supprimé.
+- **Éradication de `--passWithNoTests` :** Interdiction des faux succès sans tests dans `qa_security_gate.sh`.
+- **Suppression des `rm -rf` Destructeurs :** Élimination des suppressions irrémédiables dans `git_ai_hygiene.sh`.
+- **Suppression des Domaines Propriétaires en Dur :** Retrait de toute référence codée en dur à `alexsan.pro` dans les scripts d'infrastructure (`infra_health_check.sh`, `verify_tracking_and_seo.sh`) et de la référence `.agents/` en CI (`DEPLOYMENT_WORKFLOW.yml`).
+
+### Fixed
+- **Correction de 12 Vulnérabilités Logiques et Techniques :**
+  1. Fuites d'effets de bord `useEffect` sans fonction de nettoyage détectées dans `front_quality_gate.sh`.
+  2. Élimination du bypass d'audit de sécurité des dépendances (`|| true`) dans `front_quality_gate.sh`.
+  3. Faux succès `[0/4 checks] -> exit 0` éliminé dans `backend_quality_gate.sh`.
+  4. Faux succès statique Bruno dans `e2e_verification_gate.sh` requérant désormais l'exécution réelle d'une suite de tests API.
+  5. Détection des composants monolithiques (> 300 lignes) et des `<div onClick>` inaccessibles.
+  6. Détection et blocage des chaînes de connexion BDD avec identifiants en clair (`postgresql://`, `mysql://`, `mongodb://`, `redis://`).
+  7. Parsing réel des sections spacing, radii et typography de `BRAND.md` dans `build_tokens.mjs`, avec `process.exit(1)` en cas d'échec de contraste WCAG.
+  8. Unification du parser `CANVAS_SPEC` et basculement de `file://` vers un serveur HTTP éphémère local Node dans `export_png.mjs` pour éliminer les blocages CORS.
+  9. Duplication de 4 arguments Node corrigée dans `doc_scraper.sh` et remplacement du blocage rigide par un avertissement tracé.
+  10. Retrait des faux positifs en langue française (`tata`, `toto`, `titi`, attribut `placeholder`) dans `check_lorem.sh`.
+  11. Adaptation du score d'idées `score_idea.py` selon le `PROJECT_PROFILE` pour ne plus disqualifier arbitrairement les outils SaaS et CLI.
+  12. Préservation de `AGENTS.md` racine lors des purges d'hygiène Git.
+
+### Security
+- **Détection Étendue des Secrets :** Regex renforcée couvrant les URLs de bases de données avec mots de passe, les signatures webhooks (`whsec_`), les clés API tierces et les tokens sensibles codés en dur.
+- **Isolation Hermétique Git :** Verrouillage automatique bidirectionnel `.gitignore` et `.git/info/exclude` garantissant zéro fuite d'artefacts internes.
+
+---
+
 ## [1.1.0] - 2026-10-29
 
 ### Added

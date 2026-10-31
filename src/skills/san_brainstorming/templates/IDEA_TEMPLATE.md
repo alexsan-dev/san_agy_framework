@@ -160,7 +160,7 @@ Expliquer pourquoi les solutions classiques ou occidentales ne fonctionnent pas 
 
 ### 5.2 Question d'Arbitrage Fermée pour le Développeur
 > **Question au Développeur :**  
-> *« Validez-vous la sélection de l'Option A (Score : {{SCORE_A}}/40) pour transmission immédiate à [san_planner](../skills/san_planner.md) afin de générer la roadmap `/roadmaps/MVP_{{THEME}}_{{DATE_COMPACT}}.md` ? »*  
+> *« Validez-vous la sélection de l'Option A (Score : {{SCORE_A}}/40) pour transmission immédiate à [san_planner](../../san_planner/SKILL.md) afin de générer la roadmap `/roadmaps/MVP_{{THEME}}_{{DATE_COMPACT}}.md` ? »*  
 > - `[OUI]` -> Déclenche le passage du statut à `VALIDÉ_POUR_ROADMAP` et le transfert vers `san_planner`.  
 > - `[NON / AJUSTEMENT]` -> Spécifier les paramètres à recalculer.
 

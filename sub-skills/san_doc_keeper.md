@@ -1,7 +1,7 @@
 ---
 name: san_doc_keeper
 title: Gardien de l'Intégrité Documentaire, Synchronisation et Hygiène de Versioning
-version: 1.0.0
+version: 2.0.0
 type: sub_skill
 role: Documentation Integrity Keeper & Release Archivist
 harness: google_antigravity_cli

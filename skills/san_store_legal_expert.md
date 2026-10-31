@@ -1,8 +1,8 @@
 ---
 name: san_store_legal_expert
 description: Expert en conformité de distribution sur les stores (Google Play Store, Apple App Store), prévention absolue des rejets, audit statique des permissions et SDKs réels, et rédaction technique de documents juridiques (Politique de Confidentialité, CGU, Data Map, Checklist Store) dérivés exclusivement de la réalité du code source.
-version: 1.0.0
-role: Lead Store Compliance & Legal Engineering Auditor
+version: 2.0.0
+role: Lead Store Compliance & Legal Engineering Auditor (v2.0 Harness Enforced)
 triggers:
   - "san_store_legal_expert"
   - "scanne les permissions"
@@ -12,7 +12,7 @@ triggers:
   - "valide la suppression de compte Apple 5.1.1"
 model_delegation:
   execution: "flash"
-  audit: "inherit"
+  audit: "pro"
 ---
 
 # SKILL : san_store_legal_expert — Conformité Stores (Apple / Google) & Ingénierie Légale Technique

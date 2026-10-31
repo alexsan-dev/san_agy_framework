@@ -82,48 +82,44 @@ GLOBAL_FAILURE=0
 # ==============================================================================
 echo -e "${BLUE}${BOLD}--- [1/3] EXÉCUTION DU QUALITY GATE FRONTEND ---${NC}"
 
-# Recherche d'un script dédié front_quality_gate.sh
-FRONT_SCRIPT=""
-POSSIBLE_FRONT_PATHS=(
-  "${CURRENT_DIR}/scripts/front_quality_gate.sh"
-  "${CURRENT_DIR}/.agents/skills/san_ux_ui_expert/scripts/front_quality_gate.sh"
-  "${SCRIPT_DIR}/../../san_ux_ui_expert/scripts/front_quality_gate.sh"
-)
+HAS_FRONTEND=0
+if [[ -f "tsconfig.json" ]] || \
+   ([[ -f "package.json" ]] && (grep -qE '"react"|"vue"|"svelte"|"expo"|"next"|"nuxt"|"vite"' package.json 2>/dev/null || [[ ! -f "composer.json" && ! -f "artisan" && ! -f "go.mod" && ! -f "pyproject.toml" ]])) || \
+   [ -n "$(find . -maxdepth 3 -type f \( -name "*.tsx" -o -name "*.jsx" -o -name "*.vue" -o -name "*.svelte" \) 2>/dev/null | head -n 1)" ]; then
+  HAS_FRONTEND=1
+fi
 
-for p in "${POSSIBLE_FRONT_PATHS[@]}"; do
-  if [[ -f "$p" ]]; then
-    FRONT_SCRIPT="$p"
-    break
-  fi
-done
+if [[ $HAS_FRONTEND -eq 1 ]]; then
+  # Recherche d'un script dédié front_quality_gate.sh
+  FRONT_SCRIPT=""
+  POSSIBLE_FRONT_PATHS=(
+    "${CURRENT_DIR}/scripts/front_quality_gate.sh"
+    "${CURRENT_DIR}/.agents/skills/san_ux_ui_expert/scripts/front_quality_gate.sh"
+    "${SCRIPT_DIR}/../../san_ux_ui_expert/scripts/front_quality_gate.sh"
+  )
 
-if [[ -n "$FRONT_SCRIPT" ]]; then
-  echo -e "${CYAN}ℹ Script Frontend dédié détecté : ${FRONT_SCRIPT}${NC}"
-  set +e
-  bash "$FRONT_SCRIPT"
-  FRONT_CODE=$?
-  set -e
-  if [[ $FRONT_CODE -eq 0 ]]; then
-    echo -e "${GREEN}✔ Gate Frontend (scripté) validé avec succès.${NC}"
-    FRONT_STATUS="PASS"
-  else
-    echo -e "${RED}✖ ÉCHEC : Le Quality Gate Frontend a échoué (code: ${FRONT_CODE}).${NC}"
-    FRONT_STATUS="FAIL"
-    GLOBAL_FAILURE=1
-  fi
-else
-  # Pas de script dédié, exécution des vérifications natives si stack frontend détectée
-  IS_FRONT=0
-  if [[ -f "package.json" || -f "tsconfig.json" || -d "src" || -d "app" ]]; then
-    # Distinguer un projet JS/TS frontend ou fullstack d'un projet backend pur
-    if [[ ! -f "artisan" && ! -f "composer.json" ]] || [[ -f "tsconfig.json" ]] || grep -qE '"react"|"vue"|"svelte"|"expo"|"next"|"nuxt"' package.json 2>/dev/null; then
-      IS_FRONT=1
-    elif [[ -f "package.json" ]] && grep -q '"test"' package.json 2>/dev/null; then
-      IS_FRONT=1
+  for p in "${POSSIBLE_FRONT_PATHS[@]}"; do
+    if [[ -f "$p" ]]; then
+      FRONT_SCRIPT="$p"
+      break
     fi
-  fi
+  done
 
-  if [[ $IS_FRONT -eq 1 ]]; then
+  if [[ -n "$FRONT_SCRIPT" ]]; then
+    echo -e "${CYAN}ℹ Script Frontend dédié détecté : ${FRONT_SCRIPT}${NC}"
+    set +e
+    bash "$FRONT_SCRIPT"
+    FRONT_CODE=$?
+    set -e
+    if [[ $FRONT_CODE -eq 0 ]]; then
+      echo -e "${GREEN}✔ Gate Frontend (scripté) validé avec succès.${NC}"
+      FRONT_STATUS="PASS"
+    else
+      echo -e "${RED}✖ ÉCHEC : Le Quality Gate Frontend a échoué (code: ${FRONT_CODE}).${NC}"
+      FRONT_STATUS="FAIL"
+      GLOBAL_FAILURE=1
+    fi
+  else
     echo -e "${CYAN}ℹ Stack Frontend détectée. Exécution des contrôles intégrés...${NC}"
     FRONT_LOCAL_FAIL=0
 
@@ -191,10 +187,10 @@ else
       FRONT_STATUS="FAIL"
       GLOBAL_FAILURE=1
     fi
-  else
-    echo -e "${YELLOW}ℹ Aucun composant Frontend détecté dans cet environnement.${NC}"
-    FRONT_STATUS="SKIPPED"
   fi
+else
+  echo -e "${YELLOW}ℹ Aucun composant Frontend détecté dans cet environnement.${NC}"
+  FRONT_STATUS="SKIPPED"
 fi
 
 echo ""
@@ -316,6 +312,8 @@ echo ""
 # ==============================================================================
 echo -e "${BLUE}${BOLD}--- [3/3] VÉRIFICATION DES CONTRATS D'API & BRUNO ---${NC}"
 
+API_VERIFICATION_NOTE=""
+
 if [[ $SKIP_BRUNO -eq 1 ]]; then
   echo -e "${YELLOW}ℹ Tests Bruno ignorés via flag --skip-bruno.${NC}"
   BRUNO_STATUS="SKIPPED"
@@ -328,7 +326,7 @@ elif [[ -d "bruno" ]]; then
     BRUNO_CODE=$?
     set -e
     if [[ $BRUNO_CODE -eq 0 ]]; then
-      echo -e "${GREEN}✔ Assertions Bruno 100% validées.${NC}"
+      echo -e "${GREEN}✔ Assertions Bruno 100% validées dynamiquement.${NC}"
       BRUNO_STATUS="PASS"
     else
       echo -e "${RED}✖ ÉCHEC : Des assertions de requêtes Bruno ont échoué.${NC}"
@@ -352,8 +350,20 @@ elif [[ -d "bruno" ]]; then
         BRUNO_STATUS="FAIL"
         GLOBAL_FAILURE=1
       else
-        echo -e "${GREEN}✔ Syntaxe et métadonnées des collections Bruno conformes.${NC}"
-        BRUNO_STATUS="PASS"
+        echo -e "${YELLOW}  ⚠ Syntaxe et métadonnées des collections Bruno conformes (analyse statique).${NC}"
+        echo -e "${YELLOW}  ⚠ Attention : Aucun test HTTP dynamique exécuté par 'bru' CLI.${NC}"
+        BRUNO_STATUS="STATIC_ONLY_UNVERIFIED"
+
+        # Mode Fail-Closed : Exiger qu'au moins une suite réelle de tests d'intégration API
+        # (Bruno dynamique, Supertest, Pest HTTP, Pytest ou Go httptest) ait été exécutée avec exit 0
+        if [[ "$BACKEND_STATUS" == "PASS" ]]; then
+          echo -e "${GREEN}✔ Contrats d'API certifiés via la suite d'intégration backend (Pest/Supertest/Pytest/Go) validée au vert.${NC}"
+          API_VERIFICATION_NOTE="Validé via la suite de tests d'intégration Backend"
+        else
+          echo -e "${RED}✖ ÉCHEC (FAIL-CLOSED) : 'bru' CLI n'a rien exécuté et aucune suite d'intégration API alternative n'a tourné avec succès.${NC}"
+          echo -e "${RED}  Fin du Testing Theater : Au moins une suite réelle de tests d'intégration API (exit 0) est requise.${NC}"
+          GLOBAL_FAILURE=1
+        fi
       fi
     else
       echo -e "${YELLOW}ℹ Aucune requête .bru trouvée dans 'bruno/'.${NC}"
@@ -384,11 +394,17 @@ echo -e "${BLUE}================================================================
 format_status() {
   local status="$1"
   case $status in
-    PASS)
+    PASS*)
       echo -e "${GREEN}${BOLD}[ PASS ]${NC}"
       ;;
     FAIL)
       echo -e "${RED}${BOLD}[ FAIL ]${NC}"
+      ;;
+    STATIC_ONLY_UNVERIFIED)
+      echo -e "${YELLOW}${BOLD}[ STATIC_ONLY_UNVERIFIED ]${NC}"
+      ;;
+    NOT_RUN)
+      echo -e "${YELLOW}[ NOT_RUN ]${NC}"
       ;;
     SKIPPED)
       echo -e "${YELLOW}[ SKIPPED ]${NC}"
@@ -402,7 +418,21 @@ format_status() {
 echo -e "  1. Quality Gate Frontend (UI, typage, tests)  : $(format_status "$FRONT_STATUS")"
 echo -e "  2. Quality Gate Backend (Logique, tests, N+1) : $(format_status "$BACKEND_STATUS")"
 echo -e "  3. Contrats d'API Bruno (Assertions HTTP)     : $(format_status "$BRUNO_STATUS")"
+if [[ -n "$API_VERIFICATION_NOTE" ]]; then
+  echo -e "     ↳ ${CYAN}Note : ${API_VERIFICATION_NOTE}${NC}"
+fi
 echo -e "${BLUE}======================================================================${NC}"
+
+CHECKS_RUN=0
+if [[ "$FRONT_STATUS" == "PASS" ]]; then
+  CHECKS_RUN=$((CHECKS_RUN + 1))
+fi
+if [[ "$BACKEND_STATUS" == "PASS" ]]; then
+  CHECKS_RUN=$((CHECKS_RUN + 1))
+fi
+if [[ "$BRUNO_STATUS" == "PASS" ]]; then
+  CHECKS_RUN=$((CHECKS_RUN + 1))
+fi
 
 if [[ $GLOBAL_FAILURE -ne 0 ]]; then
   echo -e "${RED}${BOLD}[VERDICT : ÉCHEC] L'Étage 1 du Quality Gate n'est pas validé.${NC}"
@@ -410,6 +440,12 @@ if [[ $GLOBAL_FAILURE -ne 0 ]]; then
   exit 1
 fi
 
-echo -e "${GREEN}${BOLD}[VERDICT : SUCCÈS TOTAL] L'Étage 1 est 100% vert.${NC}"
+if [[ $CHECKS_RUN -eq 0 ]] || [[ "$FRONT_STATUS" == "SKIPPED" && "$BACKEND_STATUS" == "SKIPPED" && ( "$BRUNO_STATUS" == "SKIPPED" || "$BRUNO_STATUS" == "STATIC_ONLY_UNVERIFIED" ) ]]; then
+  echo -e "${RED}${BOLD}[VERDICT : ÉCHEC (FAIL-CLOSED)] Aucun contrôle réel n'a été exécuté (CHECKS_RUN == 0).${NC}"
+  echo -e "${RED}Tous les composants sont SKIPPED ou non exécutés. Fin du Testing Theater : au moins un gate réel doit être exécuté et validé.${NC}"
+  exit 1
+fi
+
+echo -e "${GREEN}${BOLD}[VERDICT : SUCCÈS TOTAL] L'Étage 1 est 100% vert (${CHECKS_RUN} composant(s) validé(s)).${NC}"
 echo -e "${GREEN}Autorisation formelle accordée pour le passage à l'Étage 2 (Audit LLM & Pentest).${NC}"
 exit 0

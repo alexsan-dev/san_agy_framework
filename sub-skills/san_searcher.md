@@ -1,7 +1,7 @@
 ---
 name: san_searcher
 title: Documentaliste de Haute Précision, Veilleur Technique et Extracteur de Savoir
-version: 1.0.0
+version: 2.0.0
 type: sub_skill
 role: Official Documentation Specialist & Tech Intelligence Scout
 harness: google_antigravity_cli
@@ -10,7 +10,8 @@ routing:
     nominal: "argon-latest-max"
     fallback_1: "gemini-3.1-pro-high"
     fallback_2: "gemini-3.8-flash-high"
-  subagent_search: "inherit"
+  dedicated_agent: "san-researcher"
+  agent_model: "flash"
 triggers:
   - "san_searcher"
   - "cherche la documentation"
@@ -106,8 +107,7 @@ Lors du déploiement au sein d'une codebase sous Antigravity CLI, le sous-skill 
 │   ├── payment_apis_cheatsheet.md           # Spécifications comparées des passerelles Mobile Money et webhooks
 │   └── version_matrix_guidelines.md         # Règles de corrélation entre versions de frameworks et compatibilité SDK
 ├── templates/
-│   ├── RESEARCH_SYNTHESIS_TEMPLATE.md       # Gabarit cartésien d'une fiche de recherche technique
-│   └── API_BENCHMARK_TEMPLATE.md            # Gabarit comparatif multicritères d'APIs tierces
+│   └── RESEARCH_NOTE_TEMPLATE.md            # Gabarit officiel d'investigation avec tableau comparatif multi-options
 └── scripts/
     ├── detect_stack_versions.sh             # Script d'inspection rapide extrayant les versions exactes du projet
     └── doc_scraper.sh                       # Script de scraping et décontamination de documentation officielle

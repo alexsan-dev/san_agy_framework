@@ -4,9 +4,11 @@
 // MODULE : san_exporter
 // FRAMEWORK : Antigravity (san_*)
 // DESCRIPTION : Moteur de capture headless déterministe Playwright multi-formats
-//               avec synchronisation des polices, attente réseau et empreinte SHA-256.
+//               avec micro-serveur HTTP éphémère anti-CORS, synchronisation des
+//               polices et calcul d'empreinte SHA-256.
 // ==============================================================================
 
+import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
@@ -31,6 +33,7 @@ const TARGET_PRESETS = {
   ipad: { width: 2048, height: 2732, label: 'Apple iPad Pro 12.9" (2048x2732)' },
   feature: { width: 1024, height: 500, label: 'Google Play Feature Graphic (1024x500)' },
   desktop: { width: 1920, height: 1080, label: 'Desktop Full HD 16:9 (1920x1080)' },
+  web: { width: 1440, height: 900, label: 'Web Desktop Responsive (1440x900)' },
   print: { width: 2480, height: 3508, label: 'Print A4 Portrait 300 DPI (2480x3508)' },
   'print-landscape': { width: 3508, height: 2480, label: 'Print A4 Paysage 300 DPI (3508x2480)' },
   banner: { width: 1200, height: 630, label: 'Bannière OpenGraph / Social (1200x630)' }
@@ -49,6 +52,7 @@ ${ANSI.bold}OPTIONS :${ANSI.reset}
   -t, --target <cible>       Preset de résolution ou dossier de lot :
                              • playstore       (1080x1920 px - Play Store 9:16)
                              • appstore        (1290x2796 px - App Store iPhone 6.7")
+                             • web             (1440x900 px  - Web Desktop Responsive)
                              • feature         (1024x500 px  - Play Store Feature Graphic)
                              • desktop         (1920x1080 px - Desktop Full HD 16:9)
                              • print           (2480x3508 px - Document A4 300 DPI)
@@ -86,7 +90,7 @@ for (let i = 0; i < rawArgs.length; i++) {
   } else if (arg === '--target' || arg === '-t') {
     targetPresetName = rawArgs[++i] || '';
   } else if (arg === '--scale' || arg === '-s') {
-    customScale = parseInt(rawArgs[++i], 10);
+    customScale = parseFloat(rawArgs[++i]);
   } else if (arg === '--out' || arg === '-o') {
     outputFile = rawArgs[++i] || '';
   } else if (arg === '--dir' || arg === '-d') {
@@ -98,7 +102,7 @@ for (let i = 0; i < rawArgs.length; i++) {
   } else if (arg.startsWith('--target=')) {
     targetPresetName = arg.split('=')[1];
   } else if (arg.startsWith('--scale=')) {
-    customScale = parseInt(arg.split('=')[1], 10);
+    customScale = parseFloat(arg.split('=')[1]);
   } else if (arg.startsWith('--out=')) {
     outputFile = arg.split('=')[1];
   } else if (arg.startsWith('--dir=')) {
@@ -114,42 +118,43 @@ if (targetPresetName && fs.existsSync(targetPresetName) && fs.statSync(targetPre
   targetPresetName = '';
 }
 
-// 3. Extraction Automatique des Métadonnées <!-- CANVAS_SPEC ... -->
+// 3. Extraction Automatique et Unifiée des Métadonnées <!-- CANVAS_SPEC ... -->
 function parseCanvasSpec(htmlContent, fallbackPresetKey, cliScale) {
   let width = 1080;
   let height = 1920;
   let scale = 1;
   let detectedTarget = '';
+  let device = 'Standard Canvas';
 
-  // Recherche du commentaire CANVAS_SPEC
-  // Syntaxes supportées :
-  // <!-- CANVAS_SPEC: width=1290px height=2796px export_scale=1 -->
-  // <!-- CANVAS_SPEC: target=playstore scale=2 -->
-  // <!-- CANVAS_SPEC width="1080" height="1920" -->
   const specMatch = htmlContent.match(/<!--\s*CANVAS_SPEC:?\s*([^>]+)-->/i);
   if (specMatch) {
     const rawSpec = specMatch[1];
 
-    const targetMatch = rawSpec.match(/target=["']?([a-zA-Z0-9_-]+)["']?/i);
+    const targetMatch = rawSpec.match(/target=["']?([a-zA-Z0-9_.-]+)["']?/i);
     if (targetMatch) {
       detectedTarget = targetMatch[1].toLowerCase();
       if (TARGET_PRESETS[detectedTarget]) {
         width = TARGET_PRESETS[detectedTarget].width;
         height = TARGET_PRESETS[detectedTarget].height;
+        device = TARGET_PRESETS[detectedTarget].label;
       }
     }
 
+    // Accepte width=1080, width=1080px, width="1080"
     const widthMatch = rawSpec.match(/width=["']?([0-9]+)(?:px)?["']?/i);
     const heightMatch = rawSpec.match(/height=["']?([0-9]+)(?:px)?["']?/i);
-    const scaleMatch = rawSpec.match(/(?:export_scale|scale)=["']?([0-9]+)["']?/i);
+    const deviceMatch = rawSpec.match(/device=["']([^"']+)["']/i);
+    const scaleMatch = rawSpec.match(/(?:export_scale|scale)=["']?([0-9.]+)(?:x)?["']?/i);
 
     if (widthMatch) width = parseInt(widthMatch[1], 10);
     if (heightMatch) height = parseInt(heightMatch[1], 10);
-    if (scaleMatch) scale = parseInt(scaleMatch[1], 10);
+    if (deviceMatch) device = deviceMatch[1];
+    if (scaleMatch) scale = parseFloat(scaleMatch[1]);
   } else if (fallbackPresetKey && TARGET_PRESETS[fallbackPresetKey.toLowerCase()]) {
     const preset = TARGET_PRESETS[fallbackPresetKey.toLowerCase()];
     width = preset.width;
     height = preset.height;
+    device = preset.label;
     detectedTarget = fallbackPresetKey.toLowerCase();
   }
 
@@ -161,9 +166,10 @@ function parseCanvasSpec(htmlContent, fallbackPresetKey, cliScale) {
     const preset = TARGET_PRESETS[fallbackPresetKey.toLowerCase()];
     width = preset.width;
     height = preset.height;
+    device = preset.label;
   }
 
-  return { width, height, scale, detectedTarget };
+  return { width, height, scale, device, detectedTarget };
 }
 
 function computeSha256(filePath) {
@@ -171,8 +177,71 @@ function computeSha256(filePath) {
   return crypto.createHash('sha256').update(fileBuffer).digest('hex');
 }
 
-// 4. Exécution de la capture pour un fichier donné
-async function captureHtmlFile(browser, filePath, outPath, presetKey, cliScale, manifestList) {
+// Micro-serveur HTTP éphémère pour neutraliser les blocages CORS (Google Fonts / assets locaux)
+function createEphemeralServer(rootDir) {
+  return new Promise((resolve, reject) => {
+    const server = http.createServer((req, res) => {
+      let rawPath = decodeURIComponent(req.url.split('?')[0]);
+      if (rawPath === '/') rawPath = '/index.html';
+      const safePath = path.normalize(rawPath).replace(/^(\.\.[\/\\])+/, '');
+      const filePath = path.join(rootDir, safePath);
+
+      if (!filePath.startsWith(rootDir)) {
+        res.statusCode = 403;
+        res.end('Forbidden');
+        return;
+      }
+
+      fs.stat(filePath, (err, stats) => {
+        if (err || !stats.isFile()) {
+          res.statusCode = 404;
+          res.end('Not Found');
+          return;
+        }
+
+        const ext = path.extname(filePath).toLowerCase();
+        const mimeTypes = {
+          '.html': 'text/html; charset=utf-8',
+          '.css': 'text/css; charset=utf-8',
+          '.js': 'application/javascript; charset=utf-8',
+          '.json': 'application/json; charset=utf-8',
+          '.png': 'image/png',
+          '.jpg': 'image/jpeg',
+          '.jpeg': 'image/jpeg',
+          '.gif': 'image/gif',
+          '.svg': 'image/svg+xml',
+          '.webp': 'image/webp',
+          '.woff': 'font/woff',
+          '.woff2': 'font/woff2',
+          '.ttf': 'font/ttf'
+        };
+
+        const contentType = mimeTypes[ext] || 'application/octet-stream';
+        res.writeHead(200, {
+          'Content-Type': contentType,
+          'Access-Control-Allow-Origin': '*',
+          'Cache-Control': 'no-cache, no-store, must-revalidate'
+        });
+        fs.createReadStream(filePath).pipe(res);
+      });
+    });
+
+    server.listen(0, '127.0.0.1', () => {
+      const port = server.address().port;
+      resolve({
+        server,
+        port,
+        baseUrl: `http://127.0.0.1:${port}`,
+        close: () => new Promise(resClose => server.close(resClose))
+      });
+    });
+
+    server.on('error', reject);
+  });
+}
+
+// 4. Exécution de la capture pour un fichier donné via HTTP local
+async function captureHtmlFile(browser, filePath, outPath, presetKey, cliScale, manifestList, serverBaseUrl, rootDir) {
   const absoluteHtmlPath = path.resolve(filePath);
   if (!fs.existsSync(absoluteHtmlPath)) {
     throw new Error(`Fichier HTML introuvable : ${absoluteHtmlPath}`);
@@ -182,7 +251,7 @@ async function captureHtmlFile(browser, filePath, outPath, presetKey, cliScale, 
   const spec = parseCanvasSpec(content, presetKey, cliScale);
 
   console.log(`\n${ANSI.bold}${ANSI.cyan}📸 [san_exporter] Traitement de : ${path.basename(filePath)}${ANSI.reset}`);
-  console.log(`   Dimensions : ${spec.width}×${spec.height} px | Échelle (DPI) : ${spec.scale}x`);
+  console.log(`   Dimensions : ${spec.width}×${spec.height} px | Échelle (DPI) : ${spec.scale}x | Cible : ${spec.device}`);
 
   const page = await browser.newPage({
     viewport: { width: spec.width, height: spec.height },
@@ -190,9 +259,10 @@ async function captureHtmlFile(browser, filePath, outPath, presetKey, cliScale, 
   });
 
   try {
-    const fileUrl = `file://${absoluteHtmlPath}`;
+    const relativeToRoot = path.relative(rootDir, absoluteHtmlPath).split(path.sep).join('/');
+    const fileUrl = `${serverBaseUrl}/${encodeURI(relativeToRoot)}`;
 
-    // 1. Synchronisation réseau : attente stricte de networkidle
+    // 1. Synchronisation réseau : attente stricte de networkidle via serveur éphémère anti-CORS
     await page.goto(fileUrl, { waitUntil: 'networkidle', timeout: 30000 });
 
     // 2. Synchronisation typographique : attente de la rastérisation des polices
@@ -203,7 +273,7 @@ async function captureHtmlFile(browser, filePath, outPath, presetKey, cliScale, 
     });
 
     // 3. Pause stabilisatrice déterministe pour absorber les transitions CSS initiales
-    await page.waitForTimeout(150);
+    await page.waitForTimeout(200);
 
     const resolvedOutPath = path.resolve(outPath);
     fs.mkdirSync(path.dirname(resolvedOutPath), { recursive: true });
@@ -221,8 +291,8 @@ async function captureHtmlFile(browser, filePath, outPath, presetKey, cliScale, 
     manifestList.push({
       file: path.relative(process.cwd(), resolvedOutPath),
       source: path.relative(process.cwd(), absoluteHtmlPath),
-      width: spec.width * spec.scale,
-      height: spec.height * spec.scale,
+      width: Math.round(spec.width * spec.scale),
+      height: Math.round(spec.height * spec.scale),
       scale: spec.scale,
       size_bytes: stats.size,
       sha256: sha,
@@ -244,7 +314,7 @@ async function main() {
     process.exit(1);
   }
 
-  // Vérification de la disponibilité du module Playwright
+  // Vérification de la disponibilité du module Playwright avec fallback gracieux
   let chromium;
   try {
     const playwrightModule = await import('playwright');
@@ -281,12 +351,22 @@ async function main() {
     process.exit(1);
   }
 
+  // Détermination du répertoire racine à servir via le micro-serveur éphémère
+  const targetPath = targetFile ? path.resolve(targetFile) : path.resolve(targetDir);
+  const serveRootDir = fs.existsSync(targetPath) && fs.statSync(targetPath).isDirectory()
+    ? targetPath
+    : path.dirname(targetPath);
+
+  let ephemeralServer = null;
   const manifestList = [];
 
   try {
+    ephemeralServer = await createEphemeralServer(serveRootDir);
+    console.log(`${ANSI.gray}📡 Micro-serveur éphémère actif sur ${ephemeralServer.baseUrl} (anti-CORS)${ANSI.reset}`);
+
     if (targetFile) {
       const out = outputFile || targetFile.replace(/\.html$/i, '.png');
-      await captureHtmlFile(browser, targetFile, out, targetPresetName, customScale, manifestList);
+      await captureHtmlFile(browser, targetFile, out, targetPresetName, customScale, manifestList, ephemeralServer.baseUrl, serveRootDir);
     } else if (targetDir) {
       const resolvedDir = path.resolve(targetDir);
       if (!fs.existsSync(resolvedDir)) {
@@ -299,7 +379,7 @@ async function main() {
       for (const f of files) {
         const fullHtml = path.join(resolvedDir, f);
         const out = path.join(resolvedDir, f.replace(/\.html$/i, '.png'));
-        await captureHtmlFile(browser, fullHtml, out, targetPresetName, customScale, manifestList);
+        await captureHtmlFile(browser, fullHtml, out, targetPresetName, customScale, manifestList, ephemeralServer.baseUrl, serveRootDir);
       }
     }
 
@@ -341,6 +421,10 @@ async function main() {
 
     console.log(`\n${ANSI.bold}${ANSI.green}✨ [SUCCÈS] Opération d'exportation déterministe achevée avec succès.${ANSI.reset}`);
   } finally {
+    if (ephemeralServer) {
+      await ephemeralServer.close();
+      console.log(`${ANSI.gray}🛑 Micro-serveur éphémère fermé proprement.${ANSI.reset}`);
+    }
     await browser.close();
   }
 }

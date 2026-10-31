@@ -3,8 +3,31 @@
 > **Fichier :** `/roadmaps/[PHASE]_[PROBLEMATIQUE]_[JJMMAAAA].md`  
 > **Date de création :** JJ/MM/AAAA  
 > **Statut :** EN COURS (Auto-nettoyage actif)  
+> **Profil Projet :** [emerging_market | global_saas | mobile_consumer | cli_devtools | api_platform]  
 > **Stack Technique :** [Stack détectée par san_init, ex: Laravel 11 + React 19 + Redis]  
 > **Objectif Mesurable :** [Description concise en 2 phrases de l'impact attendu et vérifiable].
+
+---
+
+## SECTION 0 : MINI-ADR & PRE-MORTEM SYSTÉMIQUE (san-architect)
+
+### 1. Comparatif de 2 Architectures Viables
+*Confrontation objective de 2 architectures réalistes aux compromis lucides (interdiction de l'option épouvantail).*
+
+| Critère d'Arbitrage | Option A : [Nom de l'Architecture A] | Option B : [Nom de l'Architecture B] |
+| :--- | :--- | :--- |
+| **Description du pattern** | [Ex: Transaction script + Service direct] | [Ex: Domain-Driven / Event Outbox] |
+| **Avantages clés** | [Simplicité, rapidité, zéro middleware tiers] | [Découplage fort, auditabilité, scalabilité] |
+| **Inconvénients & concessions** | [Couplage temporel, réessais synchrones] | [Complexité d'infrastructure, latence éventuelle] |
+| **Effort de mise en œuvre** | [Faible à moyen (24-48h)] | [Moyen à élevé (3-5 jours)] |
+| **Risques d'exploitation** | [Surcharge BDD en pic de charge] | [Désynchronisation éventuelle des files d'attente] |
+
+> **Décision retenue :** [Option retenue] — *Justification :* [Raison factuelle du choix adapté au PROJECT_PROFILE].
+
+### 2. Pre-Mortem : Anticipation des 3 Risques Majeurs d'Échec
+1. **Risque 1 (Point de rupture / Défaillance critique) :** [Scénario où le système plante] $\rightarrow$ *Mitigation :* [Garde-fou architectural prévu].
+2. **Risque 2 (Concurrence / Cohérence des données) :** [Condition de course ou conflit d'écriture] $\rightarrow$ *Mitigation :* [Verrou atomique / Idempotency-Key / Transaction].
+3. **Risque 3 (Réseau dégradé / Timeout tiers) :** [Panne de passerelle ou latence extrême] $\rightarrow$ *Mitigation :* [Circuit breaker / Outbox locale / Dégradation gracieuse].
 
 ---
 

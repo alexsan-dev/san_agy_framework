@@ -38,14 +38,24 @@ export async function executeOfficialPattern(payload: ServiceContract): Promise<
 }
 ```
 
-## 4. Tableau Comparatif : Déprécié vs Canonique
+## 4. Tableau Comparatif Multi-Options
+
+*Confrontation méthodique des alternatives étudiées avec balance objective avantages / inconvénients / risques / effort.*
+
+| Option | Approche / Pattern | Avantages Clés | Inconvénients & Concessions | Risques Identifiés | Effort Estimé | Verdict |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **Option A (Canonique)** | [Ex: Server Actions + Zod] | [Typage de bout en bout, bundle client allégé] | [Couplage au runtime Next.js] | [Lock-in framework] | [Faible (1-2 jours)] | **RECOMMANDÉ** |
+| **Option B (Alternative)** | [Ex: Route Handlers + Bruno] | [Standard REST universel, découplage total] | [Duplication de validation client/serveur] | [Dérive de types manuelle] | [Moyen (2-3 jours)] | **RECEVABLE** |
+| **Option C (Contournement)** | [Ex: Bibliothèque tierce X] | [Mise en place immédiate via plugin] | [Poids bundle +45 Ko, maintenance opaque] | [Abandon upstream, faille CVE] | [Immédiat (< 4h)] | **ÉCARTÉ** |
+
+## 5. Tableau Comparatif : Déprécié vs Canonique
 | Ancien Pattern (Déprécié / À Proscrire) | Pattern Canonique Actuel (Recommandé) | Risque Technique / Justification |
 | :--- | :--- | :--- |
 | `ancien_parametre` ou méthode obsolète | `nouveau_parametre` ou nouvelle API | Déprécié en vN, rupture ou exception levée en vN+1 |
 | Configuration manuelle `tailwind.config.js` | Directives CSS `@theme` (Tailwind v4) | Rupture de build et incompatibilité de rechargement à chaud |
 | Polling actif non sécurisé | Événements asynchrones ou webhooks HMAC | Saturation socket, surcoût serveur et risque de rejeu |
 
-## 5. Pièges Connus & Réalités Terrain (3G/EDGE & Idempotence)
+## 6. Pièges Connus & Réalités Terrain (3G/EDGE & Idempotence)
 - **Résilience Réseau Dégradé (3G / Latence élevée) :**
   - Comportement en cas de coupure socket ou timeout de passerelle.
   - Stratégie de retry recommandée (Exponential Backoff avec Jitter).
@@ -56,7 +66,7 @@ export async function executeOfficialPattern(payload: ServiceContract): Promise<
   - Validation cryptographique des signatures (HMAC-SHA256).
   - Assainissement strict des payloads entrants.
 
-## 6. Synthèse d'Intégration & Préconisations pour l'Orchestrateur
+## 7. Synthèse d'Intégration & Préconisations pour l'Orchestrateur
 - **Impact sur la Roadmap :** [Tâches à insérer ou modifier dans /roadmaps/]
 - **Fichiers Applicatifs à Créer / Adapter :**
   - `file:///chemin/absolu/vers/fichier_1.ext`
