@@ -1,68 +1,77 @@
 ---
 name: san_designer
-description: Déclenché quand l'utilisateur souhaite concevoir des maquettes UI haute fidélité 100% code (HTML/Tailwind), auditer visuellement un écran ou exporter des canvas stores normés.
+description: Déclenché quand l'utilisateur souhaite concevoir des maquettes UI haute fidélité 100% code (HTML/Tailwind), lancer un Studio Duel UI multi-viewports ou auditer un écran.
 ---
 
-# `san_designer` — Design Visuel Haute Fidélité, UI Mockups 100% Code & Craft Visuel
+# `san_designer` — Studio UI, Design 100% Code & Boucle Visuelle v2.1
 
-`san_designer` est le maître d'œuvre de la conception visuelle du framework **Antigravity (`san_*`)**. Il conçoit **100 % de ses maquettes, captures de stores et visuels directement en HTML sémantique + Tailwind CSS local**, avec zéro dépendance CDN externe. Chaque écran incarne l'âme de marque de `.agents/rules/BRAND.md`, répond aux contraintes physiques (plein soleil, 3G, ergonomie du pouce) et traverse obligatoirement la **Boucle Visuelle Multimodale**.
+`san_designer` pilote la conception visuelle haute fidélité du framework **Antigravity (`san_*`)**. Chaque écran est produit **100 % en HTML sémantique + Tailwind CSS local** (zéro CDN externe), aligné sur `.agents/rules/BRAND.md`, optimisé pour le terrain (plein soleil, *Thumb Zone*) et validé par la **Boucle Visuelle & Géométrique**.
 
 ---
 
 ## 1. DÉCLENCHEURS & INTENTIONS RECONNUES
 
-- *« Conçois la maquette de l'écran d'accueil / du panier / du flux Mobile Money »*
-- *« Crée les captures Play Store et App Store pour la soumission »*
-- *« Lance un audit visuel /ux-scan sur la page HTML »*
-- *« Génère le Feature Graphic Google Play en 1024x500 »*
+- *« Conçois la maquette de l'écran d'accueil / du tableau de bord / du flux Mobile Money »*
+- *« Lance un Studio Duel UI (option-a vs option-b) sur l'écran clé »*
+- *« Exporte la maquette en multi-viewports et audite la géométrie DOM »*
+- *« Crée les captures Play Store / App Store / Feature Graphic (1024x500) »*
 
 ---
 
-## 2. BOUCLE VISUELLE MULTIMODALE OBLIGATOIRE (RUNBOOK PAS À PAS)
+## 2. MODE STUDIO DUEL UI & BOUCLE VISUELLE (`swarm` HYDROGEN XHIGH)
 
-Toute création de maquette ou capture de store suit impérativement ce protocole à 3 étapes :
+> [!IMPORTANT]
+> **Doctrine Orchestrateur Souverain (`Argon`/`Carbon`) :** Déléguez systématiquement en parallèle via `swarm(action: "add", model: "gemini-4-hydrogen-xhigh")` (interdiction de `invoke_subagent(Model: "inherit")` pour sanctuariser le quota hebdomadaire).
 
 ```mermaid
 flowchart TD
-    Step1["1. san-designer-worker\n(Génération HTML/Tailwind autonome)"] --> Step2["2. Export PNG Déterministe\n(export_png.mjs via serveur HTTP local)"]
-    Step2 --> Step3["3. san-qa-auditor (model: 'pro')\nDoute Visuel Multimodal (read_file .png)"]
-    Step3 --> Decision{"Au moins 3 axes d'élévation ?"}
-    Decision -->|"Axes identifiés"| Step4["4. Passe de Raffinement\n(san-designer-worker applique les corrections)"]
-    Step4 --> Step5["5. Re-export PNG & Validation Finale\n(Score >= 8.5/10, zéro BLOQUANT)"]
+    Duel["1. Studio Duel UI (swarm Hydrogen XHigh)\noption-a vs option-b via san-designer-worker"] --> Export["2. Export Multi-Viewports & Linter DOM\nexport_png.mjs --viewports=mobile,tablet,desktop --audit-dom"]
+    Export --> Audit["3. Arbitrage Visuel & Géométrique (san-qa-auditor)\nread_file (.png) + rapport JSON DOM + 3 axes d'élévation"]
+    Audit --> Refine["4. Passe de Raffinement & Certification\nScore >= 8.5/10, zéro horizontalOverflow, zéro BLOQUANT"]
 ```
 
-### Étape 1 : Spawner `san-designer-worker` (Génération HTML)
-Invoquer le sous-agent `san-designer-worker` pour concevoir la vue dans `design/mockup/` :
-- **Archétype de marque :** Respect strict des tokens, polices et couleurs de `.agents/rules/BRAND.md`.
-- **Autonomie totale :** Zéro CDN distant, Tailwind local, polices locales embarquées (`.woff2`).
-- **Ergonomie biomécanique :** Actions primaires dans les 40 % inférieurs (*Thumb Zone*), cibles tactiles $\ge 44\text{px}$.
-- **Zéro texte factice :** Pas de *Lorem Ipsum* ni d'adresses fictives anglophones ; ancrage local et montants réels.
-- **Tag Canvas normé :** Insérer `<!-- CANVAS_SPEC: width=... height=... device="..." export_scale=1 -->` en tête de `<body>`.
+### Étape 1 : Studio Duel UI (`option-a` vs `option-b` en parallèle)
+Pour tout écran clé (accueil, checkout, dashboard), spawnez **2 workers `san-designer-worker` en parallèle** via `swarm(action: "add", model: "gemini-4-hydrogen-xhigh")` avec deux directions artistiques distinctes :
+- **Variante A (`design/mockup/<ecran>-option-a.html`)** et **Variante B (`design/mockup/<ecran>-option-b.html`)** : compositions contrastées respectant `.agents/rules/BRAND.md`, zéro CDN, zéro *Lorem Ipsum* et tag `<!-- CANVAS_SPEC: width=... height=... device="..." export_scale=1 -->`.
 
-### Étape 2 : Export PNG Déterministe via Serveur Éphémère
-Compiler immédiatement la maquette en image PNG haute résolution :
+### Étape 2 : Export Multi-Viewports & Linter Géométrique DOM (`export_png.mjs` v2.1)
+Exécutez le rendu sur **instance Chromium unique** (`mobile 390x844`, `tablet 820x1180`, `desktop 1440x900`) avec audit DOM `page.evaluate()` :
 ```bash
-node src/skills/san_designer/scripts/export_png.mjs --file=design/mockup/votre_ecran.html --scale=2
+node src/skills/san_designer/scripts/export_png.mjs \
+  --input=design/mockup/<ecran>-option-a.html \
+  --viewports=mobile,tablet,desktop \
+  --audit-dom --report=design/audit-option-a.json --strict-dom
 ```
-Le script démarre un serveur HTTP local temporaire pour charger les polices et styles sans restriction CORS, et attend `document.fonts.ready` et `networkidle`.
+Le linter vérifie mathématiquement : `horizontalOverflow` (`scrollWidth > clientWidth`), `smallTouchTargets` (`< 44x44px`), `boxCollisions` (chevauchement sur même `z-index`) et `missingTabularNums` (chiffres sans `font-variant-numeric: tabular-nums`).
 
-### Étape 3 : Étape de Doute Visuel Obligatoire (`san-qa-auditor`, `model: "pro"`)
-L'orchestrateur spawne le sous-agent inquisiteur `san-qa-auditor` (`Model: 'pro'`) pour une inspection multimodale critique :
-1. **Lecture multimodale du rendu :** L'auditeur **lit le fichier `.png` produit avec `read_file`**.
-2. **Identification de 3 axes d'élévation minimum :**
-   - *Équilibre des masses & hiérarchie :* Densité d'information, respiration, aération des blocs.
-   - *Contraste typographique & lisibilité :* Ratios de contraste WCAG $\ge 7:1$ pour le plein soleil, graisses et scannabilité.
-   - *Anti-Platitude (*Anti-AI Taste*) :* Élimination des cartes blanches uniformes ou des dégradés génériques sans personnalité.
-3. **Passe de Raffinement Obligatoire :** Renvoyer les 3 axes à `san-designer-worker` pour 1 passe de retouche ciblée.
-4. **Validation officielle :** Re-export PNG et certification lorsque le score atteint $\ge 8.5/10$ avec zéro constat `BLOQUANT`.
+### Étape 3 : Arbitrage Multimodal & Raffinement (`san-qa-auditor`)
+Spawnez `san-qa-auditor` via `swarm(action: "add", model: "gemini-4-hydrogen-xhigh")` pour inspecter les PNG (`read_file`) et les rapports JSON DOM :
+1. **Confrontation `option-a` vs `option-b` :** Éliminer le gagnant par défaut sur hiérarchie des masses, contraste WCAG ($\ge 7:1$ plein soleil) et craft *Anti-AI Taste*.
+2. **3 axes d'élévation minimum :** Corriger toute collision, cible `< 44px` ou faiblesse visuelle via 1 passe ciblée avant certification finale ($\ge 8.5/10$, zéro `BLOQUANT`).
 
 ---
 
-## 3. RESSOURCES & RÉFÉRENCES EMBARQUÉES
+## 3. STANDARD UI 5 ÉTATS NON-DESTRUCTIFS & MOTION SYSTEM
 
-- [Système Visuel, Artisanat Numérique & Thumb Zone](references/visual_system.md) : Principes Anti-AI Taste, biomécanique du pouce et règles graphiques.
-- [Spécifications Normatives des 5 Canvas Stores](references/device_canvas_specs.md) : Dimensions géométriques exactes (Play Store, App Store, Desktop, Feature Graphic).
-- [Mathématiques du Contraste & Formules WCAG](references/contrast_mathematics.md) : Formule de luminance relative et seuils extérieur $> 10\,000\text{ lux}$.
-- [Critères d'Audit UX & Heuristiques Cognitives](references/audit_criteria.md) : Grille d'évaluation /ux-scan (Hick, Fitts, Miller, Jakob, Restorff).
-- [Script d'Exportation PNG](scripts/export_png.mjs) : Moteur de capture Playwright avec serveur HTTP éphémère.
-- [Gabarit HTML Mockup Standalone](templates/mockup_standalone.html) : Squelette HTML5 autonome avec reset CSS et tags de canvas.
+Toute maquette ou vue interactive intègre explicitement les **5 états non-destructifs** et le **Motion System** :
+1. **Empty :** État initial clair avec illustration sobre et CTA primaire actionnable.
+2. **Skeleton Cold-Start :** Gabarit géométrique fidèle (anti-CLS) uniquement au tout premier chargement à froid.
+3. **Populated :** Rendu nominal structuré en 3 plans (Héros, Données, Silencieux), métriques en `font-variant-numeric: tabular-nums` (`tabular-nums`).
+4. **Stale-While-Revalidate :** Rafraîchissement non-destructif conservant les données visibles avec indicateur discret (interdiction d'écraser l'écran par un skeleton).
+5. **Error :** Diagnostic explicite et action « Réessayer » sans perte de saisie.
+
+### Motion System & Ergonomie Biomécanique
+- **Courbes physiques :** `transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1), opacity 180ms cubic-bezier(0.22, 1, 0.36, 1)` (entrées sobres, zéro effet gadget).
+- **Accessibilité motrice obligatoire :** `@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } }`.
+- **Biométrie & Tactile :** Actions primaires dans les 40 % inférieurs (*Thumb Zone*), cibles interactives $\ge 44\times44\text{px}$, `tabular-nums` sur tout nombre/prix/pourcentage.
+
+---
+
+## 4. RESSOURCES & RÉFÉRENCES EMBARQUÉES
+
+- [Système Visuel, Artisanat Numérique & Thumb Zone](references/visual_system.md) : Anti-AI Taste, biomécanique du pouce et règles graphiques.
+- [Spécifications Normatives des 5 Canvas Stores](references/device_canvas_specs.md) : Dimensions Play Store, App Store, Desktop, Tablette et Feature Graphic.
+- [Mathématiques du Contraste & Formules WCAG](references/contrast_mathematics.md) : Formule de luminance et seuils extérieur $> 10\,000\text{ lux}$.
+- [Critères d'Audit UX & Heuristiques Cognitives](references/audit_criteria.md) : Grille `/ux-scan` (Hick, Fitts, Miller, Jakob, Restorff).
+- [Script d'Exportation PNG & Linter DOM](scripts/export_png.mjs) : Pipeline Playwright multi-viewports, serveur HTTP anti-CORS et audit JSON.
+- [Gabarit HTML Mockup Standalone](templates/mockup_standalone.html) : Squelette HTML5 autonome avec tokens et `CANVAS_SPEC`.

@@ -124,31 +124,22 @@ with open('${AGENTS_DIR}/${agent}') as f:
 done
 
 # ------------------------------------------------------------------------------
-# 4. Répartition des Modèles Cognitifs (Flash vs Pro)
+# 4. Doctrine Modèles v2.1 : frontmatter 'pro' + runtime swarm gemini-4-hydrogen-xhigh
 # ------------------------------------------------------------------------------
 echo ""
-info "4. Vérification de l'attribution des modèles d'IA (pro vs flash)"
+info "4. Vérification de l'attribution des modèles v2.1 (frontmatter 'pro' + gemini-4-hydrogen-xhigh)"
 
-# Modèles 'pro' pour modélisation conceptuelle et inquisition sceptique
-for agent in "san-architect.md" "san-qa-auditor.md"; do
-  assert_true "${agent} utilise le modèle 'pro'" \
+for agent in "${EXPECTED_AGENTS[@]}"; do
+  assert_true "${agent} déclare model: 'pro' dans le frontmatter YAML" \
     "python3 -c \"
 import yaml
 with open('${AGENTS_DIR}/${agent}') as f:
     fm = yaml.safe_load(f.read().split('---', 2)[1])
 assert fm.get('model') == 'pro'
 \""
-done
 
-# Modèles 'flash' pour exploration rapide et implémentation atomique
-for agent in "san-researcher.md" "san-designer-worker.md" "san-coder-back.md" "san-coder-front.md" "san-ops-devops.md" "san-growth-legal.md"; do
-  assert_true "${agent} utilise le modèle 'flash'" \
-    "python3 -c \"
-import yaml
-with open('${AGENTS_DIR}/${agent}') as f:
-    fm = yaml.safe_load(f.read().split('---', 2)[1])
-assert fm.get('model') == 'flash'
-\""
+  assert_true "${agent} référence gemini-4-hydrogen-xhigh & swarm (zéro 3.1-pro / 3.8-flash)" \
+    'grep -q "gemini-4-hydrogen-xhigh" "${AGENTS_DIR}/${agent}" && grep -q "swarm" "${AGENTS_DIR}/${agent}" && ! grep -q "gemini-3.1-pro-high" "${AGENTS_DIR}/${agent}" && ! grep -q "gemini-3.8-flash-high" "${AGENTS_DIR}/${agent}"'
 done
 
 # ------------------------------------------------------------------------------
@@ -306,8 +297,8 @@ trap 'rm -rf "${TMP_PLUGIN_DIR}"' EXIT
 cat << 'EOF' > "${TMP_PLUGIN_DIR}/plugin.json"
 {
   "name": "san-framework",
-  "version": "2.0.0",
-  "description": "Framework Antigravity san_* v2.0 - Suite de 8 sous-agents natifs"
+  "version": "2.1.0",
+  "description": "Framework Antigravity san_* v2.1 - Suite de 8 sous-agents natifs"
 }
 EOF
 

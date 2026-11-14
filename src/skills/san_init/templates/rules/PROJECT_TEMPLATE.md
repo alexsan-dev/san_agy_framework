@@ -3,7 +3,7 @@ trigger: always_on
 ---
 # CONSTITUTION TECHNIQUE & RÈGLES D'INGÉNIERIE (`PROJECT.md`)
 
-> **Loi technique suprême :** Ce document fixe l'architecture d'ingénierie, le profil opérationnel, la gouvernance des modèles IA Antigravity, la politique de tests non négociable et l'entonnoir de validation.
+> **Loi technique suprême :** Ce document fixe l'architecture d'ingénierie, le profil opérationnel, la doctrine d'orchestration autonome Antigravity (`Argon` / `Carbon` $\rightarrow$ `swarm` `gemini-4-hydrogen-xhigh`), la politique de tests non négociable et l'entonnoir de validation.
 
 ---
 
@@ -29,7 +29,7 @@ Chaque projet adopte un profil contextuel qui conditionne les contraintes produi
 * **Base de Données Primaire :** `[Ex: PostgreSQL 16 (JSONB, GIN) / MySQL 8.0 / SQLite / LibSQL]`
 * **Cache & Files d'Attente :** `[Ex: Redis 7.2 pour verrous d'idempotence, jobs asynchrones et sessions]`
 * **Gestionnaire de Paquets :** `[pnpm / bun / npm / composer / uv / go mod]`
-* **Spécification des Contrats d'API :** OpenAPI 3.1 (`openapi.yaml`) et collections Bruno (`.bru`) dans `bruno/`.
+* **Spécification des Contrats d'API :** OpenAPI 3.1 (`openapi.yaml`), schémas Zod/TypeBox gelés et collections Bruno (`.bru`) dans `bruno/`.
 * **Ports Standards d'Exécution Locale :**
   - Frontend Web : `http://localhost:5173` (Vite) ou `http://localhost:3000` (Next.js)
   - Backend / API : `http://localhost:8000` (Laravel) ou `http://localhost:3000` (Nest/Fastify) ou `http://localhost:3333` (Adonis)
@@ -37,25 +37,29 @@ Chaque projet adopte un profil contextuel qui conditionne les contraintes produi
 
 ---
 
-## 3. ROUTAGE COGNITIF STRICT DES MODÈLES (`invoke_subagent`)
+## 3. DOCTRINE ORCHESTRATEUR SOUVERAIN & ROUTAGE `SWARM` (CLI v1.5.8)
 
-Pour maximiser l'acuité intellectuelle tout en préservant le quota de tokens et la vélocité :
+> **Autonomie Mécanique (`Argon` / `Carbon`) :** L'Orchestrateur du thread principal prend l'initiative mécanique de déléguer en parallèle sans jamais demander à l'utilisateur de taper `/model` ni le nom d'un sous-agent.  
+> **Vérité Technique Antigravity CLI v1.5.8 :** Interdiction formelle d'appeler `invoke_subagent(Model: "inherit")` quand le thread principal tourne sur `Argon` ou `Carbon` (protection du quota hebdomadaire). De plus, `invoke_subagent` bascule silencieusement sur `gemini-3.8-flash-tiered` : toute délégation doit être routée via l'outil natif **`swarm(action: "add", model: "gemini-4-hydrogen-xhigh", ...)`** (ou `agy -p --model gemini-4-hydrogen-xhigh`) pour exécuter réellement sur **Gemini 4 Hydrogen (XHigh)**. *(Les 8 fichiers `src/agents/*.md` conservent `model: "pro"` dans leur frontmatter YAML pour compatibilité ascendante du parser CLI.)*
 
-| Rôle de l'Agent / Sous-Agent | Paramètre `Model` | Modèle Cible | Justification & Périmètre |
+| Rôle / Worker Spécialisé | Outil & Modèle Runtime (`swarm`) | Frontmatter YAML | Justification & Périmètre |
 | :--- | :--- | :--- | :--- |
-| **Session Principale (Orchestrateur)** | `inherit` (ou `pro`) | `gemini-3.1-pro-high` | Stratégie, planification, coordination globale. |
-| **Architecte & Pre-Mortem (`san-architect`)** | `pro` | `gemini-3.1-pro-high` | Modélisation de domaine, analyse de risques, ADR. |
-| **Auditeur Sceptique & QA (`san-qa-auditor`)** | `pro` | `gemini-3.1-pro-high` | Présomption d'insuffisance, OWASP, critique pixels PNG. |
-| **Sous-Agents de Code (`san-coder-*`)** | `flash` | `gemini-3.8-flash-high` | Écriture atomique cadrée, respect du contrat, tests. |
-| **Artisan Designer (`san-designer-worker`)** | `flash` | `gemini-3.8-flash-high` | Layouts HTML/Tailwind, tokens, exports PNG. |
-| **Exploration & Recherche (`san-researcher`)** | `flash` | `gemini-3.8-flash-high` | Cartographie rapide, matrice 2 approches, veille RFC. |
-| **DevOps & Légal (`san-ops-*`, `san-growth-*`)** | `flash` | `gemini-3.8-flash-high` | Scripts CI/CD, Docker, conformité stores. |
+| **Orchestrateur Principal** | Thread `Argon` / `Carbon` | `mainAgent: true` | Stratégie, découpage, arbitrage, zéro solo-coding. |
+| **`san-architect`** | `swarm` $\rightarrow$ `gemini-4-hydrogen-xhigh` | `model: "pro"` | Contract-First (OpenAPI/Zod/TypeBox), Fitness Functions, Pre-Mortem. |
+| **`san-qa-auditor`** | `swarm` $\rightarrow$ `gemini-4-hydrogen-xhigh` | `model: "pro"` | Présomption de défaut, OWASP, Anti-Mock Theater, audit DOM/PNG. |
+| **`san-coder-back`** | `swarm` $\rightarrow$ `gemini-4-hydrogen-xhigh` | `model: "pro"` | Code atomique cadré sur contrat gelé, ACID, tests réels. |
+| **`san-coder-front`** | `swarm` $\rightarrow$ `gemini-4-hydrogen-xhigh` | `model: "pro"` | Composants `< 220` lignes, 5 états, Motion System, A11y. |
+| **`san-designer-worker`** | `swarm` $\rightarrow$ `gemini-4-hydrogen-xhigh` | `model: "pro"` | Studio Duel UI (`option-a`/`option-b`), `export_png.mjs` v2. |
+| **`san-researcher`** | `swarm` $\rightarrow$ `gemini-4-hydrogen-xhigh` | `model: "pro"` | Cartographie Map-First (`REPO_MAP.md`), matrice 2 approches. |
+| **`san-ops-devops`** | `swarm` $\rightarrow$ `gemini-4-hydrogen-xhigh` | `model: "pro"` | Docker multi-stage, CI/CD, rollback < 30s, backup testé. |
+| **`san-growth-legal`** | `swarm` $\rightarrow$ `gemini-4-hydrogen-xhigh` | `model: "pro"` | Conformité stores Apple/Play, RGPD code réel, SEO/ASO. |
 
 ---
 
 ## 4. INVARIANTS D'ORCHESTRATION & DISCIPLINE HARNESS
 
-* **Zéro Solo-Coding en Ligne :** L'orchestrateur délègue impérativement toute feature ou refonte via `invoke_subagent`.
+* **Zéro Solo-Coding en Ligne :** L'orchestrateur délègue impérativement toute feature, refonte ou audit via `swarm(action: "add", model: "gemini-4-hydrogen-xhigh", ...)` (ou `run_workflow`).
+* **Discipline Map-First :** Consulter `.agents/cache/REPO_MAP.md` avant toute lecture de fichier source.
 * **Fast-Track d'Hygiène Autorisé :** L'orchestrateur peut intervenir directement uniquement pour :
   1. Cocher les cases `- [x]` dans `/roadmaps/*.md` après vérification physique et exécution réelle des tests (`exit 0`).
   2. Déplacer une roadmap 100% achevée vers `/roadmaps/archives/`.
@@ -66,22 +70,22 @@ Pour maximiser l'acuité intellectuelle tout en préservant le quota de tokens e
 
 ## 5. POLITIQUE DE TESTS OBLIGATOIRE (ZÉRO TESTING THEATER)
 
-Aucune fonctionnalité n'est acceptée sans suite automatisée au vert :
+Aucune fonctionnalité n'est acceptée sans suite automatisée au vert et **Architectural Fitness Functions** validées :
 
-### A. Tests Unitaires & Métier (Domain Core)
+### A. Tests Unitaires, Métier & Fitness Functions
 * Logique métier pure testée sans mock du domaine ; isolation avec mocks des passerelles externes.
-* Couverture stricte des calculs sensibles, autorisations (RBAC/Policies) et invariants de transition d'état.
+* **Fitness Functions :** Tests automatisés vérifiant l'étanchéité inter-modules, l'absence de dépendances circulaires et le respect des budgets techniques.
 
-### B. Tests d'Intégration d'API (OpenAPI & Bruno)
-* Validation des routes avec scénarios nominaux (`200 OK`, `201 Created`) et erreurs aux limites (`400`, `401`, `403`, `422`).
-* Transactions de base de données obligatoires sur toute opération d'écriture multi-tables.
+### B. Tests d'Intégration d'API (Contract-First : OpenAPI / Zod / Bruno)
+* Contrats OpenAPI 3.1 / Zod / TypeBox gelés avant codage parallèle ; validation des statuts (`200`, `201`, `400`, `401`, `403`, `422`) et transactions ACID.
 
-### C. Validation de Composants UI (Les 5 États Invariants)
-1. **État Idéal :** Rendu complet et équilibré.
-2. **État Vide :** Message bienveillant et action d'amorce claire.
-3. **État de Chargement (*Stale-While-Revalidate*) :** Squelette non bloquant, conservation des données antérieures lors d'un filtre.
-4. **État d'Erreur :** Message actionnable avec bouton « Réessayer » (y compris quand données partielles présentes).
-5. **État Hors-Ligne :** Données en cache local avec indicateur discret de synchronisation.
+### C. Standard UI 5 États Non-Destructifs & Motion System
+1. **`Empty` :** État vide incitatif avec CTA clair.
+2. **`Skeleton Cold-Start` :** Squelette géométrique réservé uniquement au chargement initial à froid (`CLS < 0.05`).
+3. **`Populated` :** Rendu complet structuré en 3 plans.
+4. **`Stale-While-Revalidate` :** Données antérieures préservées lors d'un refetch/filtre + indicateur discret.
+5. **`Error` :** Message actionnable avec bouton « Réessayer » sans effacer les données déjà affichées.
+* **Motion & Tactile :** `cubic-bezier`, `@media (prefers-reduced-motion: reduce)`, cibles tactiles `>= 44x44px`, `font-variant-numeric: tabular-nums`.
 
 ---
 
@@ -89,10 +93,10 @@ Aucune fonctionnalité n'est acceptée sans suite automatisée au vert :
 
 ```mermaid
 flowchart TD
-    CodeWritten["Code Rédigé par Sous-Agent 'flash'"] --> Funnel1{"Étage 1 : Linters & Tests Unitaires\n(Scripts Déterministes - 0 Token LLM)"}
-    Funnel1 -->|Échec / Exit != 0| FixCode["Correction par Sous-Agent Coder"]
+    CodeWritten["Code Rédigé par Worker Swarm (gemini-4-hydrogen-xhigh)"] --> Funnel1{"Étage 1 : Linters, Fitness & Tests\n(Scripts Déterministes - 0 Token LLM)"}
+    Funnel1 -->|Échec / Exit != 0| FixCode["Correction par Worker Coder"]
     FixCode --> CodeWritten
-    Funnel1 -->|100% Vert - Exit 0| Funnel2{"Étage 2 : Audit Cognitif\n(Sous-Agent 'pro' : QA, Sécurité, Architecture)"}
+    Funnel1 -->|100% Vert - Exit 0| Funnel2{"Étage 2 : Audit Sceptique\n(san-qa-auditor sur gemini-4-hydrogen-xhigh)"}
     Funnel2 -->|Anomalie Détectée / Rejet| FixCode
-    Funnel2 -->|Validation Conforme| Done(["Tâche Validée & Cochée - [x]"])
+    Funnel2 -->|Validation Conforme| Done(["Gate Vert (.agents/cache/last-gate-status.json) & - [x]"])
 ```

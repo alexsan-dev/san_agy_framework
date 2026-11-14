@@ -114,8 +114,11 @@ assert_true "PROJECT_TEMPLATE.md fait < 8 KB (${PROJECT_SIZE} octets)" \
 assert_true "PROJECT_TEMPLATE.md documente PROJECT_PROFILE avec les 5 profils" \
   'grep -q "PROJECT_PROFILE:.*global_saas.*emerging_market_3g.*mobile_consumer.*cli_devtools.*api_platform" "${RULES_DIR}/PROJECT_TEMPLATE.md"'
 
-assert_true "PROJECT_TEMPLATE.md documente le routage cognitif pro / flash" \
-  'grep -q "gemini-3.1-pro-high" "${RULES_DIR}/PROJECT_TEMPLATE.md" && grep -q "gemini-3.8-flash-high" "${RULES_DIR}/PROJECT_TEMPLATE.md"'
+assert_true "PROJECT_TEMPLATE.md documente la doctrine swarm & gemini-4-hydrogen-xhigh (zéro 3.1-pro / 3.8-flash)" \
+  'grep -q "gemini-4-hydrogen-xhigh" "${RULES_DIR}/PROJECT_TEMPLATE.md" && grep -q "swarm" "${RULES_DIR}/PROJECT_TEMPLATE.md" && ! grep -q "gemini-3.1-pro-high" "${RULES_DIR}/PROJECT_TEMPLATE.md" && ! grep -q "gemini-3.8-flash-high" "${RULES_DIR}/PROJECT_TEMPLATE.md"'
+
+assert_true "AGENTS_INDEX_TEMPLATE.md et GEMINI_INDEX_TEMPLATE.md imposent swarm sur gemini-4-hydrogen-xhigh" \
+  'grep -q "gemini-4-hydrogen-xhigh" "${TEMPLATES_DIR}/AGENTS_INDEX_TEMPLATE.md" && grep -q "swarm" "${TEMPLATES_DIR}/AGENTS_INDEX_TEMPLATE.md" && grep -q "gemini-4-hydrogen-xhigh" "${TEMPLATES_DIR}/GEMINI_INDEX_TEMPLATE.md" && grep -q "swarm" "${TEMPLATES_DIR}/GEMINI_INDEX_TEMPLATE.md"'
 
 # PRODUCT_TEMPLATE.md
 assert_true "PRODUCT_TEMPLATE.md possède trigger: model_decision" \

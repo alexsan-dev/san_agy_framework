@@ -17,6 +17,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2.1.0] - 2026-11-14
+
+### Added
+- **1. What's New on san-agy (`src/cli/whats_new.js`, `san-framework whats-new`):**
+  - Structured release notes banner displayed in the terminal during `san-framework update` and available anytime via `npx @alexsan/agy-framework whats-new`.
+  - Automatic **one-shot notification** injected at the first `SessionStart` after an update via `.agents/cache/whats_new_pending.json` (`seen: false` $\rightarrow$ `seen: true`) in `session_start.mjs`.
+- **2. Autonomous Orchestrator (`Argon` / `Carbon`) $\rightarrow$ `gemini-4-hydrogen-xhigh` Swarm Doctrine:**
+  - The main-thread Orchestrator automatically delegates tasks in parallel via the native `swarm(action: "add", model: "gemini-4-hydrogen-xhigh", ...)` tool (or `agy -p --model gemini-4-hydrogen-xhigh`) without ever asking the user to manually switch `/model` or type subagent names.
+  - Strict prohibition of `invoke_subagent(Model: "inherit")` on `Argon`/`Carbon` (protecting weekly orchestrator quota) and elimination of silent fallback to `gemini-3.8-flash-tiered`.
+  - Full migration of all 8 native subagents and routing matrices to **`gemini-4-hydrogen-xhigh`** (while keeping `model: "pro"` in YAML frontmatter for CLI parser compatibility).
+- **3. `Stop` Hook (`stop_guard.mjs`) + Hooks API v2 (`systemMessage`):**
+  - New `src/hooks/scripts/stop_guard.mjs` (`chmod +x`) registered on the `"Stop"` event in `src/hooks/hooks.json` (`timeout: 5`).
+  - **Anti-Loop Circuit Breaker**: immediately allows stopping (`{}`) if `continuationActive === true`, on user/error interruption, in documentation/config-only sessions (`DOC_ONLY`: `*.md`, `roadmaps/*`, `docs/*`, `.agents/*`), on clean/non-git repos, or after 2 consecutive retries tracked in `.agents/cache/stop-guard-state.json`; blocks (`decision: "continue"`) when application code was modified without a recent (< 30 min) green Quality Gate proof in `.agents/cache/last-gate-status.json`.
+  - Migrated `src/hooks/scripts/pre_invocation.mjs` from deprecated `ephemeralMessage` to the official Hooks API v2 `{ systemMessage: { systemMessage: ... } }`.
+- **4. Lightweight Inheritance Mode (`--light` / `.agents/skills.json`):**
+  - Added `--light` flag on `init` and `update` generating `.agents/skills.json` (`{ "version": 1, "inherits": [".../src/skills"] }`) without duplicating the 18 skill directories, while keeping `.agents/rules/`, `.agents/agents/`, `.agents/hooks/`, and `.agents/cache/` 100% local to the project.
+  - Updated `san-framework doctor` to validate skills via `.agents/skills.json` `"inherits"` as well as `stop_guard.mjs` presence and permissions.
+- **5. Deterministic Python Workflows (`run_workflow` + JSON Schema):**
+  - Created `src/skills/san_executer/scripts/autonomous_slice_workflow.py` (`CODE_SLICE_SCHEMA`, `QA_VERDICT_SCHEMA`, multi-turn `coder ↔ san-qa-auditor` loop, and `.agents/cache/last-gate-status.json` update).
+  - Created `src/skills/san_qa_security_expert/scripts/parallel_inquisition_workflow.py` (parallel fan-out across OWASP security, anti-Mock Theater test substance & Architectural Fitness Functions, and DOM geometry/UI states with `INQUISITION_REPORT_SCHEMA`).
+- **6. Contract-First Architecture & Architectural Fitness Functions:**
+  - Enhanced `san-architect.md`, `san_planner/SKILL.md`, and `ROADMAP_TEMPLATE.md` enforcing shared contract freeze (OpenAPI 3.1 / Zod / TypeBox) prior to parallel Front/Back coding and automated architectural boundary tests at the Quality Gate.
+- **7. `export_png.mjs` v2 (Multi-Viewports + Playwright DOM Geometry Linter):**
+  - Sequential multi-viewport capture (`--viewports=mobile,tablet,desktop`: `390×844`, `820×1180`, `1440×900`) on a **single Chromium instance** in `san_designer` and `san_exporter` with 100% backward compatibility.
+  - Playwright DOM Geometry Linter (`--audit-dom`, `--report=<path.json>`, `--strict-dom`) mathematically detecting horizontal overflows (`scrollWidth > clientWidth`), sibling box collisions, interactive touch targets `< 44×44px`, and numeric metrics missing `tabular-nums`.
+- **8. Studio Duel UI Mode:**
+  - Parallel generation of 2 distinct artistic directions (`option-a` vs `option-b`) via `swarm` (`gemini-4-hydrogen-xhigh`) in `san_designer`, multi-viewport + DOM geometry capture, and visual arbitration by `san-qa-auditor`.
+- **9. 5-State Non-Destructive UI Standard, Motion System & Map-First (`san_cartographer` / `REPO_MAP.md`):**
+  - Enforced the 5 non-destructive UI states (`Empty`, `Skeleton Cold-Start`, `Populated`, `Stale-While-Revalidate`, `Error`) and Motion System (`cubic-bezier`, `@media (prefers-reduced-motion: reduce)`, touch targets $\ge 44\times 44\text{px}$, `font-variant-numeric: tabular-nums`) in `san-coder-front.md` and `san-designer-worker.md`, alongside the 18th skill `san_cartographer` (`repo_mapper.mjs`, `post_tool_indexer.mjs`, `.agents/cache/REPO_MAP.md`).
+
+### Changed
+- Replaced all references to `gemini-3.1-pro-high` and `gemini-3.8-flash-high` with `gemini-4-hydrogen-xhigh` across constitution templates, subagents, and validators.
+- Updated test suites (`tests/v2/*`, `tests/phase7/*`, `tests/phase8/*`) to validate CLI `v2.1.0`, `whats-new`, `--light`, `stop_guard.mjs`, `systemMessage`, and `gemini-4-hydrogen-xhigh`.
+
+---
+
 ## [2.0.0] - 2026-10-31
 
 ### Added

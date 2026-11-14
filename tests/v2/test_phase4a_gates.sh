@@ -161,8 +161,11 @@ name = "test-python"
 EOF
   cat << 'EOF' > test_main.py
 import unittest
+
+
 class MainTest(unittest.TestCase):
-    def test_ok(self): pass
+    def test_ok(self):
+        pass
 EOF
   set +e
   "$BACKEND_GATE" > back_out4.log 2>&1

@@ -55,7 +55,7 @@ for expected_skill in "san_init" "san_planner" "san_qa_security_expert" "san_bac
     exit 1
   fi
 done
-echo "  [OK] Commande 'list' liste les 17 modules du catalogue."
+echo "  [OK] Commande 'list' liste les 18 modules du catalogue."
 
 # ------------------------------------------------------------------------------
 # TEST 2 : Installation complète en mode local (--local --all) avec Smart Merge
@@ -91,11 +91,11 @@ if [[ ! -f ".agents/skills/san_init/SKILL.md" ]] || [[ ! -f ".agents/skills/san_
 fi
 
 SKILL_COUNT=$(find .agents/skills -mindepth 1 -maxdepth 1 -type d | wc -l)
-if [[ "${SKILL_COUNT}" -ne 17 ]]; then
-  echo "[-] ÉCHEC: Nombre de skills installés incorrect (${SKILL_COUNT} au lieu de 17) !"
+if [[ "${SKILL_COUNT}" -ne 18 ]]; then
+  echo "[-] ÉCHEC: Nombre de skills installés incorrect (${SKILL_COUNT} au lieu de 18) !"
   exit 1
 fi
-echo "  [OK] 17 skills copiés dans .agents/skills/ avec succès."
+echo "  [OK] 18 skills copiés dans .agents/skills/ avec succès."
 
 # B. Smart Merge : BRAND.md personnalisé n'a PAS été écrasé
 if ! grep -q "MON BRAND PERSONNALISÉ CLIENT INTACT" .agents/rules/BRAND.md; then
@@ -175,6 +175,22 @@ if [[ -d ".agents/skills" ]]; then
   exit 1
 fi
 echo "  [OK] Mode Dry-Run validé (zéro écriture sur le disque)."
+
+echo "[5/5] Test de whats-new et du mode --light (.agents/skills.json)..."
+WHATS_NEW_OUT=$(node "${CLI_BIN}" whats-new)
+if ! echo "${WHATS_NEW_OUT}" | grep -q "What's New on san-agy v2.1.0"; then
+  echo "[-] ÉCHEC: whats-new n'affiche pas What's New on san-agy v2.1.0 !"
+  exit 1
+fi
+
+LIGHT_DIR="${TMP_DIR}/light_project"
+mkdir -p "${LIGHT_DIR}"
+node "${CLI_BIN}" init --local --light --dir="${LIGHT_DIR}" > "${TMP_DIR}/install_light.log" 2>&1
+if [[ ! -f "${LIGHT_DIR}/.agents/skills.json" ]] || [[ -d "${LIGHT_DIR}/.agents/skills" ]]; then
+  echo "[-] ÉCHEC: Le mode --light doit créer .agents/skills.json sans copier .agents/skills/ !"
+  exit 1
+fi
+echo "  [OK] Commandes whats-new et init --light validées."
 
 echo ""
 echo "============================================================"

@@ -1,69 +1,68 @@
 ---
 name: san_executer
-description: Déclenché quand l'utilisateur souhaite exécuter une roadmap active, implémenter une fonctionnalité full-stack, backend ou frontend de bout en bout avec orchestration rigoureuse et quality gates.
+description: Déclenché quand l'utilisateur souhaite exécuter une roadmap active, implémenter une fonctionnalité full-stack, backend ou frontend de bout en bout avec orchestration swarm, run_workflow et quality gates.
 ---
 
-# `san_executer` — Chef d'Orchestre d'Implémentation Full-Stack & Delivery v2.0
+# `san_executer` — Chef d'Orchestre d'Implémentation & Delivery v2.1
 
-`san_executer` est le moteur d'exécution et le release manager autonome du framework **Antigravity (`san_*`)**. Il orchestre l'implémentation industrielle des roadmaps actives en coordonnant les sous-agents atomiques sous les règles intangibles du **Contract-First**, de la **Dialectique à 2 Approches** et du **Double Quality Gate Fail-Closed**.
-
----
-
-## 1. DÉCLENCHEURS & INTENTIONS RECONNUES
-
-- *« Exécute la roadmap active /roadmaps/... »*
-- *« Implémente la fonctionnalité [X] de bout en bout »*
-- *« Lance san_executer pour livrer le module de paiement »*
-- *« Reprends l'exécution à partir de la Phase [N] »*
+`san_executer` est le moteur d'exécution autonome du framework **Antigravity (`san_*`)**. Il orchestre les roadmaps sous les lois du **Map-First**, du **Contract-First**, de la **Dialectique à 2 Approches**, de l'exécution parallèle **`swarm` / `run_workflow`** et du **Double Quality Gate Fail-Closed**.
 
 ---
 
-## 2. BOUCLE DIALECTIQUE & INQUISITEUR QA (RUNBOOK D'EXÉCUTION PAS À PAS)
+## 1. DÉCLENCHEURS & DOCTRINE MODÈLES v2.1
 
-Toute tâche d'implémentation est pilotée selon le protocole séquentiel rigoureux suivant :
+- *« Exécute la roadmap active /roadmaps/... »* | *« Implémente la fonctionnalité [X] de bout en bout »* | *« Reprends à la Phase [N] »*
+- **Orchestrateur Souverain (`Argon`/`Carbon`) :** Déléguer sans jamais demander à l'utilisateur `/model` ni le nom d'un agent.
+- **Swarm Hydrogen XHigh :** Utiliser `swarm(action: "add", model: "gemini-4-hydrogen-xhigh", ...)` (ou `run_workflow` avec `scripts/autonomous_slice_workflow.py`).
+- **Interdiction de `inherit` :** `invoke_subagent(Model: "inherit")` est **INTERDIT** sur `Argon`/`Carbon` (brûle le quota hebdomadaire et risque un fallback caché sur `gemini-3.8-flash-tiered`).
+
+---
+
+## 2. PIPELINE DÉTERMINISTE (`run_workflow` + `swarm`)
 
 ```mermaid
 flowchart TD
-    Step1["1. Ingestion Roadmap\n(Ou appel san_planner si plan absent)"] --> Step2["2. Triage Architectural\n(BACK_ONLY, FRONT_ONLY ou FULL_STACK)"]
-    Step2 --> Step3["3. Délégation Atomique\n(san-coder-back / san-coder-front)\nObligation: Dialectique 2 Approches"]
-    Step3 --> Step4["4. Étage 1 Fail-Closed (Scripts Statiques)\nbackend_quality_gate.sh / front_quality_gate.sh / e2e_verification_gate.sh"]
-    Step4 --> Step5["5. Étage 2 Sceptique (san-qa-auditor model: 'pro')\nAudit structurel, sécurité & edge-cases"]
-    Step5 --> Verdict{"Verdict QA ?"}
-    Verdict -->|"RETOUR_ATELIER"| Step3
-    Verdict -->|"LIVRABLE"| Step6["6. Coche Roadmap & Livraison Solidarité Transactionnelle"]
+    S1["1. Map-First (.agents/cache/REPO_MAP.md)\n+ Triage (BACK_ONLY | FRONT_ONLY | FULL_STACK)"] --> S2["2. contract_lock (san-architect)\nCONTRACT_SCHEMA + Fitness Functions"]
+    S2 --> S3["3. parallel_slice_execution (swarm gemini-4-hydrogen-xhigh)\nsan-coder-back & san-coder-front (CODE_SLICE_SCHEMA)"]
+    S3 --> S4["4. Étage 1 Fail-Closed (Scripts Statiques)\nquality_gate_runner.sh / e2e_verification_gate.sh"]
+    S4 --> S5["5. Étage 2 adversarial_qa_loop (san-qa-auditor, max 3 tours)\nQA_VERDICT_SCHEMA: LIVRABLE | RETOUR_ATELIER"]
+    S5 -->|"RETOUR_ATELIER"| S3
+    S5 -->|"LIVRABLE"| S6["6. Preuve .agents/cache/last-gate-status.json\nDéverrouille Stop Hook (stop_guard.mjs)"]
 ```
 
-### Étape 1 : Cadrage & Triage Architectural
-- Charger la roadmap active sous `roadmaps/*.md`. Si la demande est complexe et dépourvue de plan, invoquer d'abord `san_planner`.
-- Classifier chaque tâche selon 3 profils exclusifs ([Matrice d'orchestration](references/orchestration_matrix.md)) :
-  - **`BACK_ONLY` :** Migrations, modèles, actions de domaine, requêtes Bruno, tests serveur.
-  - **`FRONT_ONLY` :** Composants UI, 5 états obligatoires, écrans, hooks clients.
-  - **`FULL_STACK` :** Séquencement strict **Contract-First** : verrouillage préalable du contrat d'endpoint et validation des tests Bruno côté serveur avant la moindre ligne de code frontend.
+### Étape 1 : Map-First, Cadrage & Contract Lock (`contract_lock`)
+- Consulter `.agents/cache/REPO_MAP.md` (`read_file(StartLine, EndLine)`) et charger la roadmap active sous `roadmaps/*.md` (ou appeler `san_planner`).
+- Classifier selon [orchestration_matrix.md](references/orchestration_matrix.md) (`BACK_ONLY`, `FRONT_ONLY`, `FULL_STACK`).
+- En `FULL_STACK`, geler via `san-architect` les contrats OpenAPI 3.1 / Zod / TypeBox, les assertions Bruno et les **Architectural Fitness Functions** avant tout codage parallèle.
 
-### Étape 2 : Délégation Atomique & Dialectique des 2 Approches
-Pour chaque tâche, invoquer le sous-agent dédié (`san-coder-back` ou `san-coder-front`) :
-- **Modèle :** Par défaut `Model: 'flash'`. Pour les modèles de domaine complexes, l'architecture transactionnelle sensible ou les migrations critiques, l'orchestrateur peut invoquer `Model: 'pro'` ou `Model: 'inherit'`.
-- **Clause Obligatoire dans le Prompt :** Exiger formellement du codeur d'énoncer une **Dialectique 2 Approches** (Approche A conservatrice vs Approche B optimale/performante avec analyse coûts/bénéfices) avant de produire le code.
+### Étape 2 : Délégation Parallèle (`parallel_slice_execution`)
+- Spawner en parallèle `san-coder-back` et `san-coder-front` via `swarm(action: "add", model: "gemini-4-hydrogen-xhigh", workspace: "share")` ou via `run_workflow` :
+```python
+import sys
+sys.path.insert(0, ".agents/skills/san_executer/scripts")
+from autonomous_slice_workflow import run_autonomous_slice
+result = await run_autonomous_slice(args, WORKSPACES)
+```
+- **Clause Obligatoire :** Chaque codeur (`san-coder-back`, `san-coder-front`) énonce une **Dialectique 2 Approches** avant édition ; `san-coder-front` respecte les **5 états UI** et le **Motion System**.
 
-### Étape 3 : Étage 1 — Quality Gates Fail-Closed (Zéro Token LLM)
-Exécuter immédiatement les scripts d'assurance qualité déterministes :
-- **Backend :** `bash src/skills/san_backend_expert/scripts/backend_quality_gate.sh` (typage strict, PHPStan max / tsc, tests unitaires, N+1, audit CVE).
-- **Frontend :** `bash src/skills/san_ux_ui_expert/scripts/front_quality_gate.sh` (compilation tsc stricte, linters, tests Vitest/Jest).
-- **Intégration E2E :** `bash src/skills/san_executer/scripts/e2e_verification_gate.sh` ([Script Gate E2E](scripts/e2e_verification_gate.sh)).
-En cas d'échec (code retour $\ne 0$), retour immédiat au codeur pour correction sans dépenser de tokens d'audit.
+### Étape 3 : Étage 1 — Quality Gates Fail-Closed & Preuve `stop_guard.mjs`
+Exécuter les scripts déterministes (zéro `--passWithNoTests`, zéro `|| true`) :
+- **Backend :** `bash src/skills/san_backend_expert/scripts/backend_quality_gate.sh`
+- **Frontend :** `bash src/skills/san_ux_ui_expert/scripts/front_quality_gate.sh`
+- **Intégration E2E / Runner :** `bash src/skills/san_executer/scripts/e2e_verification_gate.sh` (ou runner `quality_gate_runner.sh`)
+- Après validation `exit 0`, mettre à jour `.agents/cache/last-gate-status.json` (`{ "passed": true, "timestamp": "<ISO-8601>" }`) afin de déverrouiller le hook `Stop` (`stop_guard.mjs`).
 
-### Étape 4 : Étage 2 — Inquisiteur Sceptique (`san-qa-auditor`, `model: "pro"`)
-Invoquer `san-qa-auditor` (`Model: 'pro'`) doté d'une posture de *Présomption d'Anomalies* :
-- Analyse critique : failles de logique, BOLA/IDOR, fuite d'état, résilience 3G dégradée, gestion des cas limites.
-- **Si `RETOUR_ATELIER` :** Renvoyer les constats au codeur atomique et réitérer jusqu'à résolution complète.
-- **Si `LIVRABLE` :** Valider l'étape, cocher `- [x]` dans la roadmap et documenter le rapport.
+### Étape 4 : Étage 2 — Boucle Adversariale (`adversarial_qa_loop`, max 3 tours)
+- `san-qa-auditor` (`gemini-4-hydrogen-xhigh` en `swarm`, lecture seule) audite sécurité OWASP, substance des tests, Fitness Functions et géométrie DOM (`QA_VERDICT_SCHEMA`).
+- **`RETOUR_ATELIER` :** Boucle automatique de remédiation vers `san-coder-back` / `san-coder-front` (max 3 tours).
+- **`LIVRABLE` :** Écrire `.agents/cache/last-gate-status.json`, cocher `- [x]` dans la roadmap et produire le rapport.
 
 ---
 
-## 3. RESSOURCES & RÉFÉRENCES EMBARQUÉES
+## 3. RESSOURCES & SCRIPTS EMBARQUÉS
 
-- [Matrice d'Orchestration & Arbre de Décision](references/orchestration_matrix.md) : Règles de routage architectural (BACK_ONLY, FRONT_ONLY, FULL_STACK).
-- [Protocole Intangible Contract-First](references/contract_first_protocol.md) : Cycle de vie spécification -> Zod/TypeScript -> Bruno -> implémentation.
-- [Script E2E Verification Gate](scripts/e2e_verification_gate.sh) : Suite de tests d'intégration automatisée fail-closed.
-- [Modèle de Rapport d'Exécution](templates/EXECUTION_REPORT_TEMPLATE.md) : Synthèse formelle de livraison par phase.
-- [Gabarit de Contrat d'Endpoint](templates/ENDPOINT_CONTRACT_TEMPLATE.md) : Spécification technique d'API normative.
+- [Workflow Python Autonome `run_workflow`](scripts/autonomous_slice_workflow.py) : Orchestration 3 phases (`CONTRACT_SCHEMA`, `CODE_SLICE_SCHEMA`, `QA_VERDICT_SCHEMA`) + mode `--self-test` / `--dry-run`.
+- [Script E2E Verification Gate](scripts/e2e_verification_gate.sh) : Suite d'intégration fail-closed (Front + Back + Bruno).
+- [Matrice d'Orchestration & Arbre de Décision](references/orchestration_matrix.md) : Routage `BACK_ONLY`, `FRONT_ONLY`, `FULL_STACK`.
+- [Protocole Intangible Contract-First](references/contract_first_protocol.md) : Spécification -> Zod/TypeBox -> Bruno.
+- [Modèle de Rapport d'Exécution](templates/EXECUTION_REPORT_TEMPLATE.md) & [Gabarit Contrat d'Endpoint](templates/ENDPOINT_CONTRACT_TEMPLATE.md).

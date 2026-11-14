@@ -3,13 +3,13 @@
 > **Fichier :** `/roadmaps/[PHASE]_[PROBLEMATIQUE]_[JJMMAAAA].md`  
 > **Date de création :** JJ/MM/AAAA  
 > **Statut :** EN COURS (Auto-nettoyage actif)  
-> **Profil Projet :** [emerging_market | global_saas | mobile_consumer | cli_devtools | api_platform]  
+> **Profil Projet :** [emerging_market_3g | global_saas | mobile_consumer | cli_devtools | api_platform]  
 > **Stack Technique :** [Stack détectée par san_init, ex: Laravel 11 + React 19 + Redis]  
 > **Objectif Mesurable :** [Description concise en 2 phrases de l'impact attendu et vérifiable].
 
 ---
 
-## SECTION 0 : MINI-ADR & PRE-MORTEM SYSTÉMIQUE (san-architect)
+## SECTION 0 : MINI-ADR, PRE-MORTEM, CONTRACT-FIRST & FITNESS FUNCTIONS (`san-architect`)
 
 ### 1. Comparatif de 2 Architectures Viables
 *Confrontation objective de 2 architectures réalistes aux compromis lucides (interdiction de l'option épouvantail).*
@@ -29,6 +29,15 @@
 2. **Risque 2 (Concurrence / Cohérence des données) :** [Condition de course ou conflit d'écriture] $\rightarrow$ *Mitigation :* [Verrou atomique / Idempotency-Key / Transaction].
 3. **Risque 3 (Réseau dégradé / Timeout tiers) :** [Panne de passerelle ou latence extrême] $\rightarrow$ *Mitigation :* [Circuit breaker / Outbox locale / Dégradation gracieuse].
 
+### 3. Architecture Contract-First & Architectural Fitness Functions
+- **Contrats Partagés à Geler avant Codage Parallèle :**
+  - Spécification API : `openapi.yaml` (OpenAPI 3.1) + requêtes `bruno/`.
+  - Schémas Runtime Partagés : `src/contracts/*.ts` (**Zod** / **TypeBox**) générés et verrouillés avant de spawner `san-coder-back` et `san-coder-front`.
+- **Architectural Fitness Functions (Vérifiées au Quality Gate) :**
+  - **Étanchéité inter-modules :** [Règle d'importation stricte, ex: zéro import direct entre modules internes hors façade/contrat].
+  - **Absence de cycles :** [Commande de détection de dépendances circulaires, ex: `npx madge --circular src/`].
+  - **Budgets techniques :** [Composants `< 220` lignes, services `< 200` lignes, latence API p95 `< 100ms`, cibles tactiles `>= 44x44px`].
+
 ---
 
 ## 1. RÈGLES D'AUTO-NETTOYAGE & DIRECTIVES DE PREUVE
@@ -42,33 +51,33 @@
 
 ## 2. CONTEXTE & AUDIT PRÉALABLE
 
-* **Diagnostic UX & Cognitif (`psychologist_market_expert`) :**
+* **Diagnostic UX & Cognitif (`san-researcher` / `san-designer-worker`) :**
   - Frictions identifiées : [Points de friction cognitifs ou ergonomiques détectés]
   - Charge mentale : [Simplifications appliquées pour minimiser les hésitations utilisateur]
   - Parcours optimisé : [Nombre d'étapes réduit, feedback clair, progression visualisable]
-* **Diagnostic Technique & Clean Code (`technical_market_expert`) :**
+* **Diagnostic Technique & Clean Code (`san-architect`) :**
   - Architecture & SOLID : [Découpage en Services/Actions, respect du principe de responsabilité unique]
-  - Requêtes & Performance : [Prévention des requêtes N+1, stratégie d'indexation BDD, cache Redis]
-  - Sécurité amont : [Contrôle d'accès BOLA/IDOR, validation stricte des entrées via Zod/FormRequest]
+  - Frontières & Fitness Functions : [Frontières de modules et règles d'étanchéité]
+  - Sécurité amont : [Contrôle d'accès BOLA/IDOR, validation stricte des entrées via Zod/TypeBox/FormRequest]
 
 ---
 
-## PHASE 1 : FONDATIONS, MODÉLISATION & CONTRATS D'API (Contract-First)
-> *Règle d'étanchéité : Cette phase doit être validée à 100% avant d'aborder la Phase 2.*
+## PHASE 1 : ARCHITECTURE CONTRACT-FIRST, SCHÉMAS GELÉS & FITNESS FUNCTIONS
+> *Règle d'étanchéité : Les contrats partagés (OpenAPI 3.1 / Zod / TypeBox) et les tests de Fitness Functions doivent être gelés et validés à 100 % AVANT tout codage parallèle Front/Back en Phases 2 & 3.*
 
 - [ ] **1.1 Modélisation de Données :** Créer les migrations de base de données avec index appropriés et contraintes d'intégrité dans `database/migrations/` (ou schéma équivalent).
-- [ ] **1.2 Spécification des Contrats d'Endpoints :** Rédiger le contrat d'API dans `.agents/rules/technicals/endpoints/[domaine]_[action].md` (types d'entrée Zod, formats JSON de sortie, statuts HTTP 200/400/401/422/429/500, en-tête obligatoire `Idempotency-Key`).
+- [ ] **1.2 Spécification Contract-First (OpenAPI 3.1 + Zod / TypeBox) :** Générer et geler le contrat OpenAPI 3.1 (`openapi.yaml`), les schémas partagés Zod/TypeBox (`src/contracts/`) et `.agents/rules/technicals/endpoints/[domaine]_[action].md` (statuts HTTP 200/400/401/422/429/500, en-tête obligatoire `Idempotency-Key`).
 - [ ] **1.3 Collection Bruno :** Rédiger les requêtes de test automatisées et assertions contractuelles dans `bruno/[domaine]/[action].bru`.
-- [ ] **1.4 Types TypeScript / DTOs :** Définir et exporter les types/interfaces stricts partagés dans `src/types/` (ou DTOs équivalents backend/frontend).
-- [ ] **1.5 Validation des Contrats :** Exécuter la compilation des types (`tsc --noEmit` ou équivalent) et vérifier que les contrats sont hermétiques.
+- [ ] **1.4 Architectural Fitness Functions Automatisées :** Mettre en place les tests vérifiant l'étanchéité inter-modules, l'absence de cycles de dépendances et les budgets techniques.
+- [ ] **1.5 Gel & Validation des Contrats :** Exécuter la compilation des types (`tsc --noEmit` ou équivalent) et les tests de contrats/fitness pour certifier le socle hermétique (`exit 0`).
 
 ---
 
 ## PHASE 2 : LOGIQUE MÉTIER & BACKEND CORE
-> *Règle d'étanchéité : Les tests unitaires et d'intégration serveur doivent être 100% au vert avant d'aborder la Phase 3.*
+> *Règle d'étanchéité : Les tests unitaires et d'intégration serveur doivent être 100% au vert avant de valider l'intégration finale.*
 
-- [ ] **2.1 Services Applicatifs :** Implémenter la logique métier isolée dans des Services / Actions autonomes en conformité stricte avec SOLID.
-- [ ] **2.2 Contrôleurs & Middlewares :** Implémenter la validation stricte des payloads (`FormRequest` ou schémas Zod), l'authentification et le rate limiting.
+- [ ] **2.1 Services Applicatifs :** Implémenter la logique métier isolée dans des Services / Actions autonomes conformes aux contrats gelés en Phase 1.
+- [ ] **2.2 Contrôleurs & Middlewares :** Implémenter la validation stricte des payloads (`FormRequest`, Zod ou TypeBox), l'authentification et le rate limiting.
 - [ ] **2.3 Traitements Asynchrones & Webhooks :** Mettre en place les files d'attente Redis pour les tâches lourdes et sécuriser les webhooks (vérification de signature HMAC, replay protection).
 - [ ] **2.4 Tests Unitaires & Intégration Serveur :** Exécuter la suite de tests backend dédiée et valider 100% de réussite :
   - *Commande validante :* `[COMMANDE_TESTS_BACKEND, ex: php artisan test --parallel ou pnpm test]`
@@ -76,24 +85,25 @@
 
 ---
 
-## PHASE 3 : INTERFACE CLIENT & EXPÉRIENCE UTILISATEUR
-> *Règle d'étanchéité : Les 5 états obligatoires et le respect strict de BRAND.md doivent être validés avant la Phase 4.*
+## PHASE 3 : INTERFACE CLIENT, STUDIO DUEL UI & EXPÉRIENCE UTILISATEUR
+> *Règle d'étanchéité : Standard UI 5 États, Motion System, cibles tactiles >= 44x44px et audit géométrique DOM doivent être validés avant la Phase 4.*
 
-- [ ] **3.1 Respect des 5 États Obligatoires :** Implémenter le composant d'interface avec gestion exhaustive des 5 états :
-  - *État Idéal :* Rendu complet, lisible et fluide des données réelles.
-  - *État Vide :* Illustration ou micro-copie empathique guidant immédiatement vers l'action première.
-  - *État Chargement :* Skeleton animés à 60 fps calqués sur la géométrie exacte des composants finaux (zéro spinner bloquant plein écran).
-  - *État Erreur :* Message explicite orienté solution, sans jargon technique, doté d'un bouton de nouvelle tentative (`Retry`).
-  - *État Succès / Hors-ligne :* Feedback visuel instantané (toast, badge statut ou bannière discrète).
-- [ ] **3.2 Tokens & Mouvement :** Appliquer exclusivement les design tokens de `BRAND.md` (typographie, couleurs primaires/secondaires, espacements) et les courbes d'accélération normalisées (zéro valeur magique CSS).
-- [ ] **3.3 Branchement API Typé :** Raccorder l'interface au client API en exploitant strictement les types exportés en Phase 1 (zéro type `any`).
-- [ ] **3.4 Tests Frontend & Composants :** Valider le montage, le rendu et les interactions clés via la suite de tests frontend :
+- [ ] **3.1 Studio Duel UI (Écrans Clés) :** Produire 2 directions artistiques parallèles (`option-a` vs `option-b` via `swarm` `gemini-4-hydrogen-xhigh`), exporter en multi-viewports (`export_png.mjs --viewports=mobile,tablet,desktop --audit-dom`) et arbitrer visuellement via `san-qa-auditor`.
+- [ ] **3.2 Standard UI 5 États Non-Destructifs :** Implémenter chaque vue avec les 5 états invariants :
+  - *`Empty` :* Illustration ou micro-copie empathique guidant immédiatement vers l'action première.
+  - *`Skeleton Cold-Start` :* Squelette géométrique (`CLS < 0.05`) réservé exclusivement au chargement initial à froid.
+  - *`Populated` :* Rendu complet, lisible et hiérarchisé en 3 plans.
+  - *`Stale-While-Revalidate` :* Conservation stricte des données existantes lors d'un refetch/filtre/tri + indicateur discret non bloquant.
+  - *`Error` :* Message explicite orienté solution avec bouton `Réessayer` sans détruire les données déjà affichées.
+- [ ] **3.3 Motion System, Accessibilité & Tokens :** Appliquer les design tokens de `BRAND.md`, transitions d'entrée `cubic-bezier` (`transform`/`opacity` uniquement), `@media (prefers-reduced-motion: reduce)`, cibles tactiles `>= 44x44px`, `font-variant-numeric: tabular-nums` et `focus-visible`.
+- [ ] **3.4 Branchement API Contract-First :** Raccorder l'interface au client API en exploitant strictement les schémas Zod/TypeBox/OpenAPI gelés en Phase 1 (zéro type `any`).
+- [ ] **3.5 Tests Frontend & Composants :** Valider les 5 états et interactions clés via la suite de tests frontend :
   - *Commande validante :* `[COMMANDE_TESTS_FRONTEND, ex: pnpm test ou yarn test]`
 
 ---
 
 ## PHASE 4 : RÉSILIENCE E2E & RÉSEAU DÉGRADÉ
-> *Règle d'étanchéité : Tolérance prouvée aux conditions réseau difficiles (Afrique / Marchés émergents / 3G instable).*
+> *Règle d'étanchéité : Tolérance prouvée aux conditions réseau difficiles (Marchés émergents / 3G instable).*
 
 - [ ] **4.1 Verrou d'Idempotence :** Vérifier que chaque soumission critique transmet une `Idempotency-Key` unique et que les retries ne créent aucun effet de bord ni doublon en base de données.
 - [ ] **4.2 File d'Attente Hors-Ligne (Offline Outbox) :** Vérifier la mise en mémoire locale des requêtes (SQLite / MMKV / IndexedDB) en cas de déconnexion réseau et leur rejeu ordonné automatique dès retour de la connectivité.
@@ -102,13 +112,13 @@
 
 ---
 
-## PHASE 5 : ENTONNOIR D'ASSURANCE QUALITÉ & SÉCURITÉ
-> *Règle d'étanchéité : Score de sécurité >= 90/100, temps de réponse p95 < 100ms et zéro vulnérabilité critique.*
+## PHASE 5 : ENTONNOIR D'ASSURANCE QUALITÉ, FITNESS FUNCTIONS & SÉCURITÉ
+> *Règle d'étanchéité : Score de sécurité >= 90/100, Fitness Functions 100% vertes, 0 défaut géométrique DOM, p95 < 100ms.*
 
-- [ ] **5.1 Étage 1 (Quality Gate Déterministe) :** Lancer le script global d'assurance qualité (`scripts/e2e_verification_gate.sh` ou suite E2E du projet). Tout échec doit être corrigé avant de poursuivre.
+- [ ] **5.1 Étage 1 (Quality Gate & Fitness Functions) :** Lancer le script global d'assurance qualité + tests d'étanchéité inter-modules, d'absence de cycles et de budgets techniques, mettant à jour `.agents/cache/last-gate-status.json` (`passed: true`).
   - *Commande validante :* `[COMMANDE_E2E, ex: pnpm exec playwright test ou bash scripts/e2e_verification_gate.sh]`
-- [ ] **5.2 Étage 2 (Audit OWASP & Pentest) :** Vérifier l'étanchéité des autorisations (prévention stricte BOLA / IDOR, échappement contextuel XSS, protection CSRF, en-têtes CSP/HSTS).
-- [ ] **5.3 Métriques de Performance :** Valider un temps de réponse API p95 inférieur à 100 ms sur les routes critiques et vérifier les métriques Core Web Vitals (LCP < 2.5s, CLS < 0.1).
+- [ ] **5.2 Étage 2 (Audit OWASP, Substance & Géométrie DOM) :** Vérifier l'étanchéité des autorisations (BOLA/IDOR, XSS, CSRF, CSP/HSTS), l'absence de *Mocking Theater*, et la propreté multi-viewports (`export_png.mjs --viewports=mobile,tablet,desktop --audit-dom`).
+- [ ] **5.3 Métriques de Performance :** Valider un temps de réponse API p95 inférieur à 100 ms sur les routes critiques et vérifier les métriques Core Web Vitals (LCP < 2.5s, CLS < 0.05).
 
 ---
 

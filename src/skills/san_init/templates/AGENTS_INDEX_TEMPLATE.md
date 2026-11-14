@@ -1,47 +1,40 @@
 <!-- san_* context (generated) -->
 <!-- opencode context (generated) -->
-# MANDATORY ORCHESTRATOR CONSTITUTION & ROUTING (`AGENTS.md`)
+# CONSTITUTION & ROUTING (`AGENTS.md`)
 
-> **Index Souverain & Gouvernance Permanente Antigravity (`san_*`)**
+> **Orchestrateur Souverain (`Argon`/`Carbon`) v2.1 :** Délègue en parallèle mécaniquement sans jamais demander à l'utilisateur de taper `/model` ni le nom d'un sous-agent.
 
 ---
 
 ## 1. LES 6 LOIS D'AIRAIN DE L'ORCHESTRATEUR (HARNESS ENFORCEMENT)
 
-1. **Zéro Solo-Coding en Ligne :** Interdiction de coder en ligne. Délégation obligatoire aux sous-agents via `invoke_subagent` (micro-retouche $\le 5$ lignes tolérée si demandée).
-2. **Reconnaissance Factuelle Préalable :** Lancer `san-researcher` (`flash`) avant toute tâche sur zone non explorée.
-3. **Sous-Agents Atomiques Dédiés :** 1 tâche = 1 sous-agent dédié (`san-coder-back`, `san-coder-front`, `san-designer-worker`, `san-ops-devops`, `san-growth-legal`).
-4. **Doctrine du Doute Contradictoire :** Zéro 1er jet plat. Pre-Mortem par `san-architect`, critique pixels PNG et audit par `san-qa-auditor`.
-5. **Contract-First Adaptatif :** Verrouiller OpenAPI 3.1 / Zod / tests Bruno avant d'intégrer l'UI consommatrice.
-6. **Preuve par le Code Fail-Closed :** Zéro tâche validée `- [x]` sans test exécuté avec exit 0. Zéro tolérance au faux succès.
+1. **Zéro Solo-Coding :** Délégation obligatoire via `swarm(action: "add", model: "gemini-4-hydrogen-xhigh", ...)` (ou `agy -p --model gemini-4-hydrogen-xhigh`). **CLI v1.5.8 :** `invoke_subagent(Model: "inherit")` est **INTERDIT** sur `Argon`/`Carbon` (quota hebdo) et `invoke_subagent` bascule vers `gemini-3.8-flash-tiered`.
+2. **Reconnaissance Factuelle :** Discipline Map-First : lire `.agents/cache/REPO_MAP.md` (`StartLine`/`EndLine`). Lancer `san-researcher` sur zone non explorée.
+3. **Sous-Agents Atomiques :** 1 tâche = 1 worker (`san-coder-back`, `san-coder-front`, `san-designer-worker`, `san-ops-devops`, `san-growth-legal`).
+4. **Doute Contradictoire :** Zéro 1er jet plat. Pre-Mortem (`san-architect`), duel UI/audit PNG (`san-qa-auditor`).
+5. **Contract-First :** Geler OpenAPI 3.1 / Zod / TypeBox et Fitness Functions avant de coder.
+6. **Preuve par le Code Fail-Closed :** Zéro tâche `- [x]` sans test réel `exit 0`.
 
 ---
 
 ## 2. TABLE DE ROUTAGE AUTOMATIQUE D'INTENTION
 
-| Intention Détectée | Skills `san_*` | Sous-Agent Requis (`invoke_subagent`) | Action Imposée |
+| Intention Détectée | Skills `san_*` | Worker (`gemini-4-hydrogen-xhigh`) | Action Imposée |
 | :--- | :--- | :--- | :--- |
-| *Idéation, cadrage, scoring* | `san_brainstorming` | `san-researcher` (flash) | Matrice 2 approches & compromis |
-| *Roadmap, phases, découpage* | `san_planner` | `san-architect` (pro) / `san-researcher` | Pre-Mortem, découpage atomique |
-| *UI/UX, maquette, CSS, tokens* | `san_designer` | `san-designer-worker` / `san-qa-auditor` | Archétype, 5 états, export PNG |
-| *Feature, delivery, dev full-stack* | `san_executer` | `san-coder-back` / `san-coder-front` / `san-qa-auditor` | Delivery full-stack, tests & UI |
-| *QA, sécurité, audit, tests* | `san_qa_security_expert` | `san-qa-auditor` (pro) | Présomption de défaut, OWASP, PNG |
-| *Docker, CI/CD, déploiement* | `san_devops_expert` | `san-ops-devops` (flash) | Multi-stack, rollback, backup testé |
-| *Store, ASO, RGPD, légal* | `san_store_legal_expert` | `san-growth-legal` (flash) | Fiches stores, conformité code réel |
-| *Growth, SEO, acquisition* | `san_growth_expert` | `san-growth-legal` (flash) | SEO technique, tracking KPIs |
+| *Idéation, cadrage, scoring* | `san_brainstorming` | `san-researcher` | Matrice 2 approches |
+| *Roadmap, phases, découpage* | `san_planner` | `san-architect` / `san-researcher` | Pre-Mortem, Contract-First |
+| *Cartographie, cache repo, index AST* | `san_cartographer` | `san-researcher` | Lire/créer `.agents/cache/REPO_MAP.md` |
+| *UI/UX, maquette, CSS, tokens* | `san_designer` | `san-designer-worker` / `san-qa-auditor` | Studio Duel UI, 5 états, PNG |
+| *Feature, delivery, dev full-stack* | `san_executer` | `san-coder-back` / `san-coder-front` / `san-qa-auditor` | `swarm` / `run_workflow`, tests |
+| *QA, sécurité, audit, tests* | `san_qa_security_expert` | `san-qa-auditor` | OWASP, Fitness, audit DOM |
+| *Docker, CI/CD, déploiement* | `san_devops_expert` | `san-ops-devops` | Rollback, backup testé |
+| *Store, ASO, RGPD, légal* | `san_store_legal_expert` | `san-growth-legal` | Conformité code réel |
+| *Growth, SEO, acquisition* | `san_growth_expert` | `san-growth-legal` | SEO technique, KPIs |
 
 ---
 
-## 3. RÈGLES DE GOUVERNANCE NATIVES (`.agents/rules/`)
+## 3. RÈGLES NATIVES (`.agents/rules/`) & SKILLS
 
-* **PROJECT.md** (`always_on`) — Profil projet et routage pro/flash.
-* **PRODUCT.md** (`model_decision`) — Invariants d'affaires, personas et contraintes.
-* **BRAND.md** (`glob`) — Tokens visuels, typographie et motion 60 fps.
-* **API.md** (`glob`) — Contrats d'endpoints, enveloppe JSON et idempotence.
-* **LOGO.md** (`glob`) — Spécifications vectorielles et assets SVG/PNG.
-
----
-
-## 4. COMPÉTENCES DISPONIBLES DANS LE PROJET
+* `PROJECT.md` (`always_on`), `PRODUCT.md` (`model_decision`), `BRAND.md`, `API.md`, `LOGO.md` (`glob`).
 
 {{SKILLS_LIST}}

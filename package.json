@@ -1,6 +1,6 @@
 {
   "name": "@alexsan/agy-framework",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Universal Google Antigravity Framework & Cartesian Skills Engine for Developers",
   "type": "module",
   "main": "src/cli/index.js",

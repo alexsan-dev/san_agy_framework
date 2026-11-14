@@ -3,6 +3,7 @@ import path from 'node:path';
 import os from 'node:os';
 import { execSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { WHATS_NEW, formatWhatsNewTerminal } from './whats_new.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -37,8 +38,28 @@ export const CANONICAL_AGENTS = [
 export const CANONICAL_HOOK_SCRIPTS = [
   'session_start.mjs',
   'pre_invocation.mjs',
-  'pre_tool_guard.mjs'
+  'pre_tool_guard.mjs',
+  'post_tool_indexer.mjs',
+  'stop_guard.mjs'
 ];
+
+export function getFrameworkVersion() {
+  try {
+    const pkgPath = path.resolve(FRAMEWORK_ROOT, 'package.json');
+    if (fs.existsSync(pkgPath)) {
+      const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+      if (pkg.version) return pkg.version;
+    }
+  } catch {}
+  return '2.1.0';
+}
+
+function normalizeTargetOptions(targetDirOrOptions, maybeOptions = {}) {
+  if (typeof targetDirOrOptions === 'string') {
+    return { ...(maybeOptions || {}), targetDir: targetDirOrOptions };
+  }
+  return targetDirOrOptions || {};
+}
 
 export const colors = {
   reset: '\x1b[0m',
@@ -367,6 +388,7 @@ export function generateAgentsContext(projectRoot, { skills = [], dryRun = false
   const SHORT_DESCRIPTIONS = {
     san_backend_expert: 'API, transactions DB et idempotence.',
     san_brainstorming: 'Idéation produit et scoring matriciel.',
+    san_cartographer: 'Carte hybride du repo et cache AST/IA.',
     san_copywriter: 'Rédaction UX et micro-copies 5 états.',
     san_design_tokens: 'Tokens BRAND vers CSS, Tailwind et TS.',
     san_designer: 'Design UI 100% code et canvas stores.',
@@ -463,6 +485,53 @@ export function deploySkills(skillsDestDir, selectedSkills = getAvailableSkills(
     installedSkills.push(skillName);
   }
   return installedSkills;
+}
+
+/**
+ * Déploie les compétences en mode héritage léger (--light) via .agents/skills.json.
+ */
+export function deploySkillsLight(agentsDir, { dryRun = false } = {}) {
+  const skillsJsonPath = path.join(agentsDir, 'skills.json');
+  const payload = {
+    version: 1,
+    inherits: [SKILLS_SRC_DIR]
+  };
+
+  if (!dryRun) {
+    fs.mkdirSync(agentsDir, { recursive: true });
+    fs.writeFileSync(skillsJsonPath, JSON.stringify(payload, null, 2) + '\n', 'utf8');
+  }
+
+  return {
+    file: 'skills.json',
+    status: dryRun ? 'dry-run' : 'created',
+    config: payload
+  };
+}
+
+/**
+ * Écrit le marqueur .agents/cache/whats_new_pending.json pour notification unique au 1er SessionStart.
+ */
+export function writeWhatsNewPendingCache(agentsDir, { dryRun = false, version = getFrameworkVersion() } = {}) {
+  const entry = WHATS_NEW[version] || WHATS_NEW['2.1.0'];
+  const pendingPayload = {
+    version: entry ? entry.version : version,
+    updatedAt: new Date().toISOString(),
+    seen: false,
+    highlights: entry ? entry.highlights : []
+  };
+
+  if (!dryRun) {
+    const cacheDir = path.join(agentsDir, 'cache');
+    fs.mkdirSync(cacheDir, { recursive: true });
+    fs.writeFileSync(
+      path.join(cacheDir, 'whats_new_pending.json'),
+      JSON.stringify(pendingPayload, null, 2) + '\n',
+      'utf8'
+    );
+  }
+
+  return pendingPayload;
 }
 
 /**
@@ -686,9 +755,10 @@ export function packageGlobalPlugin(targetDir, { dryRun = false, force = false }
 }
 
 /**
- * Diagnostic de santé officiel (doctor) : contrôle les 6 piliers v2.0
+ * Diagnostic de santé officiel (doctor) : contrôle les 6 piliers v2.1
  */
-export function runDoctor(options = {}) {
+export function runDoctor(targetDirOrOptions = {}, maybeOptions = {}) {
+  const options = normalizeTargetOptions(targetDirOrOptions, maybeOptions);
   const projectRoot = options.targetDir ? path.resolve(options.targetDir) : process.cwd();
   const agentsDir = path.join(projectRoot, '.agents');
 
@@ -700,7 +770,7 @@ export function runDoctor(options = {}) {
       rules: { title: '2. Règles normatives (.agents/rules/*.md)', passed: false, checks: [] },
       agents: { title: '3. Sous-agents natifs (.agents/agents/*.md)', passed: false, checks: [] },
       hooks: { title: '4. Garde-fous mécaniques (.agents/hooks.json & scripts)', passed: false, checks: [] },
-      skills: { title: '5. Catalogue des 17 skills (.agents/skills/ <= 130 lignes)', passed: false, checks: [] },
+      skills: { title: '5. Catalogue des 18 skills (.agents/skills/ | skills.json <= 130 lignes)', passed: false, checks: [] },
       gitHygiene: { title: '6. Étanchéité Git (.gitignore ou .git/info/exclude)', passed: false, checks: [] }
     }
   };
@@ -823,29 +893,85 @@ export function runDoctor(options = {}) {
   }
   report.pillars.hooks.passed = report.pillars.hooks.checks.length >= (1 + expectedScripts.length) && report.pillars.hooks.checks.every(c => c.ok);
 
-  // Pilier 5 : Catalogue des 17 skills (.agents/skills/ <= 130 lignes)
+  // Pilier 5 : Catalogue des 18 skills (.agents/skills/ ou .agents/skills.json <= 130 lignes)
   const skillsSubDir = path.join(agentsDir, 'skills');
+  const skillsJsonPath = path.join(agentsDir, 'skills.json');
   const expectedSkills = getAvailableSkills();
-  if (!fs.existsSync(skillsSubDir)) {
-    report.pillars.skills.checks.push({ ok: false, msg: 'Répertoire .agents/skills/ absent' });
-  } else {
-    for (const sk of expectedSkills) {
-      const skMd = path.join(skillsSubDir, sk, 'SKILL.md');
-      if (!fs.existsSync(skMd)) {
-        report.pillars.skills.checks.push({ ok: false, msg: `Skill manquant ou sans SKILL.md : ${sk}` });
+
+  const validateSkillInDir = (baseDir, skillName, sourceLabel) => {
+    const skMd = path.join(baseDir, skillName, 'SKILL.md');
+    if (!fs.existsSync(skMd)) {
+      return { ok: false, msg: `Skill manquant ou sans SKILL.md (${sourceLabel}) : ${skillName}` };
+    }
+    try {
+      const content = fs.readFileSync(skMd, 'utf8');
+      const lineCount = content.split('\n').length;
+      if (lineCount > 130) {
+        return { ok: false, msg: `Skill ${skillName}/SKILL.md trop long : ${lineCount} lignes (max: 130)` };
+      }
+      return { ok: true, msg: `Skill ${skillName} valide (${lineCount} lignes <= 130 via ${sourceLabel})` };
+    } catch (e) {
+      return { ok: false, msg: `Erreur lecture ${skillName} : ${e.message}` };
+    }
+  };
+
+  if (fs.existsSync(skillsJsonPath)) {
+    try {
+      const parsed = JSON.parse(fs.readFileSync(skillsJsonPath, 'utf8'));
+      const rawInherits = Array.isArray(parsed?.inherits) ? parsed.inherits : [];
+      if (rawInherits.length === 0) {
+        report.pillars.skills.checks.push({ ok: false, msg: '.agents/skills.json ne déclare aucun chemin dans "inherits"' });
       } else {
-        try {
-          const content = fs.readFileSync(skMd, 'utf8');
-          const lineCount = content.split('\n').length;
-          if (lineCount > 130) {
-            report.pillars.skills.checks.push({ ok: false, msg: `Skill ${sk}/SKILL.md trop long : ${lineCount} lignes (max: 130)` });
-          } else {
-            report.pillars.skills.checks.push({ ok: true, msg: `Skill ${sk} valide (${lineCount} lignes <= 130)` });
+        const validInheritedDirs = [];
+        for (const entry of rawInherits) {
+          const rawPath = typeof entry === 'string' ? entry : entry?.path;
+          if (!rawPath || typeof rawPath !== 'string') {
+            report.pillars.skills.checks.push({ ok: false, msg: 'Entrée "inherits" invalide dans .agents/skills.json' });
+            continue;
           }
-        } catch (e) {
-          report.pillars.skills.checks.push({ ok: false, msg: `Erreur lecture ${sk} : ${e.message}` });
+          const expanded = rawPath.startsWith('~/')
+            ? path.join(os.homedir(), rawPath.slice(2))
+            : rawPath;
+          const resolvedDir = path.isAbsolute(expanded)
+            ? expanded
+            : path.resolve(projectRoot, expanded);
+          if (!fs.existsSync(resolvedDir)) {
+            report.pillars.skills.checks.push({ ok: false, msg: `Chemin hérité introuvable dans .agents/skills.json : ${resolvedDir}` });
+          } else {
+            validInheritedDirs.push(resolvedDir);
+            report.pillars.skills.checks.push({ ok: true, msg: `Mode léger (.agents/skills.json) : héritage valide depuis ${resolvedDir}` });
+          }
+        }
+
+        if (validInheritedDirs.length > 0) {
+          for (const sk of expectedSkills) {
+            let foundDir = null;
+            if (fs.existsSync(path.join(skillsSubDir, sk, 'SKILL.md'))) {
+              foundDir = skillsSubDir;
+            } else {
+              for (const inhDir of validInheritedDirs) {
+                if (fs.existsSync(path.join(inhDir, sk, 'SKILL.md'))) {
+                  foundDir = inhDir;
+                  break;
+                }
+              }
+            }
+            if (!foundDir) {
+              report.pillars.skills.checks.push({ ok: false, msg: `Skill manquant dans les chemins hérités (.agents/skills.json) : ${sk}` });
+            } else {
+              report.pillars.skills.checks.push(validateSkillInDir(foundDir, sk, foundDir === skillsSubDir ? '.agents/skills' : 'inherits'));
+            }
+          }
         }
       }
+    } catch (e) {
+      report.pillars.skills.checks.push({ ok: false, msg: `.agents/skills.json JSON invalide : ${e.message}` });
+    }
+  } else if (!fs.existsSync(skillsSubDir)) {
+    report.pillars.skills.checks.push({ ok: false, msg: 'Répertoire .agents/skills/ (et .agents/skills.json) absent' });
+  } else {
+    for (const sk of expectedSkills) {
+      report.pillars.skills.checks.push(validateSkillInDir(skillsSubDir, sk, '.agents/skills'));
     }
   }
   report.pillars.skills.passed = report.pillars.skills.checks.length >= expectedSkills.length && report.pillars.skills.checks.every(c => c.ok);
@@ -898,9 +1024,10 @@ export function runDoctor(options = {}) {
  * Affiche le bilan du diagnostic doctor dans la console
  */
 export function printDoctorReport(report) {
+  const version = getFrameworkVersion();
   console.log('');
   console.log(`${colors.cyan}============================================================${colors.reset}`);
-  console.log(`${colors.bold}${colors.brightCyan}  DIAGNOSTIC DE SANTÉ DU FRAMEWORK ANTIGRAVITY v2.0 (DOCTOR)${colors.reset}`);
+  console.log(`${colors.bold}${colors.brightCyan}  DIAGNOSTIC DE SANTÉ DU FRAMEWORK ANTIGRAVITY v${version} (DOCTOR)${colors.reset}`);
   console.log(`${colors.cyan}============================================================${colors.reset}`);
   console.log(`  ${colors.bold}Cible${colors.reset}   : ${report.projectRoot}`);
   console.log(`  ${colors.bold}Verdict${colors.reset} : ${report.allPassed ? `${colors.green}${colors.bold}CONFORME (6/6 PILIERS AU VERT)${colors.reset}` : `${colors.red}${colors.bold}NON CONFORME (DÉFAUTS DÉTECTÉS)${colors.reset}`}`);
@@ -919,7 +1046,7 @@ export function printDoctorReport(report) {
 
   console.log('');
   if (report.allPassed) {
-    console.log(`${colors.brightGreen}${colors.bold}✔ Félicitations ! Votre environnement respecte à 100% l'architecture souveraine v2.0.${colors.reset}`);
+    console.log(`${colors.brightGreen}${colors.bold}✔ Félicitations ! Votre environnement respecte à 100% l'architecture souveraine v${version}.${colors.reset}`);
   } else {
     console.log(`${colors.brightYellow}ℹ Conseil : Exécutez "san-framework update" ou "san-framework init --local --all" pour réparer automatiquement les piliers défaillants.${colors.reset}`);
   }
@@ -927,11 +1054,14 @@ export function printDoctorReport(report) {
 }
 
 /**
- * Moteur de la commande `update` : migration instantanée v1.0 -> v2.0 non destructive
+ * Moteur de la commande `update` : migration & mise à jour non destructive vers v2.1
  */
-export async function updateFramework(options = {}) {
+export async function updateFramework(targetDirOrOptions = {}, maybeOptions = {}) {
+  const options = normalizeTargetOptions(targetDirOrOptions, maybeOptions);
   const dryRun = Boolean(options.dryRun);
   const force = Boolean(options.force);
+  const light = Boolean(options.light);
+  const currentVersion = getFrameworkVersion();
   const projectRoot = options.targetDir ? path.resolve(options.targetDir) : process.cwd();
 
   const agentsDir = path.join(projectRoot, '.agents');
@@ -943,8 +1073,15 @@ export async function updateFramework(options = {}) {
   const availableSkills = getAvailableSkills();
   const selectedSkills = resolveSkillList(options.skills, availableSkills);
 
-  // 1. Déploiement / Resynchronisation des skills (Couche 1)
-  const skillsInstalled = deploySkills(skillsDestDir, selectedSkills, { dryRun, force });
+  // 1. Déploiement / Resynchronisation des skills (Couche 1 : standard ou --light)
+  let skillsInstalled = [];
+  let lightSkillsConfig = null;
+  if (light) {
+    lightSkillsConfig = deploySkillsLight(agentsDir, { dryRun });
+    skillsInstalled = selectedSkills;
+  } else {
+    skillsInstalled = deploySkills(skillsDestDir, selectedSkills, { dryRun, force });
+  }
 
   // 2. Déploiement des 8 sous-agents natifs (Couche 2)
   const agentsStatus = deployAgents(agentsDestDir, { dryRun, force });
@@ -985,15 +1122,45 @@ export async function updateFramework(options = {}) {
     preserveOpencode: Boolean(options.opencode || hasOpencodeConfig)
   });
 
+  // 9. Initialisation / Resynchronisation du cache cartographique & What's New (.agents/cache/)
+  let whatsNewPending = null;
+  if (!dryRun) {
+    const cacheDir = path.join(agentsDir, 'cache');
+    try { fs.mkdirSync(cacheDir, { recursive: true }); } catch {}
+
+    const localMapperScript = path.join(skillsDestDir, 'san_cartographer', 'scripts', 'repo_mapper.mjs');
+    const srcMapperScript = path.join(SKILLS_SRC_DIR, 'san_cartographer', 'scripts', 'repo_mapper.mjs');
+    const mapperScript = fs.existsSync(localMapperScript)
+      ? localMapperScript
+      : (fs.existsSync(srcMapperScript) ? srcMapperScript : null);
+
+    if (mapperScript) {
+      try {
+        execSync(`node "${mapperScript}" --root "${projectRoot}"`, {
+          cwd: projectRoot,
+          stdio: ['ignore', 'ignore', 'ignore']
+        });
+      } catch {}
+    }
+
+    whatsNewPending = writeWhatsNewPendingCache(agentsDir, { dryRun: false, version: currentVersion });
+  } else {
+    whatsNewPending = writeWhatsNewPendingCache(agentsDir, { dryRun: true, version: currentVersion });
+  }
+
   // Bilan récapitulatif
   console.log('');
   console.log(`${colors.cyan}============================================================${colors.reset}`);
-  console.log(`${colors.bold}${colors.brightCyan}  MIGRATION & MISE À JOUR v2.0 — FRAMEWORK ANTIGRAVITY${colors.reset}`);
+  console.log(`${colors.bold}${colors.brightCyan}  MIGRATION & MISE À JOUR v${currentVersion} — FRAMEWORK ANTIGRAVITY${colors.reset}`);
   console.log(`${colors.cyan}============================================================${colors.reset}`);
   console.log(`  ${colors.bold}Projet${colors.reset}        : ${projectRoot}`);
   const hasAgents = fs.existsSync(agentsDir);
   console.log(`  ${colors.bold}Déploiement${colors.reset}   : ${hasAgents ? `${colors.green}Détecté (.agents/)${colors.reset}` : `${colors.yellow}Absent (aucun .agents/)${colors.reset}`}`);
-  console.log(`  ${colors.bold}Skills resync${colors.reset} : ${skillsInstalled.length}/${availableSkills.length}`);
+  if (light) {
+    console.log(`  ${colors.bold}Skills (--light)${colors.reset}: .agents/skills.json (héritage -> ${SKILLS_SRC_DIR})`);
+  } else {
+    console.log(`  ${colors.bold}Skills resync${colors.reset} : ${skillsInstalled.length}/${availableSkills.length}`);
+  }
   console.log(`  ${colors.bold}Sous-agents${colors.reset}   : ${agentsStatus.length} installés (.agents/agents/)`);
   console.log(`  ${colors.bold}Hooks natifs${colors.reset}  : ${hooksStatus.length} fichiers (.agents/hooks.json & scripts/)`);
   if (dryRun) {
@@ -1007,7 +1174,7 @@ export async function updateFramework(options = {}) {
       ? `${colors.green}[MERGED FRONTMATTER]${colors.reset} (Frontmatter officiel injecté, texte client 100% préservé)`
       : r.status === 'preserved'
         ? `${colors.yellow}[PRÉSERVÉ]${colors.reset} (Règle avec frontmatter valide conservée)`
-        : `${colors.green}[CRÉÉ]${colors.reset} (Instancié depuis gabarit v2.0)`;
+        : `${colors.green}[CRÉÉ]${colors.reset} (Instancié depuis gabarit v${currentVersion})`;
     console.log(`  • ${r.file.padEnd(14)} : ${badge}`);
   }
 
@@ -1023,11 +1190,18 @@ export async function updateFramework(options = {}) {
   }
 
   console.log('');
-  console.log(`${colors.brightCyan}✔ Codebase migrée en v2.0. Tapez "san-framework doctor" pour valider l'intégrité.${colors.reset}`);
+  console.log(formatWhatsNewTerminal(currentVersion));
+
+  console.log('');
+  console.log(`${colors.brightCyan}✔ Codebase migrée en v${currentVersion}. Tapez "san-framework doctor" pour valider l'intégrité.${colors.reset}`);
   console.log(`${colors.cyan}============================================================${colors.reset}\n`);
 
   return {
     success: true,
+    version: currentVersion,
+    light,
+    lightSkillsConfig,
+    whatsNewPending,
     projectRoot,
     skillsInstalled,
     agentsStatus,
@@ -1047,6 +1221,8 @@ export async function installFramework(options = {}) {
   const dryRun = Boolean(options.dryRun);
   const force = Boolean(options.force);
   const opencode = Boolean(options.opencode);
+  const light = Boolean(options.light);
+  const currentVersion = getFrameworkVersion();
 
   const availableSkills = getAvailableSkills();
   const selectedSkills = resolveSkillList(options.skills, availableSkills);
@@ -1073,7 +1249,7 @@ export async function installFramework(options = {}) {
 
     console.log('');
     console.log(`${colors.cyan}============================================================${colors.reset}`);
-    console.log(`${colors.bold}${colors.brightCyan}  PACKAGING PLUGIN GLOBAL DU FRAMEWORK ANTIGRAVITY (v2.0)${colors.reset}`);
+    console.log(`${colors.bold}${colors.brightCyan}  PACKAGING PLUGIN GLOBAL DU FRAMEWORK ANTIGRAVITY (v${currentVersion})${colors.reset}`);
     console.log(`${colors.cyan}============================================================${colors.reset}`);
     for (const r of pluginReports) {
       console.log(`  ${colors.green}✔${colors.reset} Plugin assemblé dans : ${r.targetDir}`);
@@ -1081,7 +1257,7 @@ export async function installFramework(options = {}) {
       console.log(`    ↳ Sous-agents: ${r.agentsCount} agents natifs (.md)`);
       console.log(`    ↳ Skills     : ${r.skillsCount} skills canoniques`);
       console.log(`    ↳ Règles     : ${r.rulesCount} règles avec frontmatter YAML`);
-      console.log(`    ↳ Hooks      : hooks.json + 3 scripts exécutables`);
+      console.log(`    ↳ Hooks      : hooks.json + ${CANONICAL_HOOK_SCRIPTS.length} scripts exécutables`);
     }
     if (dryRun) {
       console.log(`\n  ${colors.yellow}${colors.bold}[DRY-RUN]${colors.reset} Mode simulation actif.`);
@@ -1103,8 +1279,15 @@ export async function installFramework(options = {}) {
   const rulesDestDir = path.join(agentsDir, 'rules');
   const geminiMdDest = path.join(agentsDir, 'GEMINI.md');
 
-  // 1. Couche 1 : Skills
-  const installedSkills = deploySkills(skillsDestDir, selectedSkills, { dryRun, force });
+  // 1. Couche 1 : Skills (standard ou mode léger --light via .agents/skills.json)
+  let installedSkills = [];
+  let lightSkillsConfig = null;
+  if (light) {
+    lightSkillsConfig = deploySkillsLight(agentsDir, { dryRun });
+    installedSkills = selectedSkills;
+  } else {
+    installedSkills = deploySkills(skillsDestDir, selectedSkills, { dryRun, force });
+  }
 
   // 2. Couche 2 : Sous-agents natifs (8 agents)
   const agentsStatus = deployAgents(agentsDestDir, { dryRun, force });
@@ -1142,14 +1325,35 @@ export async function installFramework(options = {}) {
     ? [agentsContext, mergeOpencodeConfig(projectRoot, { dryRun })].filter(Boolean)
     : [];
 
+  // 9. Initialisation du cache cartographique (.agents/cache/)
+  if (!dryRun) {
+    const cacheDir = path.join(agentsDir, 'cache');
+    try { fs.mkdirSync(cacheDir, { recursive: true }); } catch {}
+
+    const localMapperScript = path.join(skillsDestDir, 'san_cartographer', 'scripts', 'repo_mapper.mjs');
+    const srcMapperScript = path.join(SKILLS_SRC_DIR, 'san_cartographer', 'scripts', 'repo_mapper.mjs');
+    const mapperScript = fs.existsSync(localMapperScript)
+      ? localMapperScript
+      : (fs.existsSync(srcMapperScript) ? srcMapperScript : null);
+
+    if (mapperScript) {
+      try {
+        execSync(`node "${mapperScript}" --root "${projectRoot}"`, {
+          cwd: projectRoot,
+          stdio: ['ignore', 'ignore', 'ignore']
+        });
+      } catch {}
+    }
+  }
+
   // Bilan récapitulatif
   console.log('');
   console.log(`${colors.cyan}============================================================${colors.reset}`);
   console.log(`${colors.bold}${colors.brightCyan}  INSTALLATION DU FRAMEWORK ANTIGRAVITY (san_*) RÉUSSIE !${colors.reset}`);
   console.log(`${colors.cyan}============================================================${colors.reset}`);
-  console.log(`  ${colors.bold}Mode${colors.reset}        : Local (.agents/)`);
+  console.log(`  ${colors.bold}Mode${colors.reset}        : ${light ? 'Local léger (.agents/ + skills.json inherits)' : 'Local (.agents/)'}`);
   console.log(`  ${colors.bold}Destination${colors.reset} : ${agentsDir}`);
-  console.log(`  ${colors.bold}Couche 1${colors.reset}    : ${installedSkills.length}/${availableSkills.length} skills configurés (.agents/skills/)`);
+  console.log(`  ${colors.bold}Couche 1${colors.reset}    : ${light ? `${installedSkills.length}/${availableSkills.length} skills hérités (.agents/skills.json)` : `${installedSkills.length}/${availableSkills.length} skills configurés (.agents/skills/)`}`);
   console.log(`  ${colors.bold}Couche 2${colors.reset}    : ${agentsStatus.length} sous-agents déployés (.agents/agents/)`);
   console.log(`  ${colors.bold}Couche 3${colors.reset}    : ${rulesStatus.length} règles normatives YAML (.agents/rules/)`);
   console.log(`  ${colors.bold}Couche 4${colors.reset}    : ${hooksStatus.length} fichiers de cycle de vie (.agents/hooks.json & scripts/)`);
@@ -1158,9 +1362,14 @@ export async function installFramework(options = {}) {
   }
 
   console.log('');
-  console.log(`${colors.bold}📦 Skills installés (${installedSkills.length}) :${colors.reset}`);
-  for (const s of installedSkills) {
-    console.log(`  ${colors.green}✔${colors.reset} ${colors.cyan}${s}${colors.reset}`);
+  if (light) {
+    console.log(`${colors.bold}📦 Skills hérités via .agents/skills.json (${installedSkills.length}) :${colors.reset}`);
+    console.log(`  ${colors.green}✔${colors.reset} inherits -> ${colors.cyan}${SKILLS_SRC_DIR}${colors.reset}`);
+  } else {
+    console.log(`${colors.bold}📦 Skills installés (${installedSkills.length}) :${colors.reset}`);
+    for (const s of installedSkills) {
+      console.log(`  ${colors.green}✔${colors.reset} ${colors.cyan}${s}${colors.reset}`);
+    }
   }
 
   console.log('');
@@ -1210,7 +1419,7 @@ export async function installFramework(options = {}) {
 
   console.log('');
   console.log(`${colors.bold}🚀 Prochaines étapes recommandées :${colors.reset}`);
-  console.log(`  ${colors.brightCyan}1.${colors.reset} ${colors.bold}san-framework doctor${colors.reset}   : Contrôler les 6 piliers de santé v2.0`);
+  console.log(`  ${colors.brightCyan}1.${colors.reset} ${colors.bold}san-framework doctor${colors.reset}   : Contrôler les 6 piliers de santé v${currentVersion}`);
   console.log(`  ${colors.brightCyan}2.${colors.reset} ${colors.bold}san_init${colors.reset}               : Initialiser et cadrer chirurgicalement le projet`);
   console.log(`  ${colors.brightCyan}3.${colors.reset} ${colors.bold}san_brainstorming${colors.reset}      : Cadrer les idées produit et valider la proposition de valeur`);
   console.log(`  ${colors.brightCyan}4.${colors.reset} ${colors.bold}san_planner${colors.reset}            : Planifier les phases d'ingénierie et roadmaps d'exécution`);
@@ -1218,6 +1427,9 @@ export async function installFramework(options = {}) {
 
   return {
     success: true,
+    version: currentVersion,
+    light,
+    lightSkillsConfig,
     targetMode,
     targetDir: agentsDir,
     installedSkills,
@@ -1229,4 +1441,11 @@ export async function installFramework(options = {}) {
     hygiene,
     opencodeContext
   };
+}
+
+/**
+ * Alias programmatique compatible (targetDir, options) pour installFramework.
+ */
+export async function initProject(targetDir, options = {}) {
+  return installFramework({ ...(options || {}), targetDir });
 }

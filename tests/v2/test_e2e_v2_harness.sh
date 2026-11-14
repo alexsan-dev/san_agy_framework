@@ -110,8 +110,8 @@ assert_true "Plugin global : logo assets/logo.svg présent" \
 assert_true "Plugin global : hooks.json présent à la racine du plugin" \
   '[ -f "${TMP_GLOBAL}/hooks.json" ]'
 
-assert_true "Plugin global : 3 scripts de hooks exécutables dans hooks/scripts/" \
-  '[ -x "${TMP_GLOBAL}/hooks/scripts/session_start.mjs" ] && [ -x "${TMP_GLOBAL}/hooks/scripts/pre_invocation.mjs" ] && [ -x "${TMP_GLOBAL}/hooks/scripts/pre_tool_guard.mjs" ]'
+assert_true "Plugin global : 5 scripts de hooks exécutables dans hooks/scripts/" \
+  '[ -x "${TMP_GLOBAL}/hooks/scripts/session_start.mjs" ] && [ -x "${TMP_GLOBAL}/hooks/scripts/pre_invocation.mjs" ] && [ -x "${TMP_GLOBAL}/hooks/scripts/pre_tool_guard.mjs" ] && [ -x "${TMP_GLOBAL}/hooks/scripts/post_tool_indexer.mjs" ] && [ -x "${TMP_GLOBAL}/hooks/scripts/stop_guard.mjs" ]'
 
 GLOBAL_AGENTS_COUNT=$(find "${TMP_GLOBAL}/agents" -type f -name "san-*.md" | wc -l)
 assert_true "Plugin global : exactement 8 sous-agents dans agents/ (${GLOBAL_AGENTS_COUNT}/8)" \
@@ -122,8 +122,8 @@ assert_true "Plugin global : 5 règles avec frontmatter dans rules/ (${GLOBAL_RU
   '[ "${GLOBAL_RULES_COUNT}" -ge 1 ] && [ "${GLOBAL_RULES_COUNT}" -eq 5 ]'
 
 GLOBAL_SKILLS_COUNT=$(find "${TMP_GLOBAL}/skills" -mindepth 1 -maxdepth 1 -type d -name "san_*" | wc -l)
-assert_true "Plugin global : exactement 17 skills dans skills/ (${GLOBAL_SKILLS_COUNT}/17)" \
-  '[ "${GLOBAL_SKILLS_COUNT}" -eq 17 ]'
+assert_true "Plugin global : exactement 18 skills dans skills/ (${GLOBAL_SKILLS_COUNT}/18)" \
+  '[ "${GLOBAL_SKILLS_COUNT}" -eq 18 ]'
 
 # 1.3 Validation officielle Google Antigravity Plugin Engine
 if command -v agy >/dev/null 2>&1; then
@@ -148,8 +148,8 @@ if command -v agy >/dev/null 2>&1; then
     '[ "${AGY_RULES}" -ge 1 ]'
 
   AGY_SKILLS=$(echo "${AGY_VAL_JSON}" | node -e "const d=JSON.parse(fs.readFileSync(0,'utf8')); console.log(d.components?.skills ?? 0)")
-  assert_true "agy plugin validate détecte exactement 17 skills (détectés: ${AGY_SKILLS})" \
-    '[ "${AGY_SKILLS}" -eq 17 ]'
+  assert_true "agy plugin validate détecte exactement 18 skills (détectés: ${AGY_SKILLS})" \
+    '[ "${AGY_SKILLS}" -eq 18 ]'
 
   AGY_FINDINGS=$(echo "${AGY_VAL_JSON}" | node -e "const d=JSON.parse(fs.readFileSync(0,'utf8')); console.log((d.findings ?? []).length)")
   assert_true "agy plugin validate relève 0 finding (0 warning, 0 note, findings: [])" \
@@ -265,8 +265,8 @@ assert_true "doctor valide le Pilier 3 (Sous-agents natifs .agents/agents/*.md)"
 assert_true "doctor valide le Pilier 4 (Garde-fous mécaniques hooks.json & scripts)" \
   'echo "${DOCTOR_OUT}" | grep -E "✔.*Garde-fous mécaniques"'
 
-assert_true "doctor valide le Pilier 5 (Catalogue des 17 skills <= 130 lignes)" \
-  'echo "${DOCTOR_OUT}" | grep -E "✔.*Catalogue des 17 skills"'
+assert_true "doctor valide le Pilier 5 (Catalogue des 18 skills <= 130 lignes)" \
+  'echo "${DOCTOR_OUT}" | grep -E "✔.*Catalogue des 18 skills"'
 
 assert_true "doctor valide le Pilier 6 (Étanchéité Git)" \
   'echo "${DOCTOR_OUT}" | grep -E "✔.*Étanchéité Git"'
@@ -328,7 +328,10 @@ echo "v1 obsolete skill" > "${TMP_V1}/.agents/skills/san_init/SKILL.md"
 # 3.1 Exécution de update
 UPDATE_OUT=$(node "${CLI_INDEX}" update --dir="${TMP_V1}")
 assert_true "update s'exécute avec succès sur le repo legacy v1.0" \
-  'echo "${UPDATE_OUT}" | grep -q "MIGRATION & MISE À JOUR v2.0"'
+  'echo "${UPDATE_OUT}" | grep -q "MIGRATION & MISE À JOUR v2.1"'
+
+assert_true "update crée .agents/cache/whats_new_pending.json (version 2.1.0, seen=false)" \
+  'python3 -c "import json; d=json.load(open(\"${TMP_V1}/.agents/cache/whats_new_pending.json\")); assert d[\"version\"]==\"2.1.0\" and d[\"seen\"] is False"'
 
 # 3.2 Vérifications Smart Merge sur BRAND.md
 BRAND_MIGRATED=$(cat "${TMP_V1}/.agents/rules/BRAND.md")
@@ -364,8 +367,8 @@ assert_true "Fichier .agents/hooks.json installé et valide" \
   '[ -f "${TMP_V1}/.agents/hooks.json" ]'
 
 V1_SKILLS_COUNT=$(find "${TMP_V1}/.agents/skills" -mindepth 1 -maxdepth 1 -type d -name "san_*" 2>/dev/null | wc -l)
-assert_true "17 compétences resynchronisées dans .agents/skills/ (${V1_SKILLS_COUNT}/17)" \
-  '[ "${V1_SKILLS_COUNT}" -eq 17 ]'
+assert_true "18 compétences resynchronisées dans .agents/skills/ (${V1_SKILLS_COUNT}/18)" \
+  '[ "${V1_SKILLS_COUNT}" -eq 18 ]'
 
 assert_true "Constitution souveraine <root>/AGENTS.md créée à la racine" \
   '[ -f "${TMP_V1}/AGENTS.md" ]'
@@ -415,11 +418,12 @@ PRE_INV_ENFORCES=$(echo "${PRE_INV_OUTPUT}" | python3 -c "
 import sys, json
 data = json.load(sys.stdin)
 steps = data.get('injectSteps', [])
-msg = steps[0].get('ephemeralMessage', '') if steps and isinstance(steps[0], dict) else ''
-ok = ('Never solo-code features inline' in msg and 'san-qa-auditor' in msg)
+sm = steps[0].get('systemMessage', {}) if steps and isinstance(steps[0], dict) else {}
+msg = sm.get('systemMessage', '') if isinstance(sm, dict) else ''
+ok = ('swarm' in msg and 'gemini-4-hydrogen-xhigh' in msg and 'san-qa-auditor' in msg)
 print('true' if ok else 'false')
 ")
-assert_true "pre_invocation.mjs injecte le rappel d'orchestration atomique et QA" \
+assert_true "pre_invocation.mjs injecte le rappel Hooks API v2 (swarm/hydrogen-xhigh/QA)" \
   '[ "${PRE_INV_ENFORCES}" = "true" ]'
 
 PRE_INV_NEUTRAL_INPUT='{"lastUserInput": "Bonjour quel temps fait-il ?", "conversationId": "e2e-test-neutral"}'
@@ -457,6 +461,30 @@ CLEAN_CODE_INPUT='{"toolCall": {"name": "write_file", "args": {"Path": "src/comp
 DECISION_CLEAN=$(echo "${CLEAN_CODE_INPUT}" | node "${HOOK_SCRIPTS_DIR}/pre_tool_guard.mjs" | python3 -c "import sys, json; print(json.load(sys.stdin).get('decision', ''))")
 assert_true "pre_tool_guard.mjs émet 'ask' pour du code propre" \
   '[ "${DECISION_CLEAN}" = "ask" ]'
+
+# 4.3B Test Stop Guard (stop_guard.mjs)
+STOP_CONV_ID="e2e-test-stop-guard-$$"
+STOP_PAYLOAD="{\"conversationId\":\"${STOP_CONV_ID}\",\"workspacePaths\":[\"${TMP_CLIENT}\"],\"terminationReason\":\"NO_TOOL_CALL\",\"forceBlockForTest\":true}"
+
+STOP_BLOCK=$(echo "${STOP_PAYLOAD}" | node "${HOOK_SCRIPTS_DIR}/stop_guard.mjs")
+STOP_BLOCK_OK=$(echo "${STOP_BLOCK}" | python3 -c "import sys,json; d=json.load(sys.stdin); print('true' if d.get('decision')=='continue' and 'Relance 1/2' in d.get('reason','') else 'false')")
+assert_true "stop_guard.mjs relance (decision='continue') si forceBlockForTest=true (Relance 1/2)" \
+  '[ "${STOP_BLOCK_OK}" = "true" ]'
+
+STOP_BLOCK2=$(echo "${STOP_PAYLOAD}" | node "${HOOK_SCRIPTS_DIR}/stop_guard.mjs")
+STOP_BLOCK2_OK=$(echo "${STOP_BLOCK2}" | python3 -c "import sys,json; d=json.load(sys.stdin); print('true' if d.get('decision')=='continue' and 'Relance 2/2' in d.get('reason','') else 'false')")
+assert_true "stop_guard.mjs déclenche Relance 2/2 avant circuit breaker" \
+  '[ "${STOP_BLOCK2_OK}" = "true" ]'
+
+STOP_CB=$(echo "${STOP_PAYLOAD}" | node "${HOOK_SCRIPTS_DIR}/stop_guard.mjs")
+STOP_CB_OK=$(echo "${STOP_CB}" | python3 -c "import sys,json; print('true' if json.load(sys.stdin)=={} else 'false')")
+assert_true "stop_guard.mjs active le Circuit Breaker ({}) après 2 relances" \
+  '[ "${STOP_CB_OK}" = "true" ]'
+
+STOP_CONT=$(echo "{\"conversationId\":\"${STOP_CONV_ID}-cont\",\"workspacePaths\":[\"${TMP_CLIENT}\"],\"continuationActive\":true}" | node "${HOOK_SCRIPTS_DIR}/stop_guard.mjs")
+STOP_CONT_OK=$(echo "${STOP_CONT}" | python3 -c "import sys,json; print('true' if json.load(sys.stdin)=={} else 'false')")
+assert_true "stop_guard.mjs laisse terminer ({}) quand continuationActive=true" \
+  '[ "${STOP_CONT_OK}" = "true" ]'
 
 # 4.4 Les 4 Quality Gates Fail-Closed
 TMP_GATES="${TMP_ROOT}/gates_validation"

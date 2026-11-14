@@ -1,46 +1,36 @@
 #!/usr/bin/env node
-/**
- * scripts/export_png.mjs
- * Pipeline Playwright d'export PNG déterministe haute résolution pour Antigravity san_designer.
- * 
- * Usage:
- *   node scripts/export_png.mjs --file=design/mockup/online-shop/mobile/01-accueil.html --scale=3
- *   node scripts/export_png.mjs --target=design/screenshots/play-store/ --scale=1
- */
+// ==============================================================================
+// SCRIPT : export_png.mjs (v2.1.0)
+// MODULES : san_designer & san_exporter
+// FRAMEWORK : Antigravity (san_*)
+// DESCRIPTION : Pipeline Playwright de capture PNG multi-viewports sur instance
+//               Chromium unique avec micro-serveur HTTP éphémère anti-CORS,
+//               Linter Géométrique DOM (--audit-dom), rapport JSON (--report)
+//               et registre d'intégrité SHA-256.
+// ==============================================================================
 
 import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
+import crypto from 'node:crypto';
 import process from 'node:process';
+import { createRequire } from 'node:module';
 
-// Analyse des arguments en ligne de commande
-const args = process.argv.slice(2).reduce((acc, arg) => {
-  const [key, value] = arg.replace(/^--/, '').split('=');
-  acc[key] = value || true;
-  return acc;
-}, {});
+const ANSI = {
+  reset: '\x1b[0m',
+  bold: '\x1b[1m',
+  red: '\x1b[31m',
+  green: '\x1b[32m',
+  yellow: '\x1b[33m',
+  blue: '\x1b[34m',
+  cyan: '\x1b[36m',
+  gray: '\x1b[90m'
+};
 
-if (args.help || args.h) {
-  console.log(`\x1b[36m=== ANTIGRAVITY SAN_DESIGNER : PIPELINE PLAYWRIGHT EXPORT PNG ===\x1b[0m
-Usage:
-  node scripts/export_png.mjs --file=<chemin.html> [--scale=2] [--out=<output.png>]
-  node scripts/export_png.mjs --target=<dossier/> [--scale=2]
-`);
-  process.exit(0);
-}
-
-const TARGET_FILE = args.file;
-const TARGET_DIR = args.target;
-const SCALE_FACTOR = parseFloat(args.scale || '2');
-const CUSTOM_OUT = args.out;
-
-if (!TARGET_FILE && !TARGET_DIR) {
-  console.error('\x1b[31m[ERREUR] Vous devez spécifier --file=<chemin.html> ou --target=<dossier/>\x1b[0m');
-  process.exit(1);
-}
-
-// Matrices des formats normatifs officiels
+// Presets stores & formats normatifs existants (compatibilité ascendante 100 %)
 const TARGET_PRESETS = {
+  mobile: { width: 390, height: 844, label: 'Mobile Prototype (390x844)' },
+  tablet: { width: 820, height: 1180, label: 'Tablet Portrait (820x1180)' },
   playstore: { width: 1080, height: 1920, label: 'Google Play Store Phone (1080x1920)' },
   appstore: { width: 1290, height: 2796, label: 'Apple App Store 6.7" iPhone (1290x2796)' },
   'appstore-6.5': { width: 1242, height: 2688, label: 'Apple App Store 6.5" iPhone (1242x2688)' },
@@ -53,11 +43,233 @@ const TARGET_PRESETS = {
   banner: { width: 1200, height: 630, label: 'Bannière OpenGraph / Social (1200x630)' }
 };
 
-// Extraction unifiée du tag CANVAS_SPEC
-function parseCanvasSpec(htmlContent, fallbackPresetKey, defaultScale = SCALE_FACTOR) {
+// Presets multi-viewports responsives pour Studio UI (--viewports / --multi-viewport)
+const VIEWPORT_PRESETS = {
+  mobile: { name: 'mobile', width: 390, height: 844, label: 'Mobile (390x844)' },
+  tablet: { name: 'tablet', width: 820, height: 1180, label: 'Tablet (820x1180)' },
+  desktop: { name: 'desktop', width: 1440, height: 900, label: 'Desktop (1440x900)' }
+};
+
+function printHelp() {
+  console.log(`
+${ANSI.bold}${ANSI.blue}=== Moteur d'Exportation & Linter Géométrique DOM (export_png.mjs v2.1) ===${ANSI.reset}
+
+${ANSI.bold}UTILISATION :${ANSI.reset}
+  node export_png.mjs [options]
+  node export_png.mjs --input <mockup.html> [--output <out.png>] [--target <cible>]
+  node export_png.mjs --input <mockup.html> --viewports=mobile,tablet,desktop --audit-dom --report=audit.json
+
+${ANSI.bold}OPTIONS COMPATIBLES :${ANSI.reset}
+  -i, --input, -f, --file <fichier>   Fichier HTML source à capturer
+  -o, --output, --out <fichier>       Chemin du PNG généré (copie du rendu principal si multi-viewports)
+  -t, --target <cible|dossier>        Preset (playstore, appstore, web, feature, desktop, print, ipad, banner) ou dossier
+  -d, --dir <dossier>                 Mode lot : exporte tous les .html d'un dossier
+  -w, --width <px>                    Largeur explicite du viewport en pixels
+      --height <px>                   Hauteur explicite du viewport en pixels
+  -s, --scale <float>                 Facteur d'échelle DPI (deviceScaleFactor, défaut: 1 ou CANVAS_SPEC)
+      --wait <ms>                     Délai de stabilisation après chargement/resize en ms (défaut: 250)
+  -m, --manifest <fichier>            Registre SHA-256 (défaut: design/export_manifest.json, --no-manifest pour désactiver)
+
+${ANSI.bold}OPTIONS MULTI-VIEWPORTS & LINTER DOM (v2.1) :${ANSI.reset}
+      --viewports <liste>             Liste CSV sur Chromium unique (ex: mobile,tablet,desktop ou 390x844)
+      --multi-viewport                Raccourci pour --viewports=mobile,tablet,desktop (390x844, 820x1180, 1440x900)
+      --audit-dom                     Exécute le linter géométrique DOM via page.evaluate() (actif par défaut)
+      --no-audit-dom                  Désactive le linter géométrique DOM
+      --report <path.json>            Écrit le rapport JSON complet de l'audit géométrique DOM
+      --strict-dom                    Retourne un code non-zéro si un horizontalOverflow bloquant est détecté
+  -h, --help                          Affiche cette aide et termine l'exécution
+`);
+}
+
+/**
+ * Parse les arguments CLI en supportant --cle=valeur, --cle valeur, flags courts et argument positionnel.
+ */
+function parseCliArgs(argv) {
+  const opts = {
+    help: false,
+    inputFile: '',
+    targetDir: '',
+    targetPresetName: '',
+    rawTargetArg: '',
+    outputFile: '',
+    hasExplicitOutput: false,
+    cliWidth: null,
+    cliHeight: null,
+    cliScale: null,
+    waitMs: 250,
+    viewportsRaw: '',
+    multiViewport: false,
+    auditDom: true,
+    strictDom: false,
+    reportPath: '',
+    manifestPath: 'design/export_manifest.json',
+    noManifest: false
+  };
+
+  const readValue = (arg, index) => {
+    const eqIdx = arg.indexOf('=');
+    if (eqIdx !== -1) {
+      return { val: arg.slice(eqIdx + 1), consumedNext: false };
+    }
+    if (index + 1 >= argv.length) {
+      throw new Error(`Valeur manquante pour l'option ${arg}`);
+    }
+    return { val: argv[index + 1], consumedNext: true };
+  };
+
+  for (let i = 0; i < argv.length; i++) {
+    const arg = argv[i];
+    const flag = arg.includes('=') ? arg.slice(0, arg.indexOf('=')) : arg;
+
+    if (flag === '--help' || flag === '-h') {
+      opts.help = true;
+    } else if (flag === '--file' || flag === '-f' || flag === '--input' || flag === '-i') {
+      const { val, consumedNext } = readValue(arg, i);
+      opts.inputFile = val;
+      if (consumedNext) i++;
+    } else if (flag === '--target' || flag === '-t') {
+      const { val, consumedNext } = readValue(arg, i);
+      opts.rawTargetArg = val;
+      if (consumedNext) i++;
+    } else if (flag === '--dir' || flag === '-d') {
+      const { val, consumedNext } = readValue(arg, i);
+      opts.targetDir = val;
+      if (consumedNext) i++;
+    } else if (flag === '--out' || flag === '-o' || flag === '--output') {
+      const { val, consumedNext } = readValue(arg, i);
+      opts.outputFile = val;
+      opts.hasExplicitOutput = Boolean(val);
+      if (consumedNext) i++;
+    } else if (flag === '--width' || flag === '-w') {
+      const { val, consumedNext } = readValue(arg, i);
+      const parsed = parseInt(val, 10);
+      if (!Number.isFinite(parsed) || parsed <= 0) {
+        throw new Error(`Largeur --width invalide : ${val}`);
+      }
+      opts.cliWidth = parsed;
+      if (consumedNext) i++;
+    } else if (flag === '--height') {
+      const { val, consumedNext } = readValue(arg, i);
+      const parsed = parseInt(val, 10);
+      if (!Number.isFinite(parsed) || parsed <= 0) {
+        throw new Error(`Hauteur --height invalide : ${val}`);
+      }
+      opts.cliHeight = parsed;
+      if (consumedNext) i++;
+    } else if (flag === '--scale' || flag === '-s') {
+      const { val, consumedNext } = readValue(arg, i);
+      const parsed = parseFloat(val);
+      if (!Number.isFinite(parsed) || parsed <= 0) {
+        throw new Error(`Échelle --scale invalide : ${val}`);
+      }
+      opts.cliScale = parsed;
+      if (consumedNext) i++;
+    } else if (flag === '--wait') {
+      const { val, consumedNext } = readValue(arg, i);
+      const parsed = parseInt(val, 10);
+      if (!Number.isFinite(parsed) || parsed < 0) {
+        throw new Error(`Délai --wait invalide : ${val}`);
+      }
+      opts.waitMs = parsed;
+      if (consumedNext) i++;
+    } else if (flag === '--viewports' || flag === '--viewport') {
+      const { val, consumedNext } = readValue(arg, i);
+      opts.viewportsRaw = val;
+      if (consumedNext) i++;
+    } else if (flag === '--multi-viewport' || flag === '--multi-viewports') {
+      opts.multiViewport = true;
+    } else if (flag === '--audit-dom') {
+      opts.auditDom = true;
+    } else if (flag === '--no-audit-dom') {
+      opts.auditDom = false;
+    } else if (flag === '--strict-dom') {
+      opts.strictDom = true;
+      opts.auditDom = true;
+    } else if (flag === '--report') {
+      const { val, consumedNext } = readValue(arg, i);
+      opts.reportPath = val;
+      opts.auditDom = true;
+      if (consumedNext) i++;
+    } else if (flag === '--manifest' || flag === '-m') {
+      const { val, consumedNext } = readValue(arg, i);
+      opts.manifestPath = val;
+      if (consumedNext) i++;
+    } else if (flag === '--no-manifest') {
+      opts.noManifest = true;
+    } else if (!arg.startsWith('-')) {
+      if (fs.existsSync(arg) && fs.statSync(arg).isDirectory()) {
+        opts.targetDir = arg;
+      } else if (!opts.inputFile) {
+        opts.inputFile = arg;
+      }
+    } else {
+      throw new Error(`Option inconnue : ${arg}`);
+    }
+  }
+
+  if (opts.rawTargetArg) {
+    if (fs.existsSync(opts.rawTargetArg) && fs.statSync(opts.rawTargetArg).isDirectory()) {
+      opts.targetDir = opts.rawTargetArg;
+    } else if (TARGET_PRESETS[opts.rawTargetArg.toLowerCase()]) {
+      opts.targetPresetName = opts.rawTargetArg.toLowerCase();
+    } else {
+      throw new Error(`Cible --target introuvable ou preset inconnu : ${opts.rawTargetArg}`);
+    }
+  }
+
+  return opts;
+}
+
+/**
+ * Résout la liste ordonnée des viewports pour le mode Multi-Viewports.
+ */
+function resolveViewports(opts) {
+  let tokens = [];
+  if (opts.viewportsRaw) {
+    tokens = opts.viewportsRaw.split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+  } else if (opts.multiViewport) {
+    tokens = ['mobile', 'tablet', 'desktop'];
+  }
+
+  if (tokens.length === 0) return [];
+
+  const resolved = [];
+  const seen = new Set();
+
+  for (const token of tokens) {
+    if (seen.has(token)) continue;
+    seen.add(token);
+
+    if (VIEWPORT_PRESETS[token]) {
+      resolved.push({ ...VIEWPORT_PRESETS[token] });
+    } else if (TARGET_PRESETS[token]) {
+      resolved.push({
+        name: token,
+        width: TARGET_PRESETS[token].width,
+        height: TARGET_PRESETS[token].height,
+        label: TARGET_PRESETS[token].label
+      });
+    } else {
+      const match = token.match(/^(\d+)x(\d+)$/);
+      if (!match) {
+        throw new Error(`Viewport inconnu "${token}". Valeurs attendues : mobile, tablet, desktop ou <largeur>x<hauteur>.`);
+      }
+      const w = parseInt(match[1], 10);
+      const h = parseInt(match[2], 10);
+      resolved.push({ name: token, width: w, height: h, label: `Custom (${w}x${h})` });
+    }
+  }
+
+  return resolved;
+}
+
+/**
+ * Extraction unifiée du commentaire <!-- CANVAS_SPEC ... --> avec surcharges CLI prioritaires.
+ */
+function parseCanvasSpec(htmlContent, opts) {
   let width = 390;
   let height = 844;
-  let scale = defaultScale;
+  let scale = 1;
   let device = 'Standard Canvas';
   let detectedTarget = '';
 
@@ -84,22 +296,77 @@ function parseCanvasSpec(htmlContent, fallbackPresetKey, defaultScale = SCALE_FA
     if (heightMatch) height = parseInt(heightMatch[1], 10);
     if (deviceMatch) device = deviceMatch[1];
     if (scaleMatch) scale = parseFloat(scaleMatch[1]);
-  } else if (fallbackPresetKey && TARGET_PRESETS[fallbackPresetKey.toLowerCase()]) {
-    const preset = TARGET_PRESETS[fallbackPresetKey.toLowerCase()];
+  }
+
+  if (opts.targetPresetName && TARGET_PRESETS[opts.targetPresetName]) {
+    const preset = TARGET_PRESETS[opts.targetPresetName];
     width = preset.width;
     height = preset.height;
     device = preset.label;
-    detectedTarget = fallbackPresetKey.toLowerCase();
+    detectedTarget = opts.targetPresetName;
   }
+
+  if (opts.cliWidth) width = opts.cliWidth;
+  if (opts.cliHeight) height = opts.cliHeight;
+  if (opts.cliScale) scale = opts.cliScale;
 
   return { width, height, scale, device, detectedTarget };
 }
 
-// Micro-serveur HTTP éphémère pour neutraliser les blocages CORS et charger polices et styles
+function computeSha256(filePath) {
+  return crypto.createHash('sha256').update(fs.readFileSync(filePath)).digest('hex');
+}
+
+/**
+ * Résout Playwright depuis le script, le projet courant (mode --light) ou NODE_PATH.
+ */
+async function loadPlaywright() {
+  const normalize = (mod) => (mod?.chromium ? mod : (mod?.default?.chromium ? mod.default : mod));
+  try {
+    return normalize(await import('playwright'));
+  } catch (primaryErr) {
+    const candidateBases = [process.cwd()];
+    if (process.env.NODE_PATH) {
+      candidateBases.push(...process.env.NODE_PATH.split(path.delimiter).filter(Boolean));
+    }
+
+    for (const baseDir of candidateBases) {
+      try {
+        const req = createRequire(path.join(baseDir, '_san_resolve_.cjs'));
+        const mod = req('playwright');
+        if (mod && mod.chromium) return mod;
+      } catch {
+        // Essaie la base suivante
+      }
+    }
+    throw primaryErr;
+  }
+}
+
+/**
+ * Micro-serveur HTTP éphémère anti-CORS pour charger polices locales et feuilles de style.
+ */
 function createEphemeralServer(rootDir) {
   return new Promise((resolve, reject) => {
+    const mimeTypes = {
+      '.html': 'text/html; charset=utf-8',
+      '.css': 'text/css; charset=utf-8',
+      '.js': 'application/javascript; charset=utf-8',
+      '.mjs': 'application/javascript; charset=utf-8',
+      '.json': 'application/json; charset=utf-8',
+      '.png': 'image/png',
+      '.jpg': 'image/jpeg',
+      '.jpeg': 'image/jpeg',
+      '.gif': 'image/gif',
+      '.svg': 'image/svg+xml',
+      '.webp': 'image/webp',
+      '.woff': 'font/woff',
+      '.woff2': 'font/woff2',
+      '.ttf': 'font/ttf'
+    };
+
     const server = http.createServer((req, res) => {
-      let rawPath = decodeURIComponent(req.url.split('?')[0]);
+      let rawPath = decodeURIComponent((req.url || '/').split('?')[0]);
       if (rawPath === '/') rawPath = '/index.html';
       const safePath = path.normalize(rawPath).replace(/^(\.\.[\/\\])+/, '');
       const filePath = path.join(rootDir, safePath);
@@ -118,24 +385,8 @@ function createEphemeralServer(rootDir) {
         }
 
         const ext = path.extname(filePath).toLowerCase();
-        const mimeTypes = {
-          '.html': 'text/html; charset=utf-8',
-          '.css': 'text/css; charset=utf-8',
-          '.js': 'application/javascript; charset=utf-8',
-          '.json': 'application/json; charset=utf-8',
-          '.png': 'image/png',
-          '.jpg': 'image/jpeg',
-          '.jpeg': 'image/jpeg',
-          '.svg': 'image/svg+xml',
-          '.webp': 'image/webp',
-          '.woff': 'font/woff',
-          '.woff2': 'font/woff2',
-          '.ttf': 'font/ttf'
-        };
-
-        const contentType = mimeTypes[ext] || 'application/octet-stream';
         res.writeHead(200, {
-          'Content-Type': contentType,
+          'Content-Type': mimeTypes[ext] || 'application/octet-stream',
           'Access-Control-Allow-Origin': '*',
           'Cache-Control': 'no-cache, no-store, must-revalidate'
         });
@@ -157,79 +408,451 @@ function createEphemeralServer(rootDir) {
   });
 }
 
-async function renderHtmlToPng(browser, filePath, outputPath, forcedScale, serverBaseUrl, rootDir) {
-  const startTs = Date.now();
-  const absoluteHtmlPath = path.resolve(filePath);
-  const fileContent = fs.readFileSync(absoluteHtmlPath, 'utf-8');
-  const spec = parseCanvasSpec(fileContent);
+/**
+ * Linter Géométrique DOM exécuté dans Chromium via page.evaluate().
+ */
+async function runDomGeometricAudit(page) {
+  return page.evaluate(() => {
+    const round2 = (n) => Math.round(n * 100) / 100;
+    const INTERACTIVE_SELECTOR = 'button, a, input, select, textarea, [role="button"]';
+    const IGNORED_TAGS = new Set(['SCRIPT', 'STYLE', 'NOSCRIPT', 'TEMPLATE']);
+    const METRIC_REGEX = /\d+[.,]\d+|\$\d+|\d+%/;
 
-  const width = spec.width;
-  const height = spec.height;
-  const scale = forcedScale || spec.scale;
-  const deviceName = spec.device;
+    const describeElement = (el) => {
+      const tag = el.tagName.toLowerCase();
+      const id = el.id ? `#${el.id}` : '';
+      const cls = typeof el.className === 'string' && el.className.trim()
+        ? '.' + el.className.trim().split(/\s+/).slice(0, 3).join('.')
+        : '';
+      const text = (el.innerText || el.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 48);
+      return {
+        selector: `${tag}${id}${cls}`,
+        tag,
+        id: el.id || null,
+        text: text || null
+      };
+    };
+
+    const isVisuallyHidden = (el, style) => {
+      if (el.classList && el.classList.contains('sr-only')) return true;
+      if (style.clip === 'rect(0px, 0px, 0px, 0px)') return true;
+      if (style.clipPath === 'inset(50%)') return true;
+      return false;
+    };
+
+    const isVisible = (el) => {
+      if (!el || el.nodeType !== 1 || IGNORED_TAGS.has(el.tagName)) return null;
+      if (el.tagName === 'INPUT' && el.type === 'hidden') return null;
+      const style = window.getComputedStyle(el);
+      if (style.display === 'none' || style.visibility === 'hidden' || parseFloat(style.opacity || '1') <= 0) {
+        return null;
+      }
+      if (isVisuallyHidden(el, style)) return null;
+      if (typeof el.checkVisibility === 'function') {
+        try {
+          if (!el.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true })) return null;
+        } catch {
+          // Ignore checkVisibility edge cases on SVG internals
+        }
+      }
+      const rect = el.getBoundingClientRect();
+      if (rect.width <= 0 || rect.height <= 0) return null;
+      return { style, rect };
+    };
+
+    const hasHorizontalClipAncestor = (el) => {
+      let cur = el.parentElement;
+      while (cur && cur !== document.body && cur !== document.documentElement) {
+        const ox = window.getComputedStyle(cur).overflowX;
+        if (ox === 'hidden' || ox === 'clip' || ox === 'auto' || ox === 'scroll') return true;
+        cur = cur.parentElement;
+      }
+      return false;
+    };
+
+    const getEffectiveZIndex = (el, style, parentStyle) => {
+      const parentDisplay = parentStyle ? parentStyle.display : '';
+      const isFlexOrGridChild = parentDisplay.includes('flex') || parentDisplay.includes('grid');
+      const canStack = style.position !== 'static' || isFlexOrGridChild;
+      return canStack && style.zIndex !== 'auto' ? style.zIndex : '0';
+    };
+
+    // 1. Débordement horizontal (scrollWidth > clientWidth + éléments hors viewport)
+    const docEl = document.documentElement;
+    const scrollWidth = docEl.scrollWidth;
+    const clientWidth = docEl.clientWidth;
+    const documentOverflow = scrollWidth > clientWidth;
+    const overflowingElements = [];
+
+    const allBodyEls = Array.from(document.querySelectorAll('body *'));
+    for (const el of allBodyEls) {
+      const info = isVisible(el);
+      if (!info) continue;
+      const { rect } = info;
+      if ((rect.right > clientWidth + 1 || rect.left < -1) && !hasHorizontalClipAncestor(el)) {
+        overflowingElements.push({
+          ...describeElement(el),
+          left: round2(rect.left),
+          right: round2(rect.right),
+          width: round2(rect.width),
+          overflowRightPx: round2(Math.max(0, rect.right - clientWidth)),
+          overflowLeftPx: round2(Math.max(0, -rect.left))
+        });
+      }
+    }
+
+    // 2. Cibles tactiles inférieures à 44x44 px
+    const smallTouchTargets = [];
+    for (const el of document.querySelectorAll(INTERACTIVE_SELECTOR)) {
+      const info = isVisible(el);
+      if (!info) continue;
+      const { rect } = info;
+      if (rect.width < 43.99 || rect.height < 43.99) {
+        smallTouchTargets.push({
+          ...describeElement(el),
+          width: round2(rect.width),
+          height: round2(rect.height),
+          minRequired: 44
+        });
+      }
+    }
+
+    // 3. Collisions de boîtes entre frères visibles (boutons/textes sur même z-index)
+    const boxCollisions = [];
+    const containers = document.body ? [document.body, ...allBodyEls] : [];
+    for (const parent of containers) {
+      if (!parent.children || parent.children.length < 2) continue;
+      const parentStyle = window.getComputedStyle(parent);
+      const visibleSiblings = [];
+
+      for (const child of parent.children) {
+        const info = isVisible(child);
+        if (!info) continue;
+        const isInteractive = child.matches(INTERACTIVE_SELECTOR);
+        const hasText = (child.innerText || '').trim().length > 0;
+        if (!isInteractive && !hasText) continue;
+        visibleSiblings.push({
+          el: child,
+          style: info.style,
+          rect: info.rect,
+          zIndex: getEffectiveZIndex(child, info.style, parentStyle)
+        });
+      }
+
+      for (let i = 0; i < visibleSiblings.length; i++) {
+        for (let j = i + 1; j < visibleSiblings.length; j++) {
+          const a = visibleSiblings[i];
+          const b = visibleSiblings[j];
+          if (a.zIndex !== b.zIndex) continue;
+          if (
+            a.style.display === 'inline' && b.style.display === 'inline' &&
+            a.style.position === 'static' && b.style.position === 'static'
+          ) {
+            continue;
+          }
+
+          const overlapW = Math.min(a.rect.right, b.rect.right) - Math.max(a.rect.left, b.rect.left);
+          const overlapH = Math.min(a.rect.bottom, b.rect.bottom) - Math.max(a.rect.top, b.rect.top);
+          if (overlapW > 2 && overlapH > 2) {
+            boxCollisions.push({
+              first: describeElement(a.el),
+              second: describeElement(b.el),
+              zIndex: a.zIndex,
+              overlapWidth: round2(overlapW),
+              overlapHeight: round2(overlapH)
+            });
+          }
+        }
+      }
+    }
+
+    // 4. Métriques numériques / prix sans font-variant-numeric: tabular-nums
+    const missingTabularNums = [];
+    const textCandidates = document.body ? [document.body, ...allBodyEls] : [];
+    for (const el of textCandidates) {
+      const info = isVisible(el);
+      if (!info) continue;
+      let directText = '';
+      for (const node of el.childNodes) {
+        if (node.nodeType === Node.TEXT_NODE && node.nodeValue) {
+          directText += node.nodeValue;
+        }
+      }
+      const trimmed = directText.trim();
+      if (!trimmed || !METRIC_REGEX.test(trimmed)) continue;
+      if (!info.style.fontVariantNumeric.includes('tabular-nums')) {
+        missingTabularNums.push({
+          ...describeElement(el),
+          sample: trimmed.slice(0, 60),
+          fontVariantNumeric: info.style.fontVariantNumeric
+        });
+      }
+    }
+
+    return {
+      viewport: { width: window.innerWidth, height: window.innerHeight },
+      horizontalOverflow: {
+        detected: documentOverflow || overflowingElements.length > 0,
+        documentOverflow,
+        scrollWidth,
+        clientWidth,
+        overflowPx: Math.max(0, scrollWidth - clientWidth),
+        count: overflowingElements.length,
+        elements: overflowingElements.slice(0, 50)
+      },
+      smallTouchTargets: {
+        detected: smallTouchTargets.length > 0,
+        minRequiredPx: 44,
+        count: smallTouchTargets.length,
+        elements: smallTouchTargets.slice(0, 50)
+      },
+      boxCollisions: {
+        detected: boxCollisions.length > 0,
+        count: boxCollisions.length,
+        pairs: boxCollisions.slice(0, 50)
+      },
+      missingTabularNums: {
+        detected: missingTabularNums.length > 0,
+        count: missingTabularNums.length,
+        elements: missingTabularNums.slice(0, 50)
+      }
+    };
+  });
+}
+
+function deriveViewportOutputPath(baseOutPath, viewportName) {
+  const resolved = path.resolve(baseOutPath);
+  const ext = path.extname(resolved) || '.png';
+  const stem = path.extname(resolved) ? resolved.slice(0, -ext.length) : resolved;
+  return `${stem}-${viewportName}${ext}`;
+}
+
+function recordAssetManifest(manifestList, resolvedOutPath, absoluteHtmlPath, width, height, scale) {
+  const sha = computeSha256(resolvedOutPath);
+  const stats = fs.statSync(resolvedOutPath);
+  manifestList.push({
+    file: path.relative(process.cwd(), resolvedOutPath),
+    source: path.relative(process.cwd(), absoluteHtmlPath),
+    width: Math.round(width * scale),
+    height: Math.round(height * scale),
+    scale,
+    size_bytes: stats.size,
+    sha256: sha,
+    created_at: new Date().toISOString()
+  });
+  return { sha, sizeBytes: stats.size };
+}
+
+function printDomAuditSummary(label, domAudit) {
+  const ov = domAudit.horizontalOverflow;
+  const st = domAudit.smallTouchTargets;
+  const bc = domAudit.boxCollisions;
+  const tn = domAudit.missingTabularNums;
+  const hasAny = ov.detected || st.detected || bc.detected || tn.detected;
+  const prefix = ov.detected ? ANSI.red : hasAny ? ANSI.yellow : ANSI.green;
+
+  console.log(
+    `   ${prefix}[DOM AUDIT ${label}]${ANSI.reset} ` +
+    `overflow=${ov.detected ? `OUI(${ov.overflowPx}px/${ov.count}el)` : '0'} | ` +
+    `touch<44=${st.count} | collisions=${bc.count} | no-tabular=${tn.count}`
+  );
+}
+
+/**
+ * Capture un fichier HTML en mode mono-viewport ou multi-viewports sur une seule page Chromium.
+ */
+async function captureHtmlFile(browser, filePath, baseOutPath, opts, viewports, serverBaseUrl, rootDir, manifestList, auditResults) {
+  const absoluteHtmlPath = path.resolve(filePath);
+  if (!fs.existsSync(absoluteHtmlPath)) {
+    throw new Error(`Fichier HTML introuvable : ${absoluteHtmlPath}`);
+  }
+
+  const content = fs.readFileSync(absoluteHtmlPath, 'utf-8');
+  const spec = parseCanvasSpec(content, opts);
+  const activeViewports = viewports.length > 0
+    ? viewports
+    : [{ name: spec.detectedTarget || 'default', width: spec.width, height: spec.height, label: spec.device }];
+
+  const isMulti = viewports.length > 0;
+  console.log(`\n${ANSI.bold}${ANSI.cyan}📸 [export_png] Traitement de : ${path.basename(filePath)}${ANSI.reset}`);
 
   const context = await browser.newContext({
-    viewport: { width, height },
-    deviceScaleFactor: scale,
+    viewport: { width: activeViewports[0].width, height: activeViewports[0].height },
+    deviceScaleFactor: spec.scale
   });
-
   const page = await context.newPage();
 
+  const renderedItems = [];
+
   try {
-    // Calcul de l'URL HTTP via le micro-serveur éphémère (contourne le blocage CORS de file://)
     const relativeToRoot = path.relative(rootDir, absoluteHtmlPath).split(path.sep).join('/');
-    const targetUrl = `${serverBaseUrl}/${encodeURI(relativeToRoot)}`;
+    const fileUrl = `${serverBaseUrl}/${encodeURI(relativeToRoot)}`;
 
-    await page.goto(targetUrl, {
-      waitUntil: 'networkidle',
-      timeout: 30000,
-    });
-
-    // Attente impérative de la résolution intégrale des polices
+    await page.goto(fileUrl, { waitUntil: 'networkidle', timeout: 30000 });
     await page.evaluate(async () => {
       if (document.fonts && document.fonts.ready) {
         await document.fonts.ready;
       }
     });
 
-    // Stabilisation cinétique (fin des transitions CSS initiales)
-    await page.waitForTimeout(300);
+    for (const vp of activeViewports) {
+      const startTs = Date.now();
+      await page.setViewportSize({ width: vp.width, height: vp.height });
+      await page.evaluate(() => new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))));
+      if (opts.waitMs > 0) {
+        await page.waitForTimeout(opts.waitMs);
+      }
 
-    const outDir = path.dirname(outputPath);
-    if (!fs.existsSync(outDir)) {
-      fs.mkdirSync(outDir, { recursive: true });
+      const outPath = isMulti
+        ? deriveViewportOutputPath(baseOutPath, vp.name)
+        : path.resolve(baseOutPath);
+
+      fs.mkdirSync(path.dirname(outPath), { recursive: true });
+      await page.screenshot({ path: outPath, type: 'png', fullPage: false });
+
+      const { sha, sizeBytes } = recordAssetManifest(
+        manifestList,
+        outPath,
+        absoluteHtmlPath,
+        vp.width,
+        vp.height,
+        spec.scale
+      );
+      const elapsed = Date.now() - startTs;
+
+      console.log(
+        `   ${ANSI.green}✔ EXPORT RÉUSSI${ANSI.reset} : ${path.basename(outPath)} ` +
+        `[${vp.width}x${vp.height} @${spec.scale}x | ${(sizeBytes / 1024).toFixed(1)} Ko | ${elapsed}ms | ${vp.label}]`
+      );
+      console.log(`   ${ANSI.gray}SHA-256 : ${sha.slice(0, 16)}...${ANSI.reset}`);
+
+      let domAudit = null;
+      if (opts.auditDom) {
+        domAudit = await runDomGeometricAudit(page);
+        printDomAuditSummary(vp.name, domAudit);
+        auditResults.push({
+          source: path.relative(process.cwd(), absoluteHtmlPath),
+          output: path.relative(process.cwd(), outPath),
+          viewport: { name: vp.name, width: vp.width, height: vp.height, scale: spec.scale },
+          domAudit
+        });
+      }
+
+      renderedItems.push({ viewport: vp, outputPath: outPath });
     }
 
-    // Capture d'écran fidèle au canvas
-    await page.screenshot({
-      path: outputPath,
-      type: 'png',
-      clip: { x: 0, y: 0, width, height },
-    });
-
-    const elapsed = Date.now() - startTs;
-    const fileSize = (fs.statSync(outputPath).size / 1024).toFixed(1);
-    console.log(`\x1b[32m✔ EXPORT RÉUSSI\x1b[0m : ${path.basename(filePath)} -> ${path.basename(outputPath)} [${width}x${height} @${scale}x | ${fileSize} Ko | ${elapsed}ms | ${deviceName}]`);
-  } catch (err) {
-    console.error(`\x1b[31m✖ ÉCHEC EXPORT\x1b[0m sur ${filePath} : ${err.message}`);
-    throw err;
+    // En mode multi-viewports avec --output/--out explicite sur fichier unique, copie le rendu principal vers --output
+    if (isMulti && opts.hasExplicitOutput && opts.inputFile && renderedItems.length > 0) {
+      const resolvedExplicit = path.resolve(baseOutPath);
+      const primary = renderedItems.find(r => r.viewport.name === 'desktop') || renderedItems[renderedItems.length - 1];
+      if (primary.outputPath !== resolvedExplicit) {
+        fs.mkdirSync(path.dirname(resolvedExplicit), { recursive: true });
+        fs.copyFileSync(primary.outputPath, resolvedExplicit);
+        recordAssetManifest(
+          manifestList,
+          resolvedExplicit,
+          absoluteHtmlPath,
+          primary.viewport.width,
+          primary.viewport.height,
+          spec.scale
+        );
+        console.log(`   ${ANSI.cyan}↳ Rendu principal (${primary.viewport.name}) copié vers :${ANSI.reset} ${path.relative(process.cwd(), resolvedExplicit)}`);
+      }
+    }
   } finally {
     await context.close();
   }
 }
 
-async function main() {
-  console.log('\x1b[36m=== ANTIGRAVITY SAN_DESIGNER : PIPELINE PLAYWRIGHT EXPORT PNG ===\x1b[0m');
+function writeDomReportIfRequested(reportPath, auditResults, strictDom) {
+  const summary = {
+    filesAudited: new Set(auditResults.map(r => r.source)).size,
+    viewportsAudited: auditResults.length,
+    totalHorizontalOverflow: auditResults.filter(r => r.domAudit.horizontalOverflow.detected).length,
+    totalSmallTouchTargets: auditResults.reduce((sum, r) => sum + r.domAudit.smallTouchTargets.count, 0),
+    totalBoxCollisions: auditResults.reduce((sum, r) => sum + r.domAudit.boxCollisions.count, 0),
+    totalMissingTabularNums: auditResults.reduce((sum, r) => sum + r.domAudit.missingTabularNums.count, 0)
+  };
 
-  // Fallback gracieux si Playwright n'est pas installé
+  const blockingFailures = summary.totalHorizontalOverflow;
+  const payload = {
+    tool: 'san_designer/export_png.mjs',
+    version: '2.1.0',
+    generatedAt: new Date().toISOString(),
+    strictDom,
+    passed: blockingFailures === 0,
+    blockingFailures,
+    summary,
+    results: auditResults
+  };
+
+  if (reportPath) {
+    const resolvedReport = path.resolve(reportPath);
+    fs.mkdirSync(path.dirname(resolvedReport), { recursive: true });
+    fs.writeFileSync(resolvedReport, JSON.stringify(payload, null, 2), 'utf-8');
+    console.log(`\n${ANSI.bold}${ANSI.cyan}📐 Rapport d'audit DOM écrit :${ANSI.reset} ${path.relative(process.cwd(), resolvedReport)}`);
+  }
+
+  return payload;
+}
+
+function updateIntegrityManifest(manifestPath, manifestList) {
+  if (manifestList.length === 0) return;
+
+  const resolvedManifest = path.resolve(manifestPath);
+  fs.mkdirSync(path.dirname(resolvedManifest), { recursive: true });
+
+  let existing = { assets: [] };
+  if (fs.existsSync(resolvedManifest)) {
+    try {
+      existing = JSON.parse(fs.readFileSync(resolvedManifest, 'utf-8'));
+    } catch {
+      existing = { assets: [] };
+    }
+  }
+
+  const combined = [...(existing.assets || [])];
+  for (const item of manifestList) {
+    const idx = combined.findIndex(a => a.file === item.file);
+    if (idx >= 0) combined[idx] = item;
+    else combined.push(item);
+  }
+
+  const payload = {
+    updated_at: new Date().toISOString(),
+    engine: 'san_designer/san_exporter Playwright Headless v2.1',
+    total_assets: combined.length,
+    assets: combined
+  };
+
+  fs.writeFileSync(resolvedManifest, JSON.stringify(payload, null, 2), 'utf-8');
+  console.log(`${ANSI.bold}${ANSI.green}📋 Registre d'intégrité mis à jour :${ANSI.reset} ${path.relative(process.cwd(), resolvedManifest)}`);
+}
+
+async function main() {
+  const opts = parseCliArgs(process.argv.slice(2));
+  if (opts.help) {
+    printHelp();
+    process.exit(0);
+  }
+
+  if (!opts.inputFile && !opts.targetDir) {
+    console.error(`${ANSI.red}❌ Vous devez spécifier --input <fichier.html> (ou --file) ou --dir / --target <dossier>.${ANSI.reset}`);
+    printHelp();
+    process.exit(1);
+  }
+
+  const viewports = resolveViewports(opts);
+  console.log(`${ANSI.cyan}${ANSI.bold}=== ANTIGRAVITY STUDIO UI : PIPELINE PLAYWRIGHT EXPORT PNG v2.1 ===${ANSI.reset}`);
+
   let chromium;
   try {
-    const playwright = await import('playwright');
-    chromium = playwright.chromium;
-  } catch (err) {
-    console.error('\x1b[31m\x1b[1m[san_designer] Le module d\'automatisation "playwright" n\'est pas installé.\x1b[0m');
-    console.error('\x1b[33mPour effectuer des captures PNG haute résolution, exécutez :\x1b[0m');
-    console.error('  pnpm add -D playwright && npx playwright install chromium');
+    const playwrightModule = await loadPlaywright();
+    chromium = playwrightModule.chromium;
+  } catch {
+    console.error(`\n${ANSI.bold}${ANSI.red}[export_png] Le module d'automatisation "playwright" n'est pas installé.${ANSI.reset}`);
+    console.error(`${ANSI.yellow}Pour activer les captures PNG et l'audit géométrique DOM, exécutez :${ANSI.reset}`);
+    console.error(`  pnpm add -D playwright && npx playwright install chromium`);
     process.exit(1);
   }
 
@@ -240,47 +863,89 @@ async function main() {
       args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
     });
   } catch (launchErr) {
-    console.error('\x1b[31m\x1b[1m❌ Impossible d\'initialiser Chromium headless :\x1b[0m', launchErr.message);
-    console.error('\x1b[33mAssurez-vous que Chromium est installé via : npx playwright install chromium\x1b[0m');
+    console.error(`\n${ANSI.bold}${ANSI.red}❌ Impossible d'initialiser Chromium headless :${ANSI.reset} ${launchErr.message}`);
+    console.error(`${ANSI.yellow}Exécutez : npx playwright install chromium${ANSI.reset}`);
     process.exit(1);
   }
 
-  // Détermination du répertoire racine pour le micro-serveur éphémère
-  const targetPath = TARGET_FILE ? path.resolve(TARGET_FILE) : path.resolve(TARGET_DIR);
+  const targetPath = opts.inputFile ? path.resolve(opts.inputFile) : path.resolve(opts.targetDir);
+  if (!fs.existsSync(targetPath)) {
+    await browser.close();
+    throw new Error(`Chemin cible introuvable : ${targetPath}`);
+  }
   const serveRootDir = fs.statSync(targetPath).isDirectory() ? targetPath : path.dirname(targetPath);
 
   let ephemeralServer = null;
+  const manifestList = [];
+  const auditResults = [];
+  let blockingDomFailures = 0;
+
   try {
     ephemeralServer = await createEphemeralServer(serveRootDir);
-    console.log(`\x1b[90m📡 Micro-serveur éphémère actif sur ${ephemeralServer.baseUrl} (anti-CORS)\x1b[0m`);
+    console.log(`${ANSI.gray}📡 Micro-serveur éphémère actif sur ${ephemeralServer.baseUrl} (anti-CORS)${ANSI.reset}`);
 
-    if (TARGET_FILE) {
-      const defaultOut = TARGET_FILE.replace(/\.html$/i, '.png');
-      const out = CUSTOM_OUT || defaultOut;
-      await renderHtmlToPng(browser, TARGET_FILE, out, SCALE_FACTOR, ephemeralServer.baseUrl, serveRootDir);
-    } else if (TARGET_DIR) {
-      const dirPath = path.resolve(TARGET_DIR);
-      const files = fs.readdirSync(dirPath).filter(f => f.endsWith('.html'));
+    if (opts.inputFile) {
+      const defaultOut = opts.inputFile.replace(/\.html$/i, '.png');
+      const baseOut = opts.outputFile || (defaultOut === opts.inputFile ? `${opts.inputFile}.png` : defaultOut);
+      await captureHtmlFile(
+        browser,
+        opts.inputFile,
+        baseOut,
+        opts,
+        viewports,
+        ephemeralServer.baseUrl,
+        serveRootDir,
+        manifestList,
+        auditResults
+      );
+    } else if (opts.targetDir) {
+      const resolvedDir = path.resolve(opts.targetDir);
+      const files = fs.readdirSync(resolvedDir).filter(f => f.toLowerCase().endsWith('.html')).sort();
       if (files.length === 0) {
-        console.warn(`\x1b[33m[AVERTISSEMENT] Aucun fichier .html trouvé dans ${TARGET_DIR}\x1b[0m`);
+        console.warn(`${ANSI.yellow}⚠️ Aucun fichier .html trouvé dans ${resolvedDir}${ANSI.reset}`);
       }
-      for (const file of files) {
-        const fullPath = path.join(dirPath, file);
-        const outPath = path.join(dirPath, file.replace(/\.html$/i, '.png'));
-        await renderHtmlToPng(browser, fullPath, outPath, SCALE_FACTOR, ephemeralServer.baseUrl, serveRootDir);
+      for (const f of files) {
+        const fullHtml = path.join(resolvedDir, f);
+        const baseOut = path.join(resolvedDir, f.replace(/\.html$/i, '.png'));
+        await captureHtmlFile(
+          browser,
+          fullHtml,
+          baseOut,
+          opts,
+          viewports,
+          ephemeralServer.baseUrl,
+          serveRootDir,
+          manifestList,
+          auditResults
+        );
       }
+    }
+
+    if (!opts.noManifest) {
+      updateIntegrityManifest(opts.manifestPath, manifestList);
+    }
+
+    if (opts.auditDom && (opts.reportPath || opts.strictDom || auditResults.length > 0)) {
+      const report = writeDomReportIfRequested(opts.reportPath, auditResults, opts.strictDom);
+      blockingDomFailures = report.blockingFailures;
     }
   } finally {
     if (ephemeralServer) {
       await ephemeralServer.close();
-      console.log('\x1b[90m🛑 Micro-serveur éphémère fermé proprement.\x1b[0m');
+      console.log(`${ANSI.gray}🛑 Micro-serveur éphémère fermé proprement.${ANSI.reset}`);
     }
     await browser.close();
-    console.log('\x1b[36m=== FIN DU TRAITEMENT D\'EXPORT ===\x1b[0m');
   }
+
+  if (opts.strictDom && blockingDomFailures > 0) {
+    console.error(`\n${ANSI.bold}${ANSI.red}✖ ÉCHEC --strict-dom : ${blockingDomFailures} dépassement(s) horizontal(aux) détecté(s).${ANSI.reset}`);
+    process.exit(2);
+  }
+
+  console.log(`\n${ANSI.bold}${ANSI.green}✨ [SUCCÈS] Exportation et contrôle DOM terminés.${ANSI.reset}`);
 }
 
 main().catch(err => {
-  console.error('\x1b[31m[ERREUR FATALE]\x1b[0m', err.message);
+  console.error(`\n${ANSI.bold}${ANSI.red}❌ Erreur critique :${ANSI.reset}`, err.message);
   process.exit(1);
 });

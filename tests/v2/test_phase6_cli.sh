@@ -33,16 +33,24 @@ echo "======================================================================"
 echo ""
 
 # ------------------------------------------------------------------------------
-# 0. Vérification de la version dans package.json
+# 0. Vérification de la version 2.1.0, whats-new et --help
 # ------------------------------------------------------------------------------
-info "0. Vérification de la version 2.0.0 dans package.json"
+info "0. Vérification de la version 2.1.0 dans package.json & CLI"
 PKG_VERSION=$(node -e "const pkg = JSON.parse(fs.readFileSync('${ROOT_DIR}/package.json', 'utf8')); console.log(pkg.version);")
-assert_true "package.json a pour version '2.0.0' (actuel: ${PKG_VERSION})" \
-  '[ "${PKG_VERSION}" = "2.0.0" ]'
+assert_true "package.json a pour version '2.1.0' (actuel: ${PKG_VERSION})" \
+  '[ "${PKG_VERSION}" = "2.1.0" ]'
 
 CLI_VERSION_OUTPUT=$(node "${CLI_INDEX}" --version)
-assert_true "CLI index.js --version retourne '2.0.0'" \
-  'echo "${CLI_VERSION_OUTPUT}" | grep -q "2.0.0"'
+assert_true "CLI index.js --version retourne '2.1.0'" \
+  'echo "${CLI_VERSION_OUTPUT}" | grep -q "2.1.0"'
+
+WHATS_NEW_OUTPUT=$(node "${CLI_INDEX}" whats-new)
+assert_true "CLI index.js whats-new affiche 'What'\''s New on san-agy v2.1.0'" \
+  'echo "${WHATS_NEW_OUTPUT}" | grep -q "What'\''s New on san-agy v2.1.0"'
+
+HELP_OUTPUT=$(node "${CLI_INDEX}" --help)
+assert_true "CLI index.js --help documente whats-new et --light" \
+  'echo "${HELP_OUTPUT}" | grep -q "whats-new" && echo "${HELP_OUTPUT}" | grep -q "\-\-light"'
 
 # ------------------------------------------------------------------------------
 # 1. Scénario 1 : init --local (Les 4 couches + gouvernance souveraine + hygiène réversible)
@@ -65,8 +73,8 @@ assert_true "init --local s'exécute avec succès" \
 
 # Couche 1 : Skills
 SKILLS_COUNT=$(find "${TMP_LOCAL}/.agents/skills" -mindepth 1 -maxdepth 1 -type d | wc -l)
-assert_true "Couche 1 : Les 17 skills sont installés dans .agents/skills/ (détectés: ${SKILLS_COUNT})" \
-  '[ "${SKILLS_COUNT}" -eq 17 ]'
+assert_true "Couche 1 : Les 18 skills sont installés dans .agents/skills/ (détectés: ${SKILLS_COUNT})" \
+  '[ "${SKILLS_COUNT}" -eq 18 ]'
 
 EXECUTABLE_SCRIPTS_COUNT=$(find "${TMP_LOCAL}/.agents/skills" -type f -name "*.sh" -perm -111 | wc -l)
 assert_true "Couche 1 : Les scripts de skills possèdent le bit exécutable (chmod +x, count: ${EXECUTABLE_SCRIPTS_COUNT})" \
@@ -111,6 +119,12 @@ assert_true "Couche 4 : pre_invocation.mjs est présent et exécutable" \
 
 assert_true "Couche 4 : pre_tool_guard.mjs est présent et exécutable" \
   '[ -x "${TMP_LOCAL}/.agents/hooks/scripts/pre_tool_guard.mjs" ]'
+
+assert_true "Couche 4 : post_tool_indexer.mjs est présent et exécutable" \
+  '[ -x "${TMP_LOCAL}/.agents/hooks/scripts/post_tool_indexer.mjs" ]'
+
+assert_true "Couche 4 : stop_guard.mjs est présent et exécutable" \
+  '[ -x "${TMP_LOCAL}/.agents/hooks/scripts/stop_guard.mjs" ]'
 
 # Gouvernance racine
 assert_true "Gouvernance : <root>/AGENTS.md est déployé à la racine" \
@@ -167,7 +181,7 @@ assert_true "doctor retourne un code de sortie 0 sur un repo conforme" \
 assert_true "doctor affiche 'CONFORME (6/6 PILIERS AU VERT)'" \
   'echo "${DOCTOR_OUTPUT}" | grep -q "CONFORME (6/6 PILIERS AU VERT)"'
 
-for p in "Gouvernance souveraine" "Règles normatives" "Sous-agents natifs" "Garde-fous mécaniques" "Catalogue des 17 skills" "Étanchéité Git"; do
+for p in "Gouvernance souveraine" "Règles normatives" "Sous-agents natifs" "Garde-fous mécaniques" "Catalogue des 18 skills" "Étanchéité Git"; do
   assert_true "doctor valide le pilier : ${p}" \
     'echo "${DOCTOR_OUTPUT}" | grep -E "✔.*${p}"'
 done
@@ -209,10 +223,20 @@ set -e
 assert_true "doctor échoue (code 1) lorsque AGENTS.md possède un frontmatter YAML interdit" \
   '[ "${DOC_CODE_C}" -eq 1 ] && echo "${DOC_BROKEN_C}" | grep -q "NON CONFORME"'
 
+# Cas D : stop_guard.mjs absent
+cp "${TMP_LOCAL}/AGENTS.md" "${TMP_BROKEN}/AGENTS.md"
+rm -f "${TMP_BROKEN}/.agents/hooks/scripts/stop_guard.mjs"
+set +e
+DOC_BROKEN_D=$(node "${CLI_INDEX}" doctor --dir="${TMP_BROKEN}")
+DOC_CODE_D=$?
+set -e
+assert_true "doctor échoue (code 1) lorsque stop_guard.mjs est absent" \
+  '[ "${DOC_CODE_D}" -eq 1 ] && echo "${DOC_BROKEN_D}" | grep -q "NON CONFORME"'
+
 rm -rf "${TMP_BROKEN}"
 
 # ------------------------------------------------------------------------------
-# 4. Scénario 4 : Commande update (migration v1.0 -> v2.0 non destructive)
+# 4. Scénario 4 : Commande update (migration v1.0 -> v2.1 non destructive & What's New)
 # ------------------------------------------------------------------------------
 info "4. Scénario update sur un projet v1.0 avec textes personnalisés"
 TMP_V1=$(mktemp -d)
@@ -239,7 +263,25 @@ echo '{"rules": ["BRAND", "PRODUCT"]}' > "${TMP_V1}/.agents/rules.json"
 
 UPDATE_OUTPUT=$(node "${CLI_INDEX}" update --dir="${TMP_V1}")
 assert_true "update s'exécute avec succès" \
-  'echo "${UPDATE_OUTPUT}" | grep -q "MIGRATION & MISE À JOUR v2.0"'
+  'echo "${UPDATE_OUTPUT}" | grep -q "MIGRATION & MISE À JOUR v2.1"'
+
+assert_true "update affiche l'encart What'\''s New on san-agy v2.1.0 dans le terminal" \
+  'echo "${UPDATE_OUTPUT}" | grep -q "What'\''s New on san-agy v2.1.0"'
+
+assert_true "update génère .agents/cache/whats_new_pending.json avec version=2.1.0 et seen=false" \
+  'python3 -c "import json; d=json.load(open(\"${TMP_V1}/.agents/cache/whats_new_pending.json\")); assert d[\"version\"]==\"2.1.0\" and d[\"seen\"] is False and len(d.get(\"highlights\", [])) >= 5"'
+
+# Vérification injection unique au 1er SessionStart post-update
+SESSION_V1_OUT1=$(echo '{"workspacePaths":["'"${TMP_V1}"'"]}' | node "${TMP_V1}/.agents/hooks/scripts/session_start.mjs")
+assert_true "1er SessionStart post-update injecte [WHAT'\''S NEW ON SAN.AGY v2.1.0] et bascule seen=true" \
+  'python3 -c "import sys,json; out=json.loads(sys.argv[1]); msg=out[\"injectSteps\"][0][\"systemMessage\"][\"systemMessage\"]; assert \"[WHAT'\''S NEW ON SAN.AGY v2.1.0]\" in msg; cache=json.load(open(\"${TMP_V1}/.agents/cache/whats_new_pending.json\")); assert cache[\"seen\"] is True" "${SESSION_V1_OUT1}"'
+
+SESSION_V1_OUT2=$(echo '{"workspacePaths":["'"${TMP_V1}"'"]}' | node "${TMP_V1}/.agents/hooks/scripts/session_start.mjs")
+assert_true "2ème SessionStart post-update n'\''injecte plus [WHAT'\''S NEW ON SAN.AGY v2.1.0]" \
+  'python3 -c "import sys,json; out=json.loads(sys.argv[1]); msg=out[\"injectSteps\"][0][\"systemMessage\"][\"systemMessage\"]; assert \"[WHAT'\''S NEW ON SAN.AGY v2.1.0]\" not in msg" "${SESSION_V1_OUT2}"'
+
+assert_true "update installe stop_guard.mjs exécutable" \
+  '[ -x "${TMP_V1}/.agents/hooks/scripts/stop_guard.mjs" ]'
 
 # Vérification Smart Merge Frontmatter
 BRAND_POST=$(cat "${TMP_V1}/.agents/rules/BRAND.md")
@@ -268,8 +310,8 @@ assert_true "update : Les 8 sous-agents ont été installés dans .agents/agents
 assert_true "update : .agents/hooks.json a été installé" \
   '[ -f "${TMP_V1}/.agents/hooks.json" ]'
 
-assert_true "update : Les 17 skills sont resynchronisés" \
-  '[ "$(find "${TMP_V1}/.agents/skills" -mindepth 1 -maxdepth 1 -type d | wc -l)" -eq 17 ]'
+assert_true "update : Les 18 skills sont resynchronisés" \
+  '[ "$(find "${TMP_V1}/.agents/skills" -mindepth 1 -maxdepth 1 -type d | wc -l)" -eq 18 ]'
 
 assert_true "update : AGENTS.md souverain est créé à la racine" \
   '[ -f "${TMP_V1}/AGENTS.md" ]'
@@ -304,8 +346,8 @@ assert_true "Plugin global : assets/logo.svg est présent" \
 assert_true "Plugin global : hooks.json est placé à la racine du plugin" \
   '[ -f "${TMP_GLOBAL}/hooks.json" ]'
 
-assert_true "Plugin global : Les 3 scripts sont dans hooks/scripts/ et exécutables" \
-  '[ -x "${TMP_GLOBAL}/hooks/scripts/session_start.mjs" ] && [ -x "${TMP_GLOBAL}/hooks/scripts/pre_invocation.mjs" ] && [ -x "${TMP_GLOBAL}/hooks/scripts/pre_tool_guard.mjs" ]'
+assert_true "Plugin global : Les 5 scripts de hooks sont dans hooks/scripts/ et exécutables" \
+  '[ -x "${TMP_GLOBAL}/hooks/scripts/session_start.mjs" ] && [ -x "${TMP_GLOBAL}/hooks/scripts/pre_invocation.mjs" ] && [ -x "${TMP_GLOBAL}/hooks/scripts/pre_tool_guard.mjs" ] && [ -x "${TMP_GLOBAL}/hooks/scripts/post_tool_indexer.mjs" ] && [ -x "${TMP_GLOBAL}/hooks/scripts/stop_guard.mjs" ]'
 
 assert_true "Plugin global : Les 8 agents sont dans agents/" \
   '[ "$(find "${TMP_GLOBAL}/agents" -name "san-*.md" | wc -l)" -eq 8 ]'
@@ -313,8 +355,8 @@ assert_true "Plugin global : Les 8 agents sont dans agents/" \
 assert_true "Plugin global : Les 5 règles avec frontmatter sont dans rules/" \
   '[ "$(find "${TMP_GLOBAL}/rules" -name "*.md" | wc -l)" -eq 5 ]'
 
-assert_true "Plugin global : Les 17 skills sont dans skills/" \
-  '[ "$(find "${TMP_GLOBAL}/skills" -mindepth 1 -maxdepth 1 -type d | wc -l)" -eq 17 ]'
+assert_true "Plugin global : Les 18 skills sont dans skills/" \
+  '[ "$(find "${TMP_GLOBAL}/skills" -mindepth 1 -maxdepth 1 -type d | wc -l)" -eq 18 ]'
 
 # Validation officielle Google Antigravity
 if command -v agy >/dev/null 2>&1; then
@@ -331,8 +373,8 @@ if command -v agy >/dev/null 2>&1; then
     '[ "${AGY_AGENTS}" -eq 8 ]'
 
   AGY_SKILLS=$(echo "${AGY_VAL_JSON}" | node -e "const d=JSON.parse(fs.readFileSync(0,'utf8')); console.log(d.components?.skills ?? 0)")
-  assert_true "agy plugin validate détecte 17 skills (détectés: ${AGY_SKILLS})" \
-    '[ "${AGY_SKILLS}" -eq 17 ]'
+  assert_true "agy plugin validate détecte 18 skills (détectés: ${AGY_SKILLS})" \
+    '[ "${AGY_SKILLS}" -eq 18 ]'
 
   AGY_HOOKS=$(echo "${AGY_VAL_JSON}" | node -e "const d=JSON.parse(fs.readFileSync(0,'utf8')); console.log(d.components?.hooks ?? 0)")
   assert_true "agy plugin validate détecte 1 hook (détectés: ${AGY_HOOKS})" \
@@ -350,6 +392,50 @@ else
 fi
 
 rm -rf "${TMP_GLOBAL}"
+
+# ------------------------------------------------------------------------------
+# 6. Scénario 6 : Mode Héritage Léger (init --light / update --light / doctor)
+# ------------------------------------------------------------------------------
+info "6. Scénario Mode Héritage Léger (--light : .agents/skills.json inherits & doctor)"
+TMP_LIGHT=$(mktemp -d)
+trap 'rm -rf "${TMP_LOCAL}" "${TMP_LIGHT}"' EXIT
+
+git -C "${TMP_LIGHT}" init -q
+LIGHT_INIT_OUT=$(node "${CLI_INDEX}" init --local --light --dir="${TMP_LIGHT}")
+assert_true "init --local --light s'exécute avec succès" \
+  'echo "${LIGHT_INIT_OUT}" | grep -q "INSTALLATION DU FRAMEWORK ANTIGRAVITY"'
+
+assert_true "Mode --light : .agents/skills.json créé avec version=1 et inherits vers src/skills" \
+  'python3 -c "import json,os; d=json.load(open(\"${TMP_LIGHT}/.agents/skills.json\")); expected=os.path.realpath(\"${ROOT_DIR}/src/skills\"); assert d.get(\"version\")==1 and len(d.get(\"inherits\", []))>=1 and os.path.realpath(d[\"inherits\"][0])==expected"'
+
+assert_true "Mode --light : les 18 dossiers lourds ne sont PAS copiés dans .agents/skills/" \
+  '[ ! -d "${TMP_LIGHT}/.agents/skills" ]'
+
+assert_true "Mode --light : rules, agents, hooks (dont stop_guard.mjs) et cache REPO_MAP.md sont locaux" \
+  '[ -f "${TMP_LIGHT}/.agents/rules/PROJECT.md" ] && [ -f "${TMP_LIGHT}/.agents/agents/san-architect.md" ] && [ -x "${TMP_LIGHT}/.agents/hooks/scripts/stop_guard.mjs" ] && [ -f "${TMP_LIGHT}/.agents/cache/REPO_MAP.md" ] && [ -f "${TMP_LIGHT}/AGENTS.md" ]'
+
+set +e
+DOC_LIGHT_OUT=$(node "${CLI_INDEX}" doctor --dir="${TMP_LIGHT}")
+DOC_LIGHT_CODE=$?
+set -e
+assert_true "doctor valide le projet en mode --light (code 0, 6/6 PILIERS AU VERT)" \
+  '[ "${DOC_LIGHT_CODE}" -eq 0 ] && echo "${DOC_LIGHT_OUT}" | grep -q "CONFORME (6/6 PILIERS AU VERT)"'
+
+# Test update --light
+LIGHT_UPDATE_OUT=$(node "${CLI_INDEX}" update --light --dir="${TMP_LIGHT}")
+assert_true "update --light met à jour sans copier .agents/skills/ et génère whats_new_pending.json" \
+  '[ ! -d "${TMP_LIGHT}/.agents/skills" ] && [ -f "${TMP_LIGHT}/.agents/skills.json" ] && [ -f "${TMP_LIGHT}/.agents/cache/whats_new_pending.json" ] && echo "${LIGHT_UPDATE_OUT}" | grep -q "What'\''s New on san-agy v2.1.0"'
+
+# Test chemin fantôme dans .agents/skills.json -> doctor doit échouer (code 1)
+echo '{"version": 1, "inherits": ["/tmp/chemin_fantome_san_skills_inexistant"]}' > "${TMP_LIGHT}/.agents/skills.json"
+set +e
+DOC_PHANTOM_OUT=$(node "${CLI_INDEX}" doctor --dir="${TMP_LIGHT}")
+DOC_PHANTOM_CODE=$?
+set -e
+assert_true "doctor échoue (code 1) si .agents/skills.json pointe vers un chemin fantôme" \
+  '[ "${DOC_PHANTOM_CODE}" -eq 1 ] && echo "${DOC_PHANTOM_OUT}" | grep -q "NON CONFORME"'
+
+rm -rf "${TMP_LIGHT}"
 
 # ------------------------------------------------------------------------------
 # Bilan Récapitulatif

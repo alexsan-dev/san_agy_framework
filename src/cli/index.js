@@ -4,7 +4,7 @@
  * ==============================================================================
  * CLI UNIVERSEL D'INSTALLATION & GOUVERNANCE — FRAMEWORK ANTIGRAVITY (san_*)
  * Auteur : Alexsan.pro
- * Architecture v2.0 : 4 Couches, 8 Sous-Agents, 17 Skills, 3 Hooks, Doctor
+ * Architecture v2.1 : 4 Couches, 8 Sous-Agents, 18 Skills, 5 Hooks, Doctor
  * ==============================================================================
  */
 
@@ -26,12 +26,13 @@ import {
   printDoctorReport,
   colors
 } from './installer.js';
+import { formatWhatsNewTerminal } from './whats_new.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Lecture de la version dynamique depuis package.json
-let frameworkVersion = '2.0.0';
+let frameworkVersion = '2.1.0';
 try {
   const pkgPath = path.resolve(FRAMEWORK_ROOT, 'package.json');
   if (fs.existsSync(pkgPath)) {
@@ -65,29 +66,33 @@ export function showHelp() {
   console.log(`  agy-framework <commande> [options]`);
   console.log(`  san-framework <commande> [options]\n`);
   console.log(`${colors.bold}COMMANDES OFFICIELLES :${colors.reset}`);
-  console.log(`  ${colors.brightCyan}init${colors.reset}                     Installer le framework v2.0 (local 4 couches ou global plugin)`);
-  console.log(`  ${colors.brightCyan}update${colors.reset}                   Migrer instantanément v1.0 -> v2.0 (Smart Merge frontmatter, 8 agents, 3 hooks)`);
-  console.log(`  ${colors.brightCyan}doctor${colors.reset}                   Contrôler les 6 piliers de santé v2.0 et l'intégrité de l'environnement`);
-  console.log(`  ${colors.brightCyan}list${colors.reset}                     Lister l'ensemble des 17 skills du catalogue`);
+  console.log(`  ${colors.brightCyan}init${colors.reset}                     Installer le framework v2.1 (local 4 couches ou global plugin)`);
+  console.log(`  ${colors.brightCyan}update${colors.reset}                   Mettre à jour vers v2.1 (Smart Merge frontmatter, 8 agents, 5 hooks)`);
+  console.log(`  ${colors.brightCyan}doctor${colors.reset}                   Contrôler les 6 piliers de santé v2.1 et l'intégrité de l'environnement`);
+  console.log(`  ${colors.brightCyan}whats-new${colors.reset}                Afficher les notes de version (What's New on san-agy)`);
+  console.log(`  ${colors.brightCyan}list${colors.reset}                     Lister l'ensemble des 18 skills du catalogue`);
   console.log(`  ${colors.brightCyan}version, -v, --version${colors.reset}   Afficher la version installée`);
   console.log(`  ${colors.brightCyan}help, -h, --help${colors.reset}         Afficher ce guide d'aide\n`);
   console.log(`${colors.bold}OPTIONS GÉNÉRALES :${colors.reset}`);
   console.log(`  ${colors.cyan}--local${colors.reset}                  Installer dans le projet local (.agents/) [Défaut en non-interactif]`);
   console.log(`  ${colors.cyan}--global${colors.reset}                 Installer sous forme de Plugin global Antigravity`);
-  console.log(`  ${colors.cyan}--all${colors.reset}                    Installer l'intégralité des 17 skills du catalogue`);
+  console.log(`  ${colors.cyan}--light${colors.reset}                  Mode héritage léger (.agents/skills.json "inherits" sans copier les 18 skills)`);
+  console.log(`  ${colors.cyan}--all${colors.reset}                    Installer l'intégralité des 18 skills du catalogue`);
   console.log(`  ${colors.cyan}--skills=<liste>${colors.reset}         Sélection granulaire de skills (ex: --skills=san_init,san_planner)`);
   console.log(`  ${colors.cyan}--dry-run${colors.reset}                Mode simulation (zéro écriture sur le disque)`);
   console.log(`  ${colors.cyan}--force${colors.reset}                  Forcer la réécriture des composants existants`);
   console.log(`  ${colors.cyan}--opencode${colors.reset}               Génère également le contexte opencode.json`);
   console.log(`  ${colors.cyan}--dir=<chemin>${colors.reset}            Spécifier manuellement le répertoire cible\n`);
   console.log(`${colors.bold}EXEMPLES D'UTILISATION :${colors.reset}`);
-  console.log(`  ${colors.gray}# 1. Déploiement complet des 4 couches v2.0 dans le projet courant${colors.reset}`);
+  console.log(`  ${colors.gray}# 1. Déploiement complet des 4 couches v2.1 dans le projet courant${colors.reset}`);
   console.log(`  san-framework init --local --all\n`);
-  console.log(`  ${colors.gray}# 2. Vérification de santé et conformité des 6 piliers${colors.reset}`);
+  console.log(`  ${colors.gray}# 2. Déploiement léger (skills hérités via .agents/skills.json)${colors.reset}`);
+  console.log(`  san-framework init --local --light\n`);
+  console.log(`  ${colors.gray}# 3. Vérification de santé et conformité des 6 piliers${colors.reset}`);
   console.log(`  san-framework doctor\n`);
-  console.log(`  ${colors.gray}# 3. Migration transparente non-destructive d'une v1.0 vers v2.0${colors.reset}`);
-  console.log(`  san-framework update\n`);
-  console.log(`  ${colors.gray}# 4. Packaging Plugin global Antigravity CLI${colors.reset}`);
+  console.log(`  ${colors.gray}# 4. Mise à jour non-destructive et affichage des nouveautés${colors.reset}`);
+  console.log(`  san-framework update && san-framework whats-new\n`);
+  console.log(`  ${colors.gray}# 5. Packaging Plugin global Antigravity CLI${colors.reset}`);
   console.log(`  san-framework init --global --all\n`);
 }
 
@@ -114,7 +119,7 @@ async function runInteractivePrompt(availableSkills, initialTargetMode = null) {
   const rl = readline.createInterface({ input, output });
 
   try {
-    console.log(`${colors.brightCyan}${colors.bold}--- Assistant Interactif d'Installation Antigravity v2.0 ---${colors.reset}\n`);
+    console.log(`${colors.brightCyan}${colors.bold}--- Assistant Interactif d'Installation Antigravity v2.1 ---${colors.reset}\n`);
 
     let targetMode = initialTargetMode;
     if (!targetMode) {
@@ -127,7 +132,7 @@ async function runInteractivePrompt(availableSkills, initialTargetMode = null) {
     }
 
     console.log(`\n${colors.bold}2. Sélection des compétences (Skills) :${colors.reset}`);
-    console.log(`   [1] Tous les skills ${colors.green}[Recommandé - 17 modules du framework v2.0]${colors.reset}`);
+    console.log(`   [1] Tous les skills ${colors.green}[Recommandé - 18 modules du framework v2.1]${colors.reset}`);
     console.log(`   [2] Socle Onboarding & Cadrage (san_init, san_brainstorming, san_planner)`);
     console.log(`   [3] Sélection manuelle personnalisée\n`);
 
@@ -180,6 +185,8 @@ async function main() {
       version: { type: 'boolean', short: 'v' },
       local: { type: 'boolean' },
       global: { type: 'boolean' },
+      light: { type: 'boolean' },
+      inherit: { type: 'boolean' },
       all: { type: 'boolean' },
       skills: { type: 'string' },
       'dry-run': { type: 'boolean' },
@@ -192,6 +199,7 @@ async function main() {
   });
 
   const command = positionals[0] ? positionals[0].toLowerCase() : null;
+  const isLightMode = Boolean(values.light || values.inherit);
 
   // 1. Commande Version
   if (values.version || command === 'version' || command === '-v' || command === '--version') {
@@ -205,13 +213,20 @@ async function main() {
     process.exit(0);
   }
 
+  // 2B. Commande What's New
+  if (command === 'whats-new' || command === 'whatsnew') {
+    const requestedVersion = positionals[1] || frameworkVersion;
+    console.log(formatWhatsNewTerminal(requestedVersion));
+    process.exit(0);
+  }
+
   // 3. Commande List
   if (command === 'list') {
     showList();
     process.exit(0);
   }
 
-  // 4. Commande Doctor (contrôle officiel des 6 piliers de santé v2.0)
+  // 4. Commande Doctor (contrôle officiel des 6 piliers de santé v2.1)
   if (command === 'doctor') {
     showBanner();
     const report = runDoctor({ targetDir: values.dir });
@@ -219,7 +234,7 @@ async function main() {
     process.exit(report.allPassed ? 0 : 1);
   }
 
-  // 5. Commande Update (migration v1.0 -> v2.0 non destructive)
+  // 5. Commande Update (migration & mise à jour v2.1 non destructive)
   if (command === 'update') {
     showBanner();
     const availableSkills = getAvailableSkills();
@@ -237,7 +252,8 @@ async function main() {
       skills: skillsToUpdate,
       dryRun: Boolean(values['dry-run']),
       force: Boolean(values.force),
-      opencode: Boolean(values.opencode)
+      opencode: Boolean(values.opencode),
+      light: isLightMode
     });
 
     process.exit(0);
@@ -257,7 +273,7 @@ async function main() {
       skillsToInstall = resolveSkillList(values.skills, availableSkills);
     }
 
-    const isAutomated = (values.all || values.skills !== undefined);
+    const isAutomated = Boolean(values.all || values.skills !== undefined || isLightMode);
     const isInteractive = Boolean(process.stdin.isTTY && !isAutomated);
 
     if (isInteractive) {
@@ -276,7 +292,8 @@ async function main() {
       skills: skillsToInstall,
       dryRun: Boolean(values['dry-run']),
       force: Boolean(values.force),
-      opencode: Boolean(values.opencode)
+      opencode: Boolean(values.opencode),
+      light: isLightMode
     });
 
     process.exit(0);

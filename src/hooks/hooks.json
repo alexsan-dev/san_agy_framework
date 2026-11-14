@@ -22,6 +22,24 @@
           }
         ]
       }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "write_file|edit_file",
+        "hooks": [
+          {
+            "command": "node ./hooks/scripts/post_tool_indexer.mjs",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "type": "command",
+        "command": "node ./hooks/scripts/stop_guard.mjs",
+        "timeout": 5
+      }
     ]
   }
 }

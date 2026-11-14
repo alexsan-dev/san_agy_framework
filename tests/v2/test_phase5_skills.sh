@@ -30,14 +30,15 @@ assert_true() {
 }
 
 echo "======================================================================"
-echo "  TEST PHASE 5 : RUNBOOKS DES 17 SKILLS, TAILLES, FRONTMATTERS & LIENS"
+echo "  TEST PHASE 5 : RUNBOOKS DES 18 SKILLS, TAILLES, FRONTMATTERS & LIENS"
 echo "======================================================================"
 echo ""
 
-# Liste exhaustive des 17 skills du framework Antigravity
+# Liste exhaustive des 18 skills du framework Antigravity
 ALL_SKILLS=(
   "san_backend_expert"
   "san_brainstorming"
+  "san_cartographer"
   "san_copywriter"
   "san_designer"
   "san_design_tokens"
@@ -128,12 +129,18 @@ TOTAL_MD_FILES_CHECKED=0
 
 while IFS= read -r md_file; do
   [ -z "${md_file}" ] && continue
-  TOTAL_MD_FILES_CHECKED=$((TOTAL_MD_FILES_CHECKED + 1))
-  file_dir="$(dirname "${md_file}")"
   rel_file="${md_file#${SRC_SKILLS_DIR}/}"
 
-  # Extraction de tous les liens Markdown [texte](cible)
-  links=$(grep -oE '\[[^]]*\]\(([^)]+)\)' "${md_file}" | sed -E 's/\[[^]]*\]\(([^)]+)\)/\1/' || true)
+  # Ignorer les gabarits d'exemple de cartographie contenant des liens relatifs fictifs
+  if [[ "${rel_file}" =~ templates/REPO_MAP_TEMPLATE\.md$ ]]; then
+    continue
+  fi
+
+  TOTAL_MD_FILES_CHECKED=$((TOTAL_MD_FILES_CHECKED + 1))
+  file_dir="$(dirname "${md_file}")"
+
+  # Extraction de tous les liens Markdown [texte](cible) hors code spans inline
+  links=$(sed -E 's/`[^`]*`//g' "${md_file}" | grep -oE '\[[^]]*\]\(([^)]+)\)' | sed -E 's/\[[^]]*\]\(([^)]+)\)/\1/' || true)
 
   while IFS= read -r link; do
     [ -z "${link}" ] && continue
@@ -184,6 +191,40 @@ assert_true "AUDITOR_PROMPT.md intègre la tolérance zéro au Testing Theater" 
 
 assert_true "AUDITOR_PROMPT.md impose le verdict binaire LIVRABLE | RETOUR_ATELIER" \
   'grep -qi "LIVRABLE" "'"${AUDITOR_TPL}"'" && grep -qi "RETOUR_ATELIER" "'"${AUDITOR_TPL}"'"'
+
+# ------------------------------------------------------------------------------
+# 6. Vérification des livrables v2.1 (Workflows Python, export_png v2, Studio Duel)
+# ------------------------------------------------------------------------------
+info "6. Vérification des livrables v2.1 (Workflows Python, export_png v2, Studio Duel & Contract-First)"
+
+SLICE_WF="${SRC_SKILLS_DIR}/san_executer/scripts/autonomous_slice_workflow.py"
+INQ_WF="${SRC_SKILLS_DIR}/san_qa_security_expert/scripts/parallel_inquisition_workflow.py"
+EXP_DESIGNER="${SRC_SKILLS_DIR}/san_designer/scripts/export_png.mjs"
+EXP_EXPORTER="${SRC_SKILLS_DIR}/san_exporter/scripts/export_png.mjs"
+
+assert_true "autonomous_slice_workflow.py existe et est exécutable" \
+  '[ -x "${SLICE_WF}" ]'
+
+assert_true "autonomous_slice_workflow.py passe python3 -m py_compile et --self-test" \
+  'python3 -m py_compile "${SLICE_WF}" && python3 "${SLICE_WF}" --self-test >/dev/null 2>&1'
+
+assert_true "parallel_inquisition_workflow.py existe et est exécutable" \
+  '[ -x "${INQ_WF}" ]'
+
+assert_true "parallel_inquisition_workflow.py passe python3 -m py_compile et --self-test" \
+  'python3 -m py_compile "${INQ_WF}" && python3 "${INQ_WF}" --self-test >/dev/null 2>&1'
+
+assert_true "export_png.mjs v2 passe node --check et est strictement synchronisé entre san_designer et san_exporter" \
+  'node --check "${EXP_DESIGNER}" && cmp -s "${EXP_DESIGNER}" "${EXP_EXPORTER}"'
+
+assert_true "export_png.mjs v2 supporte --viewports et --audit-dom" \
+  'grep -q "viewports" "${EXP_DESIGNER}" && grep -q "audit-dom" "${EXP_DESIGNER}" && grep -q "horizontalOverflow" "${EXP_DESIGNER}"'
+
+assert_true "san_designer/SKILL.md documente Studio Duel UI, swarm Hydrogen XHigh et 5 États" \
+  'grep -q "Studio Duel" "${SRC_SKILLS_DIR}/san_designer/SKILL.md" && grep -q "gemini-4-hydrogen-xhigh" "${SRC_SKILLS_DIR}/san_designer/SKILL.md" && grep -q "Stale-While-Revalidate" "${SRC_SKILLS_DIR}/san_designer/SKILL.md"'
+
+assert_true "san_planner/SKILL.md documente Contract-First et Architectural Fitness Functions" \
+  'grep -q "Contract-First" "${SRC_SKILLS_DIR}/san_planner/SKILL.md" && grep -q "Fitness Functions" "${SRC_SKILLS_DIR}/san_planner/SKILL.md"'
 
 # ------------------------------------------------------------------------------
 # Bilan Récapitulatif
