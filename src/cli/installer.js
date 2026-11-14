@@ -562,9 +562,50 @@ export function deployAgents(agentsDestDir, { dryRun = false, force = false } = 
 }
 
 /**
+ * Migre chirurgicalement la section de routage des modèles v2.0 (invoke_subagent / 3.8 Flash / 3.1 Pro)
+ * dans un fichier PROJECT.md personnalisé tout en préservant 100% de la stack métier du projet.
+ */
+export function migrateLegacyModelRoutingInProjectRule(content) {
+  if (!content || typeof content !== 'string') return { content, migrated: false };
+  const hasLegacySection =
+    /ROUTAGE STRICT DES MOD[ÈE]LES ANTIGRAVITY\s*\(`?invoke_subagent`?\)/i.test(content) ||
+    /Gemini 3\.8 Flash|gemini-3\.8-flash-high|gemini-3\.1-pro-high/i.test(content);
+
+  if (!hasLegacySection) {
+    return { content, migrated: false };
+  }
+
+  const v21RoutingSection = `## 2. DOCTRINE D'ORCHESTRATION SOUVERAINE (\`Argon\` -> \`Swarm Hydrogen XHigh\`)
+
+Pour maximiser la puissance d'ingénierie tout en sanctuarisant le quota hebdomadaire de l'Orchestrateur, la délégation suit la vérité technique Antigravity CLI v1.5.8+ :
+
+- **Interdiction absolue de \`invoke_subagent\` :** \`invoke_subagent(Model: "inherit")\` brûle le quota hebdomadaire \`Argon\`/\`Carbon\`, et \`invoke_subagent(Model: "pro" | "flash")\` subit un fallback serveur vers \`gemini-3.8-flash-tiered\`.
+- **Délégation exclusive via \`swarm\` :** Toute tâche de recherche, d'architecture, de code, d'UI ou d'audit est déléguée via **\`swarm(action: "add", model: "gemini-4-hydrogen-xhigh", ...)\`** (ou \`agy -p --model gemini-4-hydrogen-xhigh\`).
+
+| Rôle dans le Projet | Outil & Paramètre \`model\` | Modèle Réel Actif | Périmètre & Responsabilité |
+| :--- | :--- | :--- | :--- |
+| **Session Principale (Orchestrateur)** | Thread principal (\`coordinator\`) | \`Gemini 4 Argon (High)\` | Architecture, arbitrage, découpage sans conflit de fichiers et pilotage du board \`swarm\`. |
+| **Workers d'Architecture & Code (\`san-architect\`, \`san-coder-*\`, \`san-designer-worker\`, \`san-ops-devops\`)** | \`swarm(action: "add", model: "gemini-4-hydrogen-xhigh")\` | \`Gemini 4 Hydrogen (XHigh)\` | Pre-Mortem, contrats OpenAPI/Zod, code Backend/Frontend atomique, Studio Duel UI, scripts & infra. |
+| **Workers de Recherche & Audit QA (\`san-researcher\`, \`san-qa-auditor\`)** | \`swarm(action: "add", model: "gemini-4-hydrogen-xhigh")\` | \`Gemini 4 Hydrogen (XHigh)\` | Exploration Map-First (\`REPO_MAP.md\`), audit contradictoire OWASP/Substance/DOM, validation des tests. |`;
+
+  let next = content;
+  const sectionRegex = /##\s*2\.\s*ROUTAGE STRICT DES MOD[ÈE]LES ANTIGRAVITY[\s\S]*?(?=\r?\n---\r?\n|\r?\n##\s*3\.|$)/i;
+  if (sectionRegex.test(next)) {
+    next = next.replace(sectionRegex, v21RoutingSection + '\n');
+  } else {
+    next = next
+      .replace(/gemini-3\.1-pro-high|gemini-3\.8-flash-high|Gemini 3\.8 Flash/g, 'gemini-4-hydrogen-xhigh')
+      .replace(/invoke_subagent/g, 'swarm(action: "add", model: "gemini-4-hydrogen-xhigh")');
+  }
+
+  return { content: next, migrated: next !== content };
+}
+
+/**
  * Déploie les règles avec Smart Merge Frontmatter :
  * Si une règle existe sans frontmatter YAML valide (trigger:), le frontmatter officiel
  * est injecté en tête de fichier tout en conservant 100% du contenu rédigé par le développeur.
+ * Migre également toute table de routage legacy v2.0 (3.8-flash / invoke_subagent) dans PROJECT.md.
  * Supprime également l'ancien fichier obsolète rules.json.
  */
 export function deployRulesWithSmartMerge(rulesDestDir, { dryRun = false, force = false } = {}) {
@@ -591,9 +632,21 @@ export function deployRulesWithSmartMerge(rulesDestDir, { dryRun = false, force 
         continue;
       }
 
-      const existingContent = fs.readFileSync(targetPath, 'utf8');
+      let existingContent = fs.readFileSync(targetPath, 'utf8');
+      let migratedRouting = false;
+      if (rule.target === 'PROJECT.md') {
+        const mig = migrateLegacyModelRoutingInProjectRule(existingContent);
+        if (mig.migrated) {
+          existingContent = mig.content;
+          migratedRouting = true;
+        }
+      }
+
       if (hasTriggerFrontmatter(existingContent)) {
-        statusList.push({ file: rule.target, status: 'preserved' });
+        if (migratedRouting && !dryRun) {
+          fs.writeFileSync(targetPath, existingContent, 'utf8');
+        }
+        statusList.push({ file: rule.target, status: migratedRouting ? 'migrated-v2.1' : 'preserved' });
       } else {
         // Smart Merge Frontmatter : injecter le frontmatter officiel en préservant le texte client
         const templateContent = fs.readFileSync(templatePath, 'utf8');
@@ -822,6 +875,15 @@ export function runDoctor(targetDirOrOptions = {}, maybeOptions = {}) {
           const content = fs.readFileSync(rPath, 'utf8');
           if (!hasTriggerFrontmatter(content)) {
             report.pillars.rules.checks.push({ ok: false, msg: `Règle ${r} sans frontmatter YAML valide (trigger:)` });
+          } else if (
+            r === 'PROJECT.md' &&
+            (/ROUTAGE STRICT DES MOD[ÈE]LES ANTIGRAVITY\s*\(`?invoke_subagent`?\)/i.test(content) ||
+              /Gemini 3\.8 Flash|gemini-3\.8-flash-high|gemini-3\.1-pro-high/i.test(content))
+          ) {
+            report.pillars.rules.checks.push({
+              ok: false,
+              msg: 'Règle PROJECT.md contient encore le routage legacy v2.0 (3.8-flash / invoke_subagent) — exécutez "san-framework update"'
+            });
           } else {
             report.pillars.rules.checks.push({ ok: true, msg: `Règle ${r} avec frontmatter YAML valide (trigger:)` });
           }
@@ -848,8 +910,16 @@ export function runDoctor(targetDirOrOptions = {}, maybeOptions = {}) {
           const content = fs.readFileSync(aPath, 'utf8');
           if (!content.trimStart().startsWith('---') || !content.includes('name:')) {
             report.pillars.agents.checks.push({ ok: false, msg: `Sous-agent ${a} invalide (frontmatter YAML manquant)` });
+          } else if (
+            /gemini-3\.8-flash-high|gemini-3\.1-pro-high/i.test(content) ||
+            !content.includes('gemini-4-hydrogen-xhigh')
+          ) {
+            report.pillars.agents.checks.push({
+              ok: false,
+              msg: `Sous-agent ${a} en version v2.0 obsolète (manque gemini-4-hydrogen-xhigh) — exécutez "san-framework update"`
+            });
           } else {
-            report.pillars.agents.checks.push({ ok: true, msg: `Sous-agent ${a} présent et valide` });
+            report.pillars.agents.checks.push({ ok: true, msg: `Sous-agent ${a} présent et valide (v2.1 Hydrogen XHigh)` });
           }
         } catch (e) {
           report.pillars.agents.checks.push({ ok: false, msg: `Erreur lecture ${a} : ${e.message}` });
@@ -1083,10 +1153,10 @@ export async function updateFramework(targetDirOrOptions = {}, maybeOptions = {}
     skillsInstalled = deploySkills(skillsDestDir, selectedSkills, { dryRun, force });
   }
 
-  // 2. Déploiement des 8 sous-agents natifs (Couche 2)
-  const agentsStatus = deployAgents(agentsDestDir, { dryRun, force });
+  // 2. Déploiement des 8 sous-agents natifs (Couche 2 : toujours resynchronisés lors d'un update)
+  const agentsStatus = deployAgents(agentsDestDir, { dryRun, force: true });
 
-  // 3. Déploiement des règles avec Smart Merge Frontmatter (Couche 3)
+  // 3. Déploiement des règles avec Smart Merge Frontmatter & migration routage v2.1 (Couche 3)
   const rulesStatus = deployRulesWithSmartMerge(rulesDestDir, { dryRun, force });
 
   // 4. Déploiement des hooks mécaniques (Couche 4)
@@ -1100,6 +1170,17 @@ export async function updateFramework(targetDirOrOptions = {}, maybeOptions = {}
       fs.copyFileSync(geminiTemplate, geminiMdDest);
     }
     geminiStatus = fs.existsSync(geminiMdDest) ? 'updated' : 'created';
+  } else if (!dryRun && fs.existsSync(geminiMdDest)) {
+    try {
+      const existingGemini = fs.readFileSync(geminiMdDest, 'utf8');
+      const migratedGemini = existingGemini
+        .replace(/routage des mod[èe]les LLM\s*\(`?flash`?\s*vs\s*`?inherit`?\)/gi, 'routage Swarm autonome (`Argon` -> `gemini-4-hydrogen-xhigh`)')
+        .replace(/via\s+`?\.agents\/rules\.json`?/gi, 'via `.agents/cache/REPO_MAP.md` (Map-First)');
+      if (migratedGemini !== existingGemini) {
+        fs.writeFileSync(geminiMdDest, migratedGemini, 'utf8');
+        geminiStatus = 'migrated-v2.1';
+      }
+    } catch {}
   }
 
   // 6. Gouvernance souveraine AGENTS.md racine
