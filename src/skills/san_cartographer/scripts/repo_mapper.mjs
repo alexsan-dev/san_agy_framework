@@ -11,8 +11,13 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
+import { execFileSync } from 'node:child_process';
 
 // --- CONFIGURATION & FILTRES ---
+
+const MAX_FILE_SIZE_BYTES = 512 * 1024; // 512 Ko max par fichier indexé (anti-OOM)
+const MAX_INDEXED_FILES = 5000;
+const MAX_CACHE_JSON_BYTES = 12 * 1024 * 1024; // 12 Mo max pour relire repo-index.json
 
 const IGNORED_DIRS = new Set([
   '.git',
@@ -35,14 +40,32 @@ const IGNORED_DIRS = new Set([
   '.pytest_cache',
   '.venv',
   'venv',
-  'env'
+  'env',
+  'google-cloud-sdk',
+  'Pods',
+  '.expo',
+  '.gradle',
+  'target',
+  'storage',
+  'tmp',
+  'temp',
+  'logs',
+  '.dart_tool',
+  'bower_components',
+  '.svelte-kit',
+  '.nuxt',
+  '.output',
+  '.parcel-cache',
+  'storybook-static'
 ]);
 
 const IGNORED_EXTENSIONS = new Set([
   '.png', '.jpg', '.jpeg', '.gif', '.svg', '.ico', '.webp', '.bmp', '.tiff',
-  '.pdf', '.zip', '.tar', '.gz', '.tgz', '.7z', '.rar', '.exe', '.bin', '.dll',
-  '.so', '.dylib', '.woff', '.woff2', '.ttf', '.eot', '.otf', '.mp3', '.mp4',
-  '.mov', '.avi', '.webm', '.wav', '.flac', '.ogg', '.m4a', '.map'
+  '.pdf', '.zip', '.tar', '.gz', '.tgz', '.7z', '.rar', '.bz2', '.xz',
+  '.exe', '.bin', '.dll', '.so', '.dylib', '.wasm', '.apk', '.aab', '.ipa', '.dmg', '.iso',
+  '.woff', '.woff2', '.ttf', '.eot', '.otf', '.mp3', '.mp4',
+  '.mov', '.avi', '.webm', '.wav', '.flac', '.ogg', '.m4a', '.map',
+  '.lock', '.db', '.sqlite', '.sqlite3', '.pyc', '.pyo', '.class', '.jar', '.war', '.log'
 ]);
 
 const IGNORED_FILENAMES = new Set([
@@ -666,18 +689,88 @@ function extractDbApi(ext, lines) {
   return { symbols, imports };
 }
 
+function isBinaryBuffer(buf) {
+  if (!buf || buf.length === 0) return false;
+  const sampleLen = Math.min(buf.length, 1024);
+  for (let i = 0; i < sampleLen; i++) {
+    if (buf[i] === 0) return true;
+  }
+  return false;
+}
+
+function isPathExcluded(relPath) {
+  const normalized = relPath.replace(/\\/g, '/').replace(/^\.\//, '');
+  if (!normalized) return true;
+  const parts = normalized.split('/');
+  const base = parts[parts.length - 1];
+  for (let i = 0; i < parts.length - 1; i++) {
+    const seg = parts[i];
+    if (!seg || IGNORED_DIRS.has(seg) || seg.startsWith('.')) return true;
+  }
+  if (!base || IGNORED_FILENAMES.has(base) || base.startsWith('.')) return true;
+  const ext = path.extname(base).toLowerCase();
+  if (IGNORED_EXTENSIONS.has(ext)) return true;
+  return false;
+}
+
+function getGitFiles(rootDir) {
+  try {
+    const isGit = execFileSync(
+      'git',
+      ['-c', 'safe.directory=*', 'rev-parse', '--is-inside-work-tree'],
+      { cwd: rootDir, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'], timeout: 3000 }
+    ).trim();
+    if (isGit !== 'true') return null;
+
+    const raw = execFileSync(
+      'git',
+      ['-c', 'safe.directory=*', 'ls-files', '-z', '-co', '--exclude-standard'],
+      {
+        cwd: rootDir,
+        encoding: 'buffer',
+        maxBuffer: 32 * 1024 * 1024,
+        stdio: ['ignore', 'pipe', 'ignore'],
+        timeout: 10000
+      }
+    );
+
+    const files = [];
+    for (const rel of raw.toString('utf8').split('\0')) {
+      if (!rel) continue;
+      if (isPathExcluded(rel)) continue;
+      files.push(rel);
+      if (files.length >= MAX_INDEXED_FILES) break;
+    }
+    return files;
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Analyse un fichier et extrait ses symboles, imports, métadonnées
  */
 function parseFile(rootDir, relPath) {
   const fullPath = path.join(rootDir, relPath);
-  if (!fs.existsSync(fullPath)) return null;
+  let lstat;
+  try {
+    lstat = fs.lstatSync(fullPath);
+  } catch {
+    return null;
+  }
+  if (lstat.isSymbolicLink() || !lstat.isFile()) return null;
+  if (lstat.size > MAX_FILE_SIZE_BYTES) return null;
 
-  const stat = fs.statSync(fullPath);
-  if (stat.isDirectory()) return null;
+  let rawBuf;
+  try {
+    rawBuf = fs.readFileSync(fullPath);
+  } catch {
+    return null;
+  }
+  if (isBinaryBuffer(rawBuf)) return null;
 
-  const content = fs.readFileSync(fullPath, 'utf8');
-  const hash = crypto.createHash('sha256').update(content).digest('hex').slice(0, 16);
+  const content = rawBuf.toString('utf8');
+  const hash = crypto.createHash('sha256').update(rawBuf).digest('hex').slice(0, 16);
   const lines = content.split('\n');
   const lineCount = lines.length;
   const ext = path.extname(relPath).toLowerCase();
@@ -717,7 +810,8 @@ function parseFile(rootDir, relPath) {
 
   return {
     hash,
-    size: stat.size,
+    size: lstat.size,
+    mtimeMs: lstat.mtimeMs,
     lineCount,
     language,
     symbols,
@@ -727,12 +821,19 @@ function parseFile(rootDir, relPath) {
 
 // --- EXPLORATION RÉCURSIVE DU DÉPÔT ---
 
-function crawlRepo(rootDir, currentDir = '') {
+function crawlRepo(rootDir, currentDir = '', acc = []) {
+  if (acc.length >= MAX_INDEXED_FILES) return acc;
   const fullCurrentDir = path.join(rootDir, currentDir);
-  const entries = fs.readdirSync(fullCurrentDir, { withFileTypes: true });
-  let files = [];
+  let entries;
+  try {
+    entries = fs.readdirSync(fullCurrentDir, { withFileTypes: true });
+  } catch {
+    return acc;
+  }
 
   for (const entry of entries) {
+    if (acc.length >= MAX_INDEXED_FILES) break;
+    if (entry.isSymbolicLink()) continue;
     const name = entry.name;
     const relPath = currentDir ? path.join(currentDir, name) : name;
 
@@ -740,7 +841,7 @@ function crawlRepo(rootDir, currentDir = '') {
       if (IGNORED_DIRS.has(name) || name.startsWith('.')) {
         continue;
       }
-      files = files.concat(crawlRepo(rootDir, relPath));
+      crawlRepo(rootDir, relPath, acc);
     } else if (entry.isFile()) {
       if (IGNORED_FILENAMES.has(name) || name.startsWith('.')) {
         continue;
@@ -749,11 +850,11 @@ function crawlRepo(rootDir, currentDir = '') {
       if (IGNORED_EXTENSIONS.has(ext)) {
         continue;
       }
-      files.push(relPath);
+      acc.push(relPath);
     }
   }
 
-  return files;
+  return acc;
 }
 
 // --- GESTION DU CACHE & REPO_MAP ---
@@ -771,9 +872,12 @@ function getCachePaths(rootDir) {
 function loadIndex(indexPath) {
   if (fs.existsSync(indexPath)) {
     try {
-      return JSON.parse(fs.readFileSync(indexPath, 'utf8'));
+      const stat = fs.statSync(indexPath);
+      if (stat.size <= MAX_CACHE_JSON_BYTES) {
+        return JSON.parse(fs.readFileSync(indexPath, 'utf8'));
+      }
     } catch {
-      // Index corrompu, recréation
+      // Index corrompu ou surdimensionné, recréation propre
     }
   }
   return {
@@ -936,6 +1040,11 @@ function generateRepoMap(index, summaries, radarText) {
 
 // --- TRAITEMENTS PRINCIPAUX ---
 
+function serializeIndex(indexObj) {
+  const count = Object.keys(indexObj.files || {}).length;
+  return count > 300 ? JSON.stringify(indexObj) : JSON.stringify(indexObj, null, 2);
+}
+
 function runFullScan(rootDir) {
   const { cacheDir, indexPath, summariesPath, mapPath } = getCachePaths(rootDir);
   if (!fs.existsSync(cacheDir)) {
@@ -944,21 +1053,39 @@ function runFullScan(rootDir) {
 
   const existingIndex = loadIndex(indexPath);
   const summaries = loadSummaries(summariesPath);
-  const filesList = crawlRepo(rootDir);
+  const filesList = getGitFiles(rootDir) ?? crawlRepo(rootDir);
 
   const newFiles = {};
 
   for (const relPath of filesList) {
     const fullPath = path.join(rootDir, relPath);
-    const stat = fs.statSync(fullPath);
+    let stat;
+    try {
+      stat = fs.lstatSync(fullPath);
+    } catch {
+      continue;
+    }
+    if (stat.isSymbolicLink() || !stat.isFile()) continue;
+    if (stat.size > MAX_FILE_SIZE_BYTES) continue;
+
     const existing = existingIndex.files[relPath];
 
-    // Vérification rapide de taille
+    // Fast path mtime + taille avant toute lecture disque
+    if (existing && existing.size === stat.size && existing.mtimeMs === stat.mtimeMs) {
+      newFiles[relPath] = existing;
+      continue;
+    }
+
     if (existing && existing.size === stat.size) {
-      // Optionnel : vérification de hash si modification suspecte
-      const currentHash = crypto.createHash('sha256').update(fs.readFileSync(fullPath)).digest('hex').slice(0, 16);
-      if (existing.hash === currentHash) {
-        newFiles[relPath] = existing;
+      try {
+        const rawBuf = fs.readFileSync(fullPath);
+        if (isBinaryBuffer(rawBuf)) continue;
+        const currentHash = crypto.createHash('sha256').update(rawBuf).digest('hex').slice(0, 16);
+        if (existing.hash === currentHash) {
+          newFiles[relPath] = { ...existing, mtimeMs: stat.mtimeMs };
+          continue;
+        }
+      } catch {
         continue;
       }
     }
@@ -979,7 +1106,7 @@ function runFullScan(rootDir) {
   newIndex.stats = stats;
   newIndex.entryPoints = stats.entryPoints;
 
-  fs.writeFileSync(indexPath, JSON.stringify(newIndex, null, 2), 'utf8');
+  fs.writeFileSync(indexPath, serializeIndex(newIndex), 'utf8');
 
   const { radar, unsummarized } = generateRadar(newIndex, summaries);
   const mapContent = generateRepoMap(newIndex, summaries, radar);
@@ -1007,8 +1134,8 @@ function updateSingleFile(rootDir, targetFile) {
 
   const fullPath = path.join(rootDir, relPath);
 
-  if (!fs.existsSync(fullPath)) {
-    // Fichier supprimé
+  if (!fs.existsSync(fullPath) || isPathExcluded(relPath)) {
+    // Fichier supprimé ou exclu
     if (index.files[relPath]) {
       delete index.files[relPath];
     }
@@ -1024,7 +1151,7 @@ function updateSingleFile(rootDir, targetFile) {
   index.stats = stats;
   index.entryPoints = stats.entryPoints;
 
-  fs.writeFileSync(indexPath, JSON.stringify(index, null, 2), 'utf8');
+  fs.writeFileSync(indexPath, serializeIndex(index), 'utf8');
 
   const { radar, unsummarized } = generateRadar(index, summaries);
   const mapContent = generateRepoMap(index, summaries, radar);

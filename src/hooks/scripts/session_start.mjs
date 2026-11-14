@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import fs from 'node:fs';
 import path from 'node:path';
+import { execFileSync } from 'node:child_process';
 
 // Read all stdin synchronously
 let input = '';
@@ -118,6 +119,10 @@ try {
 const agentsDir = path.join(workspaceRoot, '.agents');
 if (fs.existsSync(agentsDir)) {
   try {
+    const MAX_INDEX_FILE_BYTES = 256 * 1024;
+    const MAX_INDEXED_FILES = 4000;
+    const MAX_CACHE_JSON_BYTES = 10 * 1024 * 1024;
+
     const IGNORED_DIRS = new Set([
       'node_modules',
       '.git',
@@ -125,9 +130,63 @@ if (fs.existsSync(agentsDir)) {
       'dist',
       'vendor',
       'build',
+      'out',
       '.next',
-      'coverage'
+      'coverage',
+      'google-cloud-sdk',
+      'Pods',
+      '.expo',
+      '.gradle',
+      'target',
+      'storage',
+      'tmp',
+      'temp',
+      'logs',
+      '.dart_tool',
+      'bower_components'
     ]);
+
+    const IGNORED_EXTENSIONS = new Set([
+      '.png', '.jpg', '.jpeg', '.gif', '.svg', '.ico', '.webp', '.bmp', '.tiff',
+      '.pdf', '.zip', '.tar', '.gz', '.tgz', '.7z', '.rar', '.bz2', '.xz',
+      '.exe', '.bin', '.dll', '.so', '.dylib', '.wasm', '.apk', '.aab', '.ipa', '.dmg', '.iso',
+      '.woff', '.woff2', '.ttf', '.eot', '.otf', '.mp3', '.mp4',
+      '.mov', '.avi', '.webm', '.wav', '.flac', '.ogg', '.m4a', '.map',
+      '.lock', '.db', '.sqlite', '.sqlite3', '.pyc', '.pyo', '.class', '.jar', '.war', '.log'
+    ]);
+
+    const isBinaryBuffer = (buf) => {
+      if (!buf || buf.length === 0) return false;
+      const limit = Math.min(buf.length, 1024);
+      for (let i = 0; i < limit; i++) {
+        if (buf[i] === 0) return true;
+      }
+      return false;
+    };
+
+    const isExcludedRelPath = (relPath) => {
+      const normalized = relPath.replace(/\\/g, '/').replace(/^\.\//, '');
+      if (!normalized) return true;
+      const parts = normalized.split('/');
+      for (let i = 0; i < parts.length - 1; i++) {
+        const seg = parts[i];
+        if (!seg || IGNORED_DIRS.has(seg) || seg.startsWith('.')) return true;
+      }
+      const base = parts[parts.length - 1];
+      if (!base) return true;
+      const ext = path.extname(base).toLowerCase();
+      return IGNORED_EXTENSIONS.has(ext);
+    };
+
+    const hasGitRepo = (dir) => {
+      let cur = path.resolve(dir);
+      while (true) {
+        if (fs.existsSync(path.join(cur, '.git'))) return true;
+        const parent = path.dirname(cur);
+        if (parent === cur) return false;
+        cur = parent;
+      }
+    };
 
     const cacheDir = path.join(agentsDir, 'cache');
     fs.mkdirSync(cacheDir, { recursive: true });
@@ -136,9 +195,11 @@ if (fs.existsSync(agentsDir)) {
     let cachedFiles = {};
     if (fs.existsSync(indexFile)) {
       try {
-        const parsed = JSON.parse(fs.readFileSync(indexFile, 'utf8'));
-        if (parsed && typeof parsed.files === 'object') {
-          cachedFiles = parsed.files;
+        if (fs.statSync(indexFile).size <= MAX_CACHE_JSON_BYTES) {
+          const parsed = JSON.parse(fs.readFileSync(indexFile, 'utf8'));
+          if (parsed && typeof parsed.files === 'object') {
+            cachedFiles = parsed.files;
+          }
         }
       } catch {}
     }
@@ -168,7 +229,63 @@ if (fs.existsSync(agentsDir)) {
     }
 
     const currentFiles = {};
+    let indexedCount = 0;
+
+    const indexSingleFile = (fullPath, relPath) => {
+      if (indexedCount >= MAX_INDEXED_FILES) return;
+      if (isExcludedRelPath(relPath)) return;
+      try {
+        const stat = fs.lstatSync(fullPath);
+        if (stat.isSymbolicLink() || !stat.isFile() || stat.size > MAX_INDEX_FILE_BYTES) return;
+        const cached = cachedFiles[relPath];
+        if (cached && cached.mtimeMs === stat.mtimeMs && (cached.size === undefined || cached.size === stat.size)) {
+          currentFiles[relPath] = cached;
+          indexedCount++;
+          return;
+        }
+        const rawBuf = fs.readFileSync(fullPath);
+        if (isBinaryBuffer(rawBuf)) return;
+        const content = rawBuf.toString('utf8');
+        const lines = content ? content.split(/\r?\n/).length : 0;
+        const symbols = extractSymbols(content, relPath);
+        currentFiles[relPath] = {
+          lines,
+          lineCount: lines,
+          size: stat.size,
+          symbols,
+          mtimeMs: stat.mtimeMs
+        };
+        indexedCount++;
+      } catch {}
+    };
+
+    let usedGitList = false;
+    if (hasGitRepo(workspaceRoot)) {
+      try {
+        const raw = execFileSync(
+          'git',
+          ['-c', 'safe.directory=*', 'ls-files', '-z', '-co', '--exclude-standard'],
+          {
+            cwd: workspaceRoot,
+            encoding: 'buffer',
+            maxBuffer: 32 * 1024 * 1024,
+            stdio: ['ignore', 'pipe', 'ignore'],
+            timeout: 4000
+          }
+        );
+        usedGitList = true;
+        for (const relPath of raw.toString('utf8').split('\0')) {
+          if (!relPath) continue;
+          if (indexedCount >= MAX_INDEXED_FILES) break;
+          indexSingleFile(path.join(workspaceRoot, relPath), relPath);
+        }
+      } catch {
+        usedGitList = false;
+      }
+    }
+
     function walk(dir) {
+      if (indexedCount >= MAX_INDEXED_FILES) return;
       let entries = [];
       try {
         entries = fs.readdirSync(dir, { withFileTypes: true });
@@ -176,34 +293,23 @@ if (fs.existsSync(agentsDir)) {
         return;
       }
       for (const entry of entries) {
+        if (indexedCount >= MAX_INDEXED_FILES) break;
+        if (entry.isSymbolicLink()) continue;
         if (IGNORED_DIRS.has(entry.name)) continue;
         const fullPath = path.join(dir, entry.name);
         if (entry.isDirectory()) {
+          if (entry.name.startsWith('.')) continue;
           walk(fullPath);
         } else if (entry.isFile()) {
           const relPath = path.relative(workspaceRoot, fullPath).replace(/\\/g, '/');
-          try {
-            const stat = fs.statSync(fullPath);
-            if (cachedFiles[relPath] && cachedFiles[relPath].mtimeMs === stat.mtimeMs) {
-              currentFiles[relPath] = cachedFiles[relPath];
-            } else {
-              const content = fs.readFileSync(fullPath, 'utf8');
-              const lines = content ? content.split(/\r?\n/).length : 0;
-              const symbols = extractSymbols(content, relPath);
-              currentFiles[relPath] = {
-                lines,
-                lineCount: lines,
-                size: stat.size,
-                symbols,
-                mtimeMs: stat.mtimeMs
-              };
-            }
-          } catch {}
+          indexSingleFile(fullPath, relPath);
         }
       }
     }
 
-    walk(workspaceRoot);
+    if (!usedGitList) {
+      walk(workspaceRoot);
+    }
 
     const fileKeys = Object.keys(currentFiles);
     const fileCount = fileKeys.length;
@@ -242,7 +348,11 @@ if (fs.existsSync(agentsDir)) {
       stats: { fileCount, symbolCount, totalFiles: fileCount, totalSymbols: symbolCount },
       updatedAt: new Date().toISOString()
     };
-    fs.writeFileSync(indexFile, JSON.stringify(indexData, null, 2), 'utf8');
+    fs.writeFileSync(
+      indexFile,
+      fileCount > 300 ? JSON.stringify(indexData) : JSON.stringify(indexData, null, 2),
+      'utf8'
+    );
 
     // Generate REPO_MAP.md
     const sortedDirs = Object.keys(

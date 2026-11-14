@@ -17,6 +17,8 @@ import { fileURLToPath } from 'node:url';
 
 import {
   FRAMEWORK_ROOT,
+  resolveProjectRoot,
+  detectExistingInstallation,
   getAvailableSkills,
   getSkillDescription,
   resolveSkillList,
@@ -233,6 +235,34 @@ async function runModelsInteractivePrompt(currentConfig) {
   }
 }
 
+async function runExistingProjectMenu(existing, availableSkills, values) {
+  const rl = readline.createInterface({ input, output });
+  try {
+    const modeLabel = existing.mode === 'light'
+      ? 'Mode léger (.agents/skills.json)'
+      : `${existing.skillsCount}/${availableSkills.length} skills (.agents/skills/)`;
+    console.log(`${colors.brightGreen}${colors.bold}✔ Framework Antigravity déjà installé dans ce projet${colors.reset}`);
+    console.log(`  ${colors.bold}Racine détectée${colors.reset} : ${existing.projectRoot}`);
+    console.log(`  ${colors.bold}Architecture${colors.reset}    : ${modeLabel}`);
+    if (existing.hasModelsConfig) {
+      const m = readModelsConfig(existing.projectRoot).config;
+      console.log(`  ${colors.bold}Modèles${colors.reset}         : AGY=${m.agy.executor} | OpenCode=${m.opencode.executor}`);
+    }
+    console.log('');
+    console.log(`${colors.bold}Action souhaitée :${colors.reset}`);
+    console.log(`   [1] Mettre à jour vers v${frameworkVersion} (update) ${colors.green}[Recommandé / Défaut]${colors.reset}`);
+    console.log(`   [2] Diagnostic de santé 6 piliers (doctor)`);
+    console.log(`   [3] Configurer les modèles Dual-Harness (models)`);
+    console.log(`   [4] Réinstaller / Modifier les options (init)`);
+    console.log(`   [5] Quitter\n`);
+
+    const choice = (await rl.question(`${colors.cyan}Votre choix [1-5] (défaut: 1) : ${colors.reset}`)).trim();
+    return choice || '1';
+  } finally {
+    rl.close();
+  }
+}
+
 /**
  * Point d'entrée principal CLI
  */
@@ -391,7 +421,7 @@ async function main() {
     process.exit(0);
   }
 
-  // 6. Commande Init (ou exécution par défaut)
+  // 6. Commande Init (ou exécution par défaut en TTY)
   if (command === 'init' || (!command && process.stdin.isTTY)) {
     showBanner();
     const availableSkills = getAvailableSkills();
@@ -405,8 +435,66 @@ async function main() {
       skillsToInstall = resolveSkillList(values.skills, availableSkills);
     }
 
-    const isAutomated = Boolean(values.all || values.skills !== undefined || isLightMode);
+    const isAutomated = Boolean(values.all || values.skills !== undefined || isLightMode || values.force);
     const isInteractive = Boolean(process.stdin.isTTY && !isAutomated);
+
+    // Reconnaissance automatique d'une installation existante (.agents/ dans cwd ou racine du repo)
+    if (isInteractive && targetMode !== 'global') {
+      const existing = detectExistingInstallation(values.dir);
+      if (existing.installed) {
+        if (!command) {
+          const action = await runExistingProjectMenu(existing, availableSkills, values);
+          if (action === '1') {
+            await updateFramework({
+              targetDir: existing.projectRoot,
+              skills: availableSkills,
+              dryRun: Boolean(values['dry-run']),
+              force: Boolean(values.force),
+              opencode: Boolean(values.opencode || existing.hasOpencodeConfig),
+              light: existing.mode === 'light'
+            });
+            process.exit(0);
+          } else if (action === '2') {
+            const report = runDoctor({ targetDir: existing.projectRoot });
+            printDoctorReport(report);
+            process.exit(report.allPassed ? 0 : 1);
+          } else if (action === '3') {
+            const current = readModelsConfig(existing.projectRoot).config;
+            const answers = await runModelsInteractivePrompt(current);
+            configureModels({ targetDir: existing.projectRoot, ...answers, dryRun: Boolean(values['dry-run']) });
+            process.exit(0);
+          } else if (action === '5') {
+            process.exit(0);
+          }
+          // action === '4' -> continue vers réinstallation interactive
+        } else {
+          const rl = readline.createInterface({ input, output });
+          let confirmChoice = '1';
+          try {
+            console.log(`${colors.brightYellow}ℹ Une installation san-framework existe déjà dans : ${existing.projectRoot}${colors.reset}`);
+            console.log(`   [1] Mettre à jour sans rien écraser (update) ${colors.green}[Recommandé / Défaut]${colors.reset}`);
+            console.log(`   [2] Continuer la réinstallation (init)`);
+            console.log(`   [3] Annuler\n`);
+            confirmChoice = (await rl.question(`${colors.cyan}Votre choix [1-3] (défaut: 1) : ${colors.reset}`)).trim() || '1';
+          } finally {
+            rl.close();
+          }
+          if (confirmChoice === '1') {
+            await updateFramework({
+              targetDir: existing.projectRoot,
+              skills: availableSkills,
+              dryRun: Boolean(values['dry-run']),
+              force: false,
+              opencode: Boolean(values.opencode || existing.hasOpencodeConfig),
+              light: existing.mode === 'light'
+            });
+            process.exit(0);
+          } else if (confirmChoice === '3') {
+            process.exit(0);
+          }
+        }
+      }
+    }
 
     if (isInteractive) {
       const answers = await runInteractivePrompt(availableSkills, targetMode);

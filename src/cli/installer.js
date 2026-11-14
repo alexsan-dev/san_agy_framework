@@ -80,6 +80,110 @@ function normalizeTargetOptions(targetDirOrOptions, maybeOptions = {}) {
   return targetDirOrOptions || {};
 }
 
+function hasSanSkill(skillsDir) {
+  try {
+    if (!fs.existsSync(skillsDir)) return false;
+    return fs.readdirSync(skillsDir).some((name) => name.startsWith('san_'));
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Vérifie si un dossier contient une installation san-framework (et pas seulement
+ * un dossier .agents/ créé par un outil tiers comme Laravel Boost ou skills.sh).
+ */
+export function isSanInstallationDir(dir) {
+  const agentsDir = path.join(dir, '.agents');
+  if (!fs.existsSync(agentsDir)) return false;
+  return (
+    fs.existsSync(path.join(agentsDir, 'skills.json')) ||
+    fs.existsSync(path.join(agentsDir, 'hooks.json')) ||
+    fs.existsSync(path.join(agentsDir, 'models.json')) ||
+    fs.existsSync(path.join(agentsDir, 'rules')) ||
+    fs.existsSync(path.join(agentsDir, 'agents')) ||
+    hasSanSkill(path.join(agentsDir, 'skills'))
+  );
+}
+
+/**
+ * Résout la racine du projet :
+ * 1. Si explicitDir est fourni (--dir), le résout directement.
+ * 2. Sinon, si walkUp=true, remonte depuis process.cwd() jusqu'à trouver `.agents/` san-framework
+ *    (en s'arrêtant à la racine Git ou avant $HOME / /).
+ * 3. À défaut, retourne la racine Git (si dans un dépôt Git) ou process.cwd().
+ */
+export function resolveProjectRoot(explicitDir = null, { walkUp = true } = {}) {
+  if (explicitDir && typeof explicitDir === 'string' && explicitDir.trim()) {
+    return path.resolve(explicitDir.trim());
+  }
+
+  const startDir = path.resolve(process.cwd());
+  const homeDir = path.resolve(os.homedir());
+
+  let gitRoot = null;
+  try {
+    const top = execSync('git rev-parse --show-toplevel', {
+      cwd: startDir,
+      stdio: ['ignore', 'pipe', 'ignore'],
+      encoding: 'utf8',
+      timeout: 2000
+    }).trim();
+    if (top) gitRoot = path.resolve(top);
+  } catch {}
+
+  if (walkUp) {
+    let current = startDir;
+    while (true) {
+      if (current !== homeDir && isSanInstallationDir(current)) {
+        return current;
+      }
+      if (gitRoot && current === gitRoot) {
+        break;
+      }
+      const parent = path.dirname(current);
+      if (parent === current || current === homeDir) {
+        break;
+      }
+      current = parent;
+    }
+  }
+
+  return gitRoot || startDir;
+}
+
+/**
+ * Détecte si le framework est déjà installé dans le projet (ou un ancêtre du même repo).
+ */
+export function detectExistingInstallation(explicitDir = null, { walkUp = true } = {}) {
+  const projectRoot = resolveProjectRoot(explicitDir, { walkUp });
+  const agentsDir = path.join(projectRoot, '.agents');
+  const skillsJsonPath = path.join(agentsDir, 'skills.json');
+  const skillsDir = path.join(agentsDir, 'skills');
+
+  const hasSkillsJson = fs.existsSync(skillsJsonPath);
+  const hasSkillsDir = fs.existsSync(skillsDir);
+  const installed = isSanInstallationDir(projectRoot);
+
+  let skillsCount = 0;
+  if (hasSkillsDir) {
+    try {
+      skillsCount = fs.readdirSync(skillsDir, { withFileTypes: true })
+        .filter(d => d.isDirectory() && d.name.startsWith('san_')).length;
+    } catch {}
+  }
+
+  return {
+    installed,
+    projectRoot,
+    agentsDir,
+    mode: hasSkillsJson && !hasSkillsDir ? 'light' : 'standard',
+    skillsCount,
+    hasModelsConfig: fs.existsSync(path.join(agentsDir, 'models.json')),
+    hasOpencodeConfig: fs.existsSync(path.join(projectRoot, 'opencode.json'))
+  };
+}
+
 export const colors = {
   reset: '\x1b[0m',
   bold: '\x1b[1m',
@@ -668,7 +772,7 @@ export function configureModels(targetDirOrOptions = {}, maybeOptions = {}) {
   const options = normalizeTargetOptions(targetDirOrOptions, maybeOptions);
   const dryRun = Boolean(options.dryRun);
   const silent = Boolean(options.silent);
-  const projectRoot = options.targetDir ? path.resolve(options.targetDir) : process.cwd();
+  const projectRoot = resolveProjectRoot(options.targetDir);
   const state = readModelsConfig(projectRoot);
   const config = normalizeModelsConfig({
     ...state.config,
@@ -1130,7 +1234,7 @@ export function packageGlobalPlugin(targetDir, { dryRun = false, force = false }
  */
 export function runDoctor(targetDirOrOptions = {}, maybeOptions = {}) {
   const options = normalizeTargetOptions(targetDirOrOptions, maybeOptions);
-  const projectRoot = options.targetDir ? path.resolve(options.targetDir) : process.cwd();
+  const projectRoot = resolveProjectRoot(options.targetDir);
   const agentsDir = path.join(projectRoot, '.agents');
   const expectedSkills = getAvailableSkills();
 
@@ -1454,7 +1558,7 @@ export async function updateFramework(targetDirOrOptions = {}, maybeOptions = {}
   const force = Boolean(options.force);
   const light = Boolean(options.light);
   const currentVersion = getFrameworkVersion();
-  const projectRoot = options.targetDir ? path.resolve(options.targetDir) : process.cwd();
+  const projectRoot = resolveProjectRoot(options.targetDir);
 
   const agentsDir = path.join(projectRoot, '.agents');
   const skillsDestDir = path.join(agentsDir, 'skills');
@@ -1544,7 +1648,8 @@ export async function updateFramework(targetDirOrOptions = {}, maybeOptions = {}
       try {
         execSync(`node "${mapperScript}" --root "${projectRoot}"`, {
           cwd: projectRoot,
-          stdio: ['ignore', 'ignore', 'ignore']
+          stdio: ['ignore', 'ignore', 'ignore'],
+          timeout: 15000
         });
       } catch {}
     }
@@ -1683,7 +1788,7 @@ export async function installFramework(options = {}) {
   }
 
   // Mode Local (.agents/)
-  const projectRoot = options.targetDir ? path.resolve(options.targetDir) : process.cwd();
+  const projectRoot = resolveProjectRoot(options.targetDir);
   const agentsDir = path.join(projectRoot, '.agents');
   const skillsDestDir = path.join(agentsDir, 'skills');
   const agentsDestDir = path.join(agentsDir, 'agents');
@@ -1757,7 +1862,8 @@ export async function installFramework(options = {}) {
       try {
         execSync(`node "${mapperScript}" --root "${projectRoot}"`, {
           cwd: projectRoot,
-          stdio: ['ignore', 'ignore', 'ignore']
+          stdio: ['ignore', 'ignore', 'ignore'],
+          timeout: 15000
         });
       } catch {}
     }

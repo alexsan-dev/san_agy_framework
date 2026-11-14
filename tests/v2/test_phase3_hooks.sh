@@ -848,6 +848,40 @@ assert_true "stop_guard.mjs bloque bien (decision: continue) si src/old_dirty.js
 rm -rf "${STOP_WS_V22}"
 
 # ------------------------------------------------------------------------------
+# 6D. Garde-fou Anti-OOM & Git-First (.gitignore, fichiers >512KB, binaires)
+# ------------------------------------------------------------------------------
+info "6D. Test Anti-OOM & Git-First (repo_mapper.mjs & session_start.mjs)"
+
+OOM_WS=$(mktemp -d /tmp/san-oom-guard-ws.XXXXXX)
+(
+  cd "${OOM_WS}"
+  git init -q
+  git config user.name "OOM Tester"
+  git config user.email "oom@alexsan.pro"
+  mkdir -p .agents/cache src google-cloud-sdk/lib
+  echo "google-cloud-sdk/" > .gitignore
+  echo "export function realFeature() { return 42; }" > src/real.ts
+  echo "export function ignoredSdk() { return 0; }" > google-cloud-sdk/lib/sdk.js
+  # Fichier > 600KB suivi mais trop volumineux pour l'indexeur AST
+  python3 -c 'print("export const x = \"" + ("A" * 620000) + "\";")' > src/huge.js
+  # Fichier binaire avec octet nul
+  python3 -c 'open("src/blob.js", "wb").write(b"export function binFake(){}\x00\x01\x02")'
+  git add .gitignore src/real.ts src/huge.js src/blob.js
+  git commit -m "init" -q
+)
+
+node --max-old-space-size=128 "${ROOT_DIR}/src/skills/san_cartographer/scripts/repo_mapper.mjs" --root "${OOM_WS}" > /dev/null
+assert_true "repo_mapper.mjs indexe src/real.ts et ignore google-cloud-sdk/ (.gitignore) + huge.js (>512KB) + binaire" \
+  'grep -q "realFeature" "${OOM_WS}/.agents/cache/repo-index.json" && ! grep -q "ignoredSdk" "${OOM_WS}/.agents/cache/repo-index.json" && ! grep -q "src/huge.js" "${OOM_WS}/.agents/cache/repo-index.json" && ! grep -q "binFake" "${OOM_WS}/.agents/cache/repo-index.json"'
+
+rm -f "${OOM_WS}/.agents/cache/repo-index.json" "${OOM_WS}/.agents/cache/REPO_MAP.md"
+echo '{"workspacePaths":["'"${OOM_WS}"'"]}' | node --max-old-space-size=128 "${SCRIPTS_DIR}/session_start.mjs" > /dev/null
+assert_true "session_start.mjs indexe src/real.ts sous --max-old-space-size=128 et ignore google-cloud-sdk/ + huge.js" \
+  '[ -f "${OOM_WS}/.agents/cache/repo-index.json" ] && grep -q "realFeature" "${OOM_WS}/.agents/cache/repo-index.json" && ! grep -q "ignoredSdk" "${OOM_WS}/.agents/cache/repo-index.json" && ! grep -q "src/huge.js" "${OOM_WS}/.agents/cache/repo-index.json"'
+
+rm -rf "${OOM_WS}"
+
+# ------------------------------------------------------------------------------
 # 7. Validation officielle Antigravity Plugin Engine (agy plugin validate)
 # ------------------------------------------------------------------------------
 info "7. Validation officielle Antigravity Plugin Engine (agy plugin validate --strict --json)"

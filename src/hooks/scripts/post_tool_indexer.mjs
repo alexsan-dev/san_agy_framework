@@ -7,6 +7,9 @@ function safelyExit() {
   process.exit(0);
 }
 
+const MAX_INDEX_FILE_BYTES = 512 * 1024;
+const MAX_CACHE_JSON_BYTES = 10 * 1024 * 1024;
+
 const IGNORED_DIRS = new Set([
   'node_modules',
   '.git',
@@ -14,8 +17,20 @@ const IGNORED_DIRS = new Set([
   'dist',
   'vendor',
   'build',
+  'out',
   '.next',
-  'coverage'
+  'coverage',
+  'google-cloud-sdk',
+  'Pods',
+  '.expo',
+  '.gradle',
+  'target',
+  'storage',
+  'tmp',
+  'temp',
+  'logs',
+  '.dart_tool',
+  'bower_components'
 ]);
 
 function extractSymbols(content, filePath) {
@@ -156,9 +171,11 @@ try {
   let indexData = { files: {}, stats: { fileCount: 0, symbolCount: 0 } };
   if (fs.existsSync(indexFile)) {
     try {
-      indexData = JSON.parse(fs.readFileSync(indexFile, 'utf8'));
-      if (!indexData.files || typeof indexData.files !== 'object') {
-        indexData.files = {};
+      if (fs.statSync(indexFile).size <= MAX_CACHE_JSON_BYTES) {
+        indexData = JSON.parse(fs.readFileSync(indexFile, 'utf8'));
+        if (!indexData.files || typeof indexData.files !== 'object') {
+          indexData.files = {};
+        }
       }
     } catch {
       indexData = { files: {}, stats: { fileCount: 0, symbolCount: 0 } };
@@ -168,16 +185,30 @@ try {
   // Incremental update of this single file
   try {
     if (fs.existsSync(absPath)) {
-      const stat = fs.statSync(absPath);
-      if (stat.isFile()) {
-        const content = fs.readFileSync(absPath, 'utf8');
-        const lines = content ? content.split(/\r?\n/).length : 0;
-        const symbols = extractSymbols(content, relPath);
-        indexData.files[relPath] = {
-          lines,
-          symbols,
-          mtimeMs: stat.mtimeMs
-        };
+      const stat = fs.lstatSync(absPath);
+      if (!stat.isSymbolicLink() && stat.isFile() && stat.size <= MAX_INDEX_FILE_BYTES) {
+        const rawBuf = fs.readFileSync(absPath);
+        const sampleLen = Math.min(rawBuf.length, 1024);
+        let isBinary = false;
+        for (let i = 0; i < sampleLen; i++) {
+          if (rawBuf[i] === 0) {
+            isBinary = true;
+            break;
+          }
+        }
+        if (!isBinary) {
+          const content = rawBuf.toString('utf8');
+          const lines = content ? content.split(/\r?\n/).length : 0;
+          const symbols = extractSymbols(content, relPath);
+          indexData.files[relPath] = {
+            lines,
+            size: stat.size,
+            symbols,
+            mtimeMs: stat.mtimeMs
+          };
+        } else {
+          delete indexData.files[relPath];
+        }
       } else {
         delete indexData.files[relPath];
       }
@@ -200,7 +231,11 @@ try {
   indexData.stats = { fileCount, symbolCount };
   indexData.updatedAt = new Date().toISOString();
 
-  fs.writeFileSync(indexFile, JSON.stringify(indexData, null, 2), 'utf8');
+  fs.writeFileSync(
+    indexFile,
+    fileCount > 300 ? JSON.stringify(indexData) : JSON.stringify(indexData, null, 2),
+    'utf8'
+  );
 
   // Load semantic summaries if present
   let semanticSummaries = {};

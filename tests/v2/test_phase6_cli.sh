@@ -513,6 +513,64 @@ fi
 rm -rf "${TMP_MODELS}"
 
 # ------------------------------------------------------------------------------
+# 8. Scénario 8 : Monorepo walk-up (ignore .agents/ tiers) & Menu TTY sur install existante
+# ------------------------------------------------------------------------------
+info "8. Scénario Monorepo walk-up (.agents/ tiers ignoré) & reconnaissance TTY"
+TMP_MONO=$(mktemp -d)
+trap 'rm -rf "${TMP_LOCAL}" "${TMP_MODELS}" "${TMP_MONO}"' EXIT
+
+git -C "${TMP_MONO}" init -q
+node "${CLI_INDEX}" init --local --all --dir="${TMP_MONO}" > /dev/null
+mkdir -p "${TMP_MONO}/packages/api/.agents/skills/laravel-boost"
+touch "${TMP_MONO}/packages/api/.agents/skills/laravel-boost/SKILL.md"
+
+DOC_MONO_OUT=$(cd "${TMP_MONO}/packages/api" && node "${CLI_INDEX}" doctor)
+assert_true "doctor depuis sous-dossier monorepo (avec .agents/ tiers) remonte à la racine (${TMP_MONO})" \
+  'echo "${DOC_MONO_OUT}" | grep -q ": ${TMP_MONO}" && echo "${DOC_MONO_OUT}" | grep -q "CONFORME (6/6"'
+
+UPD_MONO_OUT=$(cd "${TMP_MONO}/packages/api" && node "${CLI_INDEX}" update --dry-run)
+assert_true "update depuis sous-dossier monorepo cible la racine du projet" \
+  'echo "${UPD_MONO_OUT}" | grep -qE "Projet.*: ${TMP_MONO}"'
+
+PTY_OUT=$(python3 -c '
+import os, pty, select, subprocess, time
+master, slave = pty.openpty()
+env = os.environ.copy()
+env["TERM"] = "xterm"
+p = subprocess.Popen(
+    ["node", "'"${CLI_INDEX}"'"],
+    cwd="'"${TMP_MONO}/packages/api"'",
+    stdin=slave, stdout=slave, stderr=slave, env=env, close_fds=True
+)
+os.close(slave)
+buf = b""
+sent = False
+deadline = time.time() + 10
+while time.time() < deadline:
+    r, _, _ = select.select([master], [], [], 0.2)
+    if master in r:
+        try:
+            chunk = os.read(master, 4096)
+            if not chunk:
+                break
+            buf += chunk
+            if not sent and b"Votre choix" in buf:
+                os.write(master, b"5\n")
+                sent = True
+        except OSError:
+            break
+    elif p.poll() is not None:
+        break
+p.wait(timeout=5)
+os.close(master)
+print(buf.decode("utf-8", errors="replace"))
+')
+assert_true "san-framework sans argument en TTY détecte .agents/ existant et propose [1] Mettre à jour" \
+  'echo "${PTY_OUT}" | grep -q "Framework Antigravity déjà installé dans ce projet" && echo "${PTY_OUT}" | grep -q "${TMP_MONO}" && echo "${PTY_OUT}" | grep -q "Mettre à jour vers"'
+
+rm -rf "${TMP_MONO}"
+
+# ------------------------------------------------------------------------------
 # Bilan Récapitulatif
 # ------------------------------------------------------------------------------
 echo ""
