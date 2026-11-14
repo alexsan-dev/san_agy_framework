@@ -1,19 +1,24 @@
 ---
 name: san_executer
 title: Chef d'Orchestre d'Implémentation Full-Stack et Moteur d'Exécution Principal
-version: 2.0.0
+version: "2.2.0"
 type: entry_point
 alias: san_execute
-harness: google_antigravity_cli
+harness: dual_harness
+models_config: ".agents/models.json"
 routing:
-  orchestrator:
-    nominal: "argon-latest-max"
-    fallback_1: "gemini-3.1-pro-high"
-    fallback_2: "gemini-3.8-flash-high"
-  subagents:
-    coder_back: "san-coder-back" # flash ou pro/inherit (modèles complexes/migrations)
-    coder_front: "san-coder-front" # flash
-    auditor: "san-qa-auditor" # pro (fail-closed, inquisiteur sceptique)
+  antigravity:
+    orchestrator: "gemini-4-argon-high"
+    executor: "gemini-4-hydrogen-xhigh"
+    primitive: "swarm"
+  opencode_v2:
+    orchestrator: "opencode-go/hy4"
+    executor: "opencode-go/deepseek-v4-pro"
+    primitive: "subagent"
+  workers:
+    coder_back: "san-coder-back"
+    coder_front: "san-coder-front"
+    auditor: "san-qa-auditor"
 ---
 
 # `san_executer` — Chef d'Orchestre d'Implémentation Full-Stack et Moteur d'Exécution Principal
@@ -48,12 +53,12 @@ routing:
    - Verrouillage atomique des requêtes via `Idempotency-Key` sur Redis (TTL 24h).
    - Retry exponentiel avec jitter aléatoire pour les appels réseaux dégradés.
    - File d'attente Outbox locale (SQLite / MMKV / IndexedDB) pour l'écriture hors-ligne avec synchronisation transparente.
-5. **Délégation Stricte et Dialectique des 2 Approches :**
-   - Délègue chaque tâche atomique à `san-coder-back` ou `san-coder-front` (`Model: 'flash'`, avec autorisation d'invoquer `Model: 'pro'` / `'inherit'` pour les modèles de domaine complexes et migrations critiques).
+5. **Délégation Dual-Harness & Dialectique des 2 Approches :**
+   - Délègue chaque tâche atomique à `san-coder-back` ou `san-coder-front` via **`swarm(action: "add", model: "gemini-4-hydrogen-xhigh")`** (Antigravity) ou **`subagent`** configuré par `.agents/models.json` / `san-framework models` (OpenCode V2) — jamais `invoke_subagent(Model: "inherit")` sur `Argon`/`Carbon`.
    - Obligation formelle d'inclure dans leur prompt la clause de **Dialectique 2 Approches** (Approche A conservatrice vs Approche B optimale/performante).
-6. **Entonnoir d'Audit Consolidé en 2 Étages (Boucle QA Inquisitrice) :**
+6. **Entonnoir d'Audit Consolidé en 2 Étages & Relais Sceptique :**
    - **Étage 1 (Scripté Déterministe Fail-Closed) :** Lancement de `scripts/e2e_verification_gate.sh`, `backend_quality_gate.sh` ou `front_quality_gate.sh`. Arrêt immédiat sans LLM si un test échoue.
-   - **Étage 2 (Inquisiteur Sceptique QA) :** Spawner `san-qa-auditor` (`Model: 'pro'`) avec présomption d'anomalies. Si `RETOUR_ATELIER`, itération avec le codeur atomique jusqu'au verdict `LIVRABLE`.
+   - **Étage 2 (Inquisiteur Sceptique QA) :** Spawner `san-qa-auditor` en Dual-Harness (`swarm` / `subagent`, lecture seule) avec présomption d'anomalies. Si `RETOUR_ATELIER`, itération jusqu'au verdict `LIVRABLE`. En fin de quota, passer par [`san_transcriber`](san_transcriber.md).
 7. **Fast-Track d'Hygiène Orchestrateur :** Vérifie le code réel avant de cocher les cases `- [x]`, met à jour `CHANGELOG.md` et exécute `scripts/archive_roadmap.sh`.
 
 ### Ce qu'il NE FAIT PAS :
@@ -267,19 +272,19 @@ flowchart TD
     CallPlanner --> Step1
     
     CheckRoadmap -->|"OUI"| TriageProfile{"Classification de la Tâche"}
-    TriageProfile -->|"Profil A (BACK_ONLY)"| SubBackOnly["san_backend_expert ('flash')"]
-    TriageProfile -->|"Profil B (FRONT_ONLY)"| SubFrontOnly["san_ux_ui_expert ('flash')"]
+    TriageProfile -->|"Profil A (BACK_ONLY)"| SubBackOnly["san_backend_expert (swarm / subagent)"]
+    TriageProfile -->|"Profil B (FRONT_ONLY)"| SubFrontOnly["san_ux_ui_expert (swarm / subagent)"]
     TriageProfile -->|"Profil C (FULL_STACK)"| Step2["Étape 2 : Verrouillage Contract-First"]
     
-    Step2 --> Step3["Étape 3 : Implémentation Séquentielle ('flash')"]
-    Step3 --> Step4["Étape 4 : Pont d'Intégration & E2E Cross-Check ('inherit')"]
+    Step2 --> Step3["Étape 3 : Implémentation Parallèle (Dual-Harness)"]
+    Step3 --> Step4["Étape 4 : Pont d'Intégration & E2E Cross-Check"]
     SubBackOnly --> Step4
     SubFrontOnly --> Step4
     
     Step4 --> Step5{"Étape 5 : Entonnoir d'Audit en 2 Étages"}
-    Step5 -->|"Étage 1 Scripté Échoue"| FixCode["Correction ciblée sous 'flash'"]
+    Step5 -->|"Étage 1 Scripté Échoue"| FixCode["Correction ciblée (coder-back / coder-front)"]
     FixCode --> Step5
-    Step5 -->|"Étage 1 Vert"| AuditE2["Étage 2 : Audit OWASP & Perf ('inherit')"]
+    Step5 -->|"Étage 1 Vert"| AuditE2["Étage 2 : Audit OWASP & Perf (san-qa-auditor)"]
     
     AuditE2 -->|"Scores >= 90/100 & 0 Bloquant"| Step6["Étape 6 : Fast-Track Clôture & Archivage"]
     Step6 --> Done(["Livraison Validée"])
@@ -299,13 +304,13 @@ flowchart TD
 - Exporter les types TypeScript / schémas Zod.
 - Créer la requête Bruno correspondante et valider les assertions de retour HTTP.
 
-### Étape 3 : Orchestration de l'Implémentation (`Model: 'flash'`)
-- Les sous-agents de code en `Model: 'flash'` implémentent :
+### Étape 3 : Orchestration de l'Implémentation (Dual-Harness `swarm` / `subagent`)
+- Les workers (`gemini-4-hydrogen-xhigh` via `swarm`, ou exécuteur `.agents/models.json` via `subagent` OpenCode V2) implémentent :
   - Côté serveur : contrôleurs, form requests, services métier, tests unitaires.
   - Côté client : composants avec gestion stricte des **5 états obligatoires** (Idéal, Vide, Chargement, Erreur, Succès/Hors-ligne), animations 60 fps conformes à `BRAND.md`.
 
-### Étape 4 : Pont d'Intégration & Contrôle Croisé E2E (`Model: 'inherit'`)
-- Déployer le sous-agent `e2e_integration_auditor` en `Model: 'inherit'` :
+### Étape 4 : Pont d'Intégration & Contrôle Croisé E2E (`san-qa-auditor`)
+- Déployer l'auditeur en lecture seule (`swarm` / `subagent` Dual-Harness) :
   - Vérifier l'adéquation au bit près des payloads transmis par le client.
   - Éprouver le comportement sous réseau dégradé (simulation coupure 3G et rejeu Outbox).
   - Contrôler l'unicité de l'`Idempotency-Key`.
@@ -313,9 +318,9 @@ flowchart TD
 ### Étape 5 : Entonnoir d'Audit en 2 Étages
 1. **Étage 1 (Scripté Déterministe - Zéro Token LLM) :**
    - Exécution de `scripts/e2e_verification_gate.sh`.
-   - Si une erreur survient (compilation TypeScript, linter, test rouge), interruption immédiate. L'erreur brute est renvoyée au sous-agent de code (`flash`). Zéro sollicitation LLM d'audit.
+   - Si une erreur survient (compilation TypeScript, linter, test rouge), interruption immédiate. L'erreur brute est renvoyée au worker de code. Zéro sollicitation LLM d'audit.
 2. **Étage 2 (Qualitatif & Pentest) :**
-   - Sollicitation de [san_qa_security_expert](san_qa_security_expert.md) (`Model: 'inherit'`).
+   - Sollicitation de [san_qa_security_expert](san_qa_security_expert.md) (`swarm` / `subagent`).
    - Seuils impératifs :
      - Score de sécurité $\ge 90/100$ ;
      - Zéro faille `CRITIQUE` ou `BLOQUANTE` ;
@@ -440,10 +445,9 @@ L'invocation de `san_executer` suffit à piloter l'intégralité du cycle de vie
 ### 2. Invariant « Contract-First, No-Mismatch »
 Aucune implémentation de composant ou d'écran ne peut débuter sans un contrat d'API formellement écrit et validé. Le code client est esclave du contrat, qui est lui-même validé par les assertions de requêtes Bruno du serveur.
 
-### 3. Invariant de Délégation et de Routage des Modèles
+### 3. Invariant de Délégation et de Routage Dual-Harness
 - L'orchestrateur est un stratège : il ne code jamais directement.
-- L'écriture de code est réservée à des sous-agents propulsés par **`Model: 'flash'`**.
-- L'évaluation d'architecture, la QA, la sécurité et l'intégration croisée sont réservées à des sous-agents sous **`Model: 'inherit'`**.
+- Les workers de code (`san-coder-back`, `san-coder-front`) et d'audit (`san-qa-auditor`) tournent via **`swarm`** (`gemini-4-hydrogen-xhigh`, Antigravity) ou **`subagent`** (`.agents/models.json`, OpenCode V2) — jamais via `invoke_subagent(Model: 'inherit')` sur `Argon`/`Carbon`.
 - Le Fast-Track d'hygiène (cochage de cases prouvées, déplacement d'archive, mise à jour changelog) est exécuté directement par l'orchestrateur.
 
 ### 4. Invariant de Solidarité Transactionnelle (Tout ou Rien)

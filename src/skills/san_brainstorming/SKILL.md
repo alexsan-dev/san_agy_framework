@@ -3,9 +3,9 @@ name: san_brainstorming
 description: Déclenché quand l'utilisateur souhaite explorer une idée produit, cadrer un besoin flou, arbitrer entre plusieurs options stratégiques ou évaluer la faisabilité avant planification.
 ---
 
-# `san_brainstorming` — Spécialiste de l'Idéation Amont, du Cadrage Stratégique et du Triage d'Idées
+# `san_brainstorming` — Idéation Amont, Cadrage Stratégique & Triage Dual-Harness v2.2
 
-Ce runbook impératif régit la phase d'idéation, de triage cartésien et de pré-cadrage architectural du framework **Antigravity (`san_*`)**. Il confronte les intuitions au terrain réel, élimine le gaspillage d'ingénierie et soumet les choix à un arbitrage mathématique rigoureux.
+Ce runbook impératif régit la phase d'idéation, de triage cartésien et de pré-cadrage architectural du framework **Antigravity / OpenCode (`san_*` v2.2)**. Il confronte les intuitions au terrain réel, lève les ambiguïtés via alignement socratique et soumet les choix à un arbitrage mathématique rigoureux.
 
 ---
 
@@ -21,17 +21,18 @@ flowchart LR
 
 ### Étape 1 : Entonnoir Socratique (5 Questions Fermées)
 1. Si `.agents/rules/PRODUCT.md` contient déjà le cadrage, extraire les contraintes de manière autonome.
-2. Sinon, soumettre à l'utilisateur le [Questionnaire Socratique en 5 Questions](references/socratic_questionnaire.md) (`ask_question`) :
+2. Sinon, soumettre à l'utilisateur le [Questionnaire Socratique en 5 Questions](references/socratic_questionnaire.md) via **`ask_question`** (Antigravity) ou **`question`** (OpenCode V2) :
    - Horizon temporel (MVP 48h vs Monétisation S1 vs Infra pérenne)
    - Profil utilisateur & connectivité (3G instable vs Fibre/SaaS vs Développeurs)
    - Canal transactionnel (Mobile Money vs CB/Stripe vs Zéro transaction)
    - Canal d'engagement (WhatsApp vs PWA/Web vs Native/CLI)
    - Dépendances & verrous réglementaires
+   - *Capture visuelle optionnelle :* si une URL concurrente/référence est citée, exécuter `node .agents/skills/san_designer/scripts/export_png.mjs --url=<url> --viewports=desktop,mobile` avant de conclure le cadrage.
 
-### Étape 2 : Exploration Parallèle Éclaireur + Architecte
-Déployer simultanément 2 sous-agents complémentaires :
-1. **`san-researcher`** (`Model: 'flash'`, sandbox) : Analyse de l'état de l'art, retours d'expérience et benchmarks concurrentiels.
-2. **`san-architect`** (`Model: 'pro'`, lecture seule) : Examen des tensions structurelles et réalisation d'un **Pre-Mortem** (anticipation des 3 principales causes de défaillance systémique).
+### Étape 2 : Exploration Parallèle Éclaireur + Architecte (Dual-Harness)
+Déployer simultanément 2 agents complémentaires via **Dual-Harness** (`swarm(action: "add", model: "gemini-4-hydrogen-xhigh", ...)` sous Antigravity ou **`subagent`** sous OpenCode V2 selon `.agents/models.json`, jamais `invoke_subagent(Model: "inherit")`) :
+1. **`san-researcher`** (sandbox lecture) : Analyse de l'état de l'art, benchmarks et captures visuelles PNG.
+2. **`san-architect`** (lecture seule) : Examen des tensions structurelles et réalisation d'un **Pre-Mortem** (anticipation des 3 principales causes de défaillance systémique).
 Pour les contextes émergents (Afrique centrale/Ouest), consulter les [Signaux Marché Terrain](references/congo_market_signals.md).
 
 ### Étape 3 : Conception de 3 Pistes Viables aux Compromis Honnêtes

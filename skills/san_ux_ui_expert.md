@@ -1,17 +1,22 @@
 ---
 name: san_ux_ui_expert
 title: Lead Frontend & Mobile Engineer (React.js, React Native, Expo, Tailwind CSS, TypeScript Strict)
-version: 2.0.0
+version: "2.2.0"
 type: domain_expert
-harness: google_antigravity_cli
+harness: dual_harness
+models_config: ".agents/models.json"
 routing:
-  orchestrator:
-    nominal: "argon-latest-max"
-    fallback_1: "gemini-3.1-pro-high"
-    fallback_2: "gemini-3.8-flash-high"
-  subagents:
-    coder_front: "san-coder-front" # flash
-    auditor: "san-qa-auditor" # pro (fail-closed, WCAG 2.1 AAA, CLS < 0.05)
+  antigravity:
+    orchestrator: "gemini-4-argon-high"
+    executor: "gemini-4-hydrogen-xhigh"
+    primitive: "swarm"
+  opencode_v2:
+    orchestrator: "opencode-go/hy4"
+    executor: "opencode-go/deepseek-v4-pro"
+    primitive: "subagent"
+  workers:
+    coder_front: "san-coder-front"
+    auditor: "san-qa-auditor"
 triggers:
   - "san_ux_ui_expert"
   - "implémente l'interface"

@@ -168,19 +168,24 @@ for target in "${AI_CACHE_TARGETS[@]}"; do
     fi
 done
 
-# 6. Verrouillage hermétique Étage 1 : .gitignore racine
-echo -e "\n${BLUE}[4/5] Verrouillage hermétique dans le .gitignore racine...${NC}"
-GITIGNORE_PATH="${GIT_ROOT}/.gitignore"
-touch "$GITIGNORE_PATH"
+# Helper réutilisable d'injection idempotente du bloc d'isolation AI & Python bytecode
+inject_isolation_block() {
+    local target_file="$1"
+    local marker="# --- ANTIGRAVITY AI ISOLATION (san_*) ---"
 
-GITIGNORE_MARKER="# --- ANTIGRAVITY AI ISOLATION (san_*) ---"
-if ! grep -q "$GITIGNORE_MARKER" "$GITIGNORE_PATH"; then
-    cat << 'EOF' >> "$GITIGNORE_PATH"
+    touch "$target_file"
+    if ! grep -q "$marker" "$target_file"; then
+        cat << 'EOF' >> "$target_file"
 
 # --- ANTIGRAVITY AI ISOLATION (san_*) ---
 # Espace souverain local Antigravity (Zéro fuite Git de configuration locale)
 /.agents/
 /GEMINI.md
+
+# Hygiène Python bytecode
+__pycache__/
+*.py[cod]
+*$py.class
 
 # Résidus tiers archivés
 /.claude/
@@ -194,43 +199,34 @@ if ! grep -q "$GITIGNORE_MARKER" "$GITIGNORE_PATH"; then
 /.copilot/
 # ----------------------------------------
 EOF
-    echo -e "${GREEN}[OK] Règles d'isolation insérées dans ${GITIGNORE_PATH}${NC}"
-else
-    echo -e "${GREEN}[OK] .gitignore contient déjà le bloc d'isolation Antigravity.${NC}"
-fi
+        echo -e "${GREEN}[OK] Règles d'isolation + hygiène Python insérées dans ${target_file}${NC}"
+    else
+        if ! grep -q "__pycache__/" "$target_file"; then
+            cat << 'EOF' >> "$target_file"
+
+# Hygiène Python bytecode (san_*)
+__pycache__/
+*.py[cod]
+*$py.class
+EOF
+            echo -e "${GREEN}[OK] Règles d'hygiène Python ajoutées à ${target_file}${NC}"
+        else
+            echo -e "${GREEN}[OK] ${target_file} contient déjà le bloc d'isolation Antigravity + hygiène Python.${NC}"
+        fi
+    fi
+}
+
+# 6. Verrouillage hermétique Étage 1 : .gitignore racine
+echo -e "\n${BLUE}[4/5] Verrouillage hermétique dans le .gitignore racine...${NC}"
+GITIGNORE_PATH="${GIT_ROOT}/.gitignore"
+inject_isolation_block "$GITIGNORE_PATH"
 
 # 7. Verrouillage hermétique Étage 2 : .git/info/exclude (Exclusion locale non commitée)
 echo -e "\n${BLUE}[5/5] Verrouillage hermétique dans l'exclusion locale (.git/info/exclude)...${NC}"
 EXCLUDE_PATH=$(git rev-parse --git-path info/exclude)
 EXCLUDE_DIR=$(dirname "$EXCLUDE_PATH")
-
 mkdir -p "$EXCLUDE_DIR"
-touch "$EXCLUDE_PATH"
-
-if ! grep -q "$GITIGNORE_MARKER" "$EXCLUDE_PATH"; then
-    cat << 'EOF' >> "$EXCLUDE_PATH"
-
-# --- ANTIGRAVITY AI ISOLATION (san_*) ---
-# Espace souverain local Antigravity (Zéro fuite Git de configuration locale)
-/.agents/
-/GEMINI.md
-
-# Résidus tiers archivés
-/.claude/
-/CLAUDE.md
-/.opencode/
-/.poolside/
-/.cursor/
-/.cursorrules/
-/.windsurf/
-/.windsurfrules/
-/.copilot/
-# ----------------------------------------
-EOF
-    echo -e "${GREEN}[OK] Règles d'isolation insérées dans ${EXCLUDE_PATH}${NC}"
-else
-    echo -e "${GREEN}[OK] ${EXCLUDE_PATH} contient déjà le bloc d'isolation Antigravity.${NC}"
-fi
+inject_isolation_block "$EXCLUDE_PATH"
 
 echo -e "\n${GREEN}${BOLD}=== [SUCCÈS] Isolation Git non-destructive validée. Zéro perte de données, AGENTS.md intact. ===${NC}"
 exit 0

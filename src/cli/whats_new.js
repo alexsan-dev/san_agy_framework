@@ -4,9 +4,25 @@
  * ==============================================================================
  */
 
-export const LATEST_WHATS_NEW_VERSION = '2.1.0';
+export const LATEST_WHATS_NEW_VERSION = '2.2.0';
 
 export const WHATS_NEW = {
+  '2.2.0': {
+    version: '2.2.0',
+    date: '2026-11-14',
+    title: "What's New on san-agy v2.2.0 — Dual-Harness (Antigravity + OpenCode V2), Models CLI & Transcriber",
+    summary:
+      'Architecture Dual-Harness (Antigravity swarm + OpenCode V2 subagents), commande san-framework models (.agents/models.json + opencode.json), 19e skill san_transcriber, alignement socratique et capture Playwright --url.',
+    highlights: [
+      "What's New on san-agy v2.2.0 : Dual-Harness natif Google Antigravity (swarm gemini-4-hydrogen-xhigh) & OpenCode V2 (opencode.json avec 8 sous-agents san-*).",
+      'Nouvelle commande CLI `san-framework models` pilotant `.agents/models.json` (Profil Exécuteur Unifié) et resynchronisant automatiquement `opencode.json` V2.',
+      'Nouveau 19e skill `san_transcriber` (`roadmaps/transcripts/`) : relais de fin de quota avec Protocole de Relais Sceptique (Doubt & Verify) annoncé au SessionStart.',
+      'Dé-lobotomisation cognitive : alignement socratique obligatoire avant délégation de roadmap, capture web live `export_png.mjs --url` (Desktop/Mobile) et Studio UI 5 états.',
+      'Réparation chirurgicale de `stop_guard.mjs` (exemption design/, logos/, opencode.json + filtre mtimeMs anti-faux-positifs) et Hooks API v2 (`systemMessage`).',
+      'Déduplication stricte (`cmp -s`) des scripts partagés (`export_png.mjs`, `archive_roadmap.sh`, `svg_to_png.mjs`) et mode léger `--light` (`.agents/skills.json`).',
+      'Architecture Contract-First, Architectural Fitness Functions, Linter Géométrique DOM (`--audit-dom`) et continuité Map-First (`san_cartographer` + `REPO_MAP.md`).'
+    ]
+  },
   '2.1.0': {
     version: '2.1.0',
     date: '2026-11-14',
@@ -26,6 +42,8 @@ export const WHATS_NEW = {
     ]
   }
 };
+
+export const WHATS_NEW_DATA = WHATS_NEW['2.2.0'];
 
 const ANSI = {
   reset: '\x1b[0m',
@@ -57,9 +75,13 @@ export function formatWhatsNewTerminal(version = LATEST_WHATS_NEW_VERSION, { use
     ? ANSI
     : { reset: '', bold: '', cyan: '', brightCyan: '', green: '', yellow: '', gray: '' };
 
+  const headerLine = entry.title.startsWith("What's New on san-agy")
+    ? `${c.brightCyan}${c.bold}${entry.title}${c.reset} ${c.gray}(${entry.date})${c.reset}`
+    : `${c.brightCyan}${c.bold}What's New on san-agy v${entry.version}${c.reset} ${c.gray}(${entry.date} · ${entry.title})${c.reset}`;
+
   const lines = [
     `${c.cyan}------------------------------------------------------------${c.reset}`,
-    `${c.brightCyan}${c.bold}What's New on san-agy v${entry.version}${c.reset} ${c.gray}(${entry.date} · ${entry.title})${c.reset}`,
+    headerLine,
     `${c.gray}${entry.summary}${c.reset}`,
     ''
   ];
@@ -90,6 +112,7 @@ export function formatWhatsNewSessionBanner(version = LATEST_WHATS_NEW_VERSION, 
 export default {
   LATEST_WHATS_NEW_VERSION,
   WHATS_NEW,
+  WHATS_NEW_DATA,
   getWhatsNewEntry,
   formatWhatsNewTerminal,
   formatWhatsNewSessionBanner

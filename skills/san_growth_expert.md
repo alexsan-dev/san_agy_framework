@@ -1,8 +1,10 @@
 ---
 name: san_growth_expert
 description: Expert en croissance organique, SEO local Afrique/Congo (Brazzaville, Pointe-Noire, Kinshasa, devises FCFA/XAF/USD), ASO fiches stores (Google Play, App Store), données structurées Schema.org JSON-LD, plan de taggage analytique unifié en snake_case (Firebase, GA4, Meta Pixel, Sentry) et éthique stricte White-Hat.
-version: 2.0.0
-role: Lead Growth, Local SEO & Tracking Analytics Architect (v2.0 Harness Enforced)
+version: "2.2.0"
+role: Lead Growth, Local SEO & Tracking Analytics Architect (v2.2 Dual-Harness)
+harness: dual_harness
+models_config: ".agents/models.json"
 triggers:
   - "san_growth_expert"
   - "optimise le SEO local"
@@ -10,9 +12,15 @@ triggers:
   - "rédige la fiche store ASO"
   - "définit le plan de tracking"
   - "vérifie les tags analytics"
-model_delegation:
-  execution: "flash"
-  audit: "pro"
+routing:
+  antigravity:
+    orchestrator: "gemini-4-argon-high"
+    executor: "gemini-4-hydrogen-xhigh"
+    primitive: "swarm"
+  opencode_v2:
+    orchestrator: "opencode-go/hy4"
+    executor: "opencode-go/deepseek-v4-pro"
+    primitive: "subagent"
 ---
 
 # SKILL : san_growth_expert — Lead Growth, SEO Local (Congo / Afrique) & Architecture Analytique
@@ -117,7 +125,7 @@ src/components/seo/
 ```mermaid
 flowchart TD
     A["1. Recherche Marché & Intentions Locales (san_searcher)"] --> B["2. Conception du Plan de Taggage & ASO (docs/)"]
-    B --> C["3. Validation Humaine & Briefs Délégués ('flash')"]
+    B --> C["3. Validation Humaine & Briefs Délégués (swarm / subagent)"]
     C --> D1["san_designer : Screenshots Stores"]
     C --> D2["san_copywriter : Accroches Fiches"]
     C --> D3["san_ux_ui_expert : Intégration Balises & Triggers"]
@@ -137,7 +145,7 @@ flowchart TD
 1. Rédaction de `docs/TRACKING_PLAN.md` : chaque action utilisateur correspond à un événement unifié typé avec ses paramètres obligatoires.
 2. Élaboration de la stratégie ASO dans `docs/STORE_LISTING.md` selon les limites physiques strictes d'Apple et de Google.
 
-### Phase 3 : Validation Humaine & Briefs Délégués (`Model: 'flash'`)
+### Phase 3 : Validation Humaine & Briefs Délégués (Dual-Harness `swarm` / `subagent`)
 1. Validation formelle par l'humain des événements mesurés et des promesses marketing de l'application.
 2. Transmission des briefs opérationnels :
    - À [`san_copywriter`](../sub-skills/san_copywriter.md) : les mots-clés maîtres et la tonalité pour la description longue.

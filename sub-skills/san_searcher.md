@@ -1,17 +1,21 @@
 ---
 name: san_searcher
 title: Documentaliste de Haute Précision, Veilleur Technique et Extracteur de Savoir
-version: 2.0.0
+version: "2.2.0"
 type: sub_skill
 role: Official Documentation Specialist & Tech Intelligence Scout
-harness: google_antigravity_cli
+harness: dual_harness
+models_config: ".agents/models.json"
 routing:
-  orchestrator:
-    nominal: "argon-latest-max"
-    fallback_1: "gemini-3.1-pro-high"
-    fallback_2: "gemini-3.8-flash-high"
+  antigravity:
+    orchestrator: "gemini-4-argon-high"
+    executor: "gemini-4-hydrogen-xhigh"
+    primitive: "swarm"
+  opencode_v2:
+    orchestrator: "opencode-go/hy4"
+    executor: "opencode-go/deepseek-v4-pro"
+    primitive: "subagent"
   dedicated_agent: "san-researcher"
-  agent_model: "flash"
 triggers:
   - "san_searcher"
   - "cherche la documentation"
@@ -451,5 +455,5 @@ flowchart TD
 - [`../skills/san_executer.md`](../skills/san_executer.md) : Déclenche `san_searcher` lorsqu'une erreur d'interfaçage bloque la validation de la livraison.
 
 ### Synergies avec les autres sous-skills :
-- [`san_subagent_manager.md`](san_subagent_manager.md) : Instancie et calibre le sous-agent dédié à la recherche documentaire (`Model: 'inherit'`) avec outils web activés et outils de modification désactivés.
+- [`san_subagent_manager.md`](san_subagent_manager.md) : Instancie et calibre le worker dédié à la recherche documentaire (`swarm` / `subagent` via `.agents/models.json`) avec outils web activés et outils de modification désactivés.
 - [`san_doc_keeper.md`](san_doc_keeper.md) : Intègre les conclusions des fiches de recherche dans la documentation globale du projet (`README.md`, `docs/ARCHITECTURE.md`).

@@ -3,18 +3,19 @@ name: san_executer
 description: Déclenché quand l'utilisateur souhaite exécuter une roadmap active, implémenter une fonctionnalité full-stack, backend ou frontend de bout en bout avec orchestration swarm, run_workflow et quality gates.
 ---
 
-# `san_executer` — Chef d'Orchestre d'Implémentation & Delivery v2.1
+# `san_executer` — Chef d'Orchestre d'Implémentation & Dual-Harness v2.2
 
-`san_executer` est le moteur d'exécution autonome du framework **Antigravity (`san_*`)**. Il orchestre les roadmaps sous les lois du **Map-First**, du **Contract-First**, de la **Dialectique à 2 Approches**, de l'exécution parallèle **`swarm` / `run_workflow`** et du **Double Quality Gate Fail-Closed**.
+`san_executer` est le moteur d'exécution autonome du framework **Antigravity / OpenCode (`san_*` v2.2)**. Il orchestre les roadmaps sous les lois du **Map-First**, du **Contract-First**, de la **Dialectique à 2 Approches**, du routage **Dual-Harness (`swarm` | `subagent` / `run_workflow`)** et du **Double Quality Gate Fail-Closed**.
 
 ---
 
-## 1. DÉCLENCHEURS & DOCTRINE MODÈLES v2.1
+## 1. DÉCLENCHEURS & DOCTRINE DUAL-HARNESS v2.2
 
 - *« Exécute la roadmap active /roadmaps/... »* | *« Implémente la fonctionnalité [X] de bout en bout »* | *« Reprends à la Phase [N] »*
-- **Orchestrateur Souverain (`Argon`/`Carbon`) :** Déléguer sans jamais demander à l'utilisateur `/model` ni le nom d'un agent.
-- **Swarm Hydrogen XHigh :** Utiliser `swarm(action: "add", model: "gemini-4-hydrogen-xhigh", ...)` (ou `run_workflow` avec `scripts/autonomous_slice_workflow.py`).
+- **Orchestrateur Souverain (`Argon`/`Carbon` | OpenCode V2) :** Déléguer sans jamais demander à l'utilisateur `/model` ni le nom d'un agent.
+- **Dual-Harness (`.agents/models.json` / `san-framework models`) :** Sous Antigravity, spawner via `swarm(action: "add", model: "gemini-4-hydrogen-xhigh", ...)` (ou `run_workflow` avec `scripts/autonomous_slice_workflow.py`) ; sous OpenCode V2, utiliser la primitive native **`subagent`** mappée sur les profils `.agents/models.json`.
 - **Interdiction de `inherit` :** `invoke_subagent(Model: "inherit")` est **INTERDIT** sur `Argon`/`Carbon` (brûle le quota hebdomadaire et risque un fallback caché sur `gemini-3.8-flash-tiered`).
+- **Relais Sceptique (`san_transcriber`) :** Si un transcript actif existe dans `roadmaps/transcripts/` ou avant compaction longue, consigner les décisions dans `roadmaps/transcripts/TRANSCRIPT_*.md` et valider chaque artefact sur disque avant de cocher `- [x]`.
 
 ---
 
@@ -36,7 +37,7 @@ flowchart TD
 - En `FULL_STACK`, geler via `san-architect` les contrats OpenAPI 3.1 / Zod / TypeBox, les assertions Bruno et les **Architectural Fitness Functions** avant tout codage parallèle.
 
 ### Étape 2 : Délégation Parallèle (`parallel_slice_execution`)
-- Spawner en parallèle `san-coder-back` et `san-coder-front` via `swarm(action: "add", model: "gemini-4-hydrogen-xhigh", workspace: "share")` ou via `run_workflow` :
+- Spawner en parallèle `san-coder-back` et `san-coder-front` via `swarm(action: "add", model: "gemini-4-hydrogen-xhigh", workspace: "share")` / `run_workflow` (Antigravity) ou **`subagent`** configuré dans `.agents/models.json` (OpenCode V2) :
 ```python
 import sys
 sys.path.insert(0, ".agents/skills/san_executer/scripts")

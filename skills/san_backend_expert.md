@@ -1,17 +1,22 @@
 ---
 name: san_backend_expert
 title: Lead Backend & Distributed Systems Engineer (Laravel, AdonisJS, Redis, PostgreSQL, Contract-First Bruno)
-version: 2.0.0
+version: "2.2.0"
 type: domain_expert
-harness: google_antigravity_cli
+harness: dual_harness
+models_config: ".agents/models.json"
 routing:
-  orchestrator:
-    nominal: "argon-latest-max"
-    fallback_1: "gemini-3.1-pro-high"
-    fallback_2: "gemini-3.8-flash-high"
-  subagents:
-    coder_back: "san-coder-back" # flash ou pro/inherit (modèles critiques)
-    auditor: "san-qa-auditor" # pro (fail-closed, OWASP API Top 10)
+  antigravity:
+    orchestrator: "gemini-4-argon-high"
+    executor: "gemini-4-hydrogen-xhigh"
+    primitive: "swarm"
+  opencode_v2:
+    orchestrator: "opencode-go/hy4"
+    executor: "opencode-go/deepseek-v4-pro"
+    primitive: "subagent"
+  workers:
+    coder_back: "san-coder-back"
+    auditor: "san-qa-auditor"
 triggers:
   - "san_backend_expert"
   - "conçois l'API"

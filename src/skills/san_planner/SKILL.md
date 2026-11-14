@@ -3,9 +3,9 @@ name: san_planner
 description: Déclenché quand l'utilisateur souhaite planifier un projet, concevoir une roadmap architecturale, découper une fonctionnalité complexe ou orchestrer un chantier technique.
 ---
 
-# `san_planner` — Planification Contract-First, Fitness Functions & Ordonnancement `Swarm`
+# `san_planner` — Planification Contract-First, Fitness Functions & Dual-Harness
 
-Ce runbook impératif régit la planification cartésienne et l'ordonnancement des développements dans le framework **Antigravity (`san_*` v2.1)**. Il impose la méthode du chemin critique (CPM), le **Contract-First**, les **Architectural Fitness Functions** et la **Preuve par le Code**.
+Ce runbook impératif régit la planification cartésienne et l'ordonnancement des développements dans **Antigravity / OpenCode (`san_*` v2.2)**. Il impose l'alignement socratique amont, la méthode du chemin critique (CPM), le **Contract-First**, les **Architectural Fitness Functions**, le routage **Dual-Harness** (`swarm` | `subagent` via `.agents/models.json` / `san-framework models`) et la **Preuve par le Code**.
 
 ---
 
@@ -13,20 +13,29 @@ Ce runbook impératif régit la planification cartésienne et l'ordonnancement d
 
 ```mermaid
 flowchart LR
-    E1["1. Éclaireur Map-First\n(san-researcher via swarm)"] --> E2["2. Pre-Mortem & Contract-First\n(san-architect via swarm)"]
+    E0["0. Alignement & Capture\n(ask_question + --url PNG)"] --> E1["1. Éclaireur Map-First\n(san-researcher)"]
+    E1 --> E2["2. Pre-Mortem & Contract-First\n(san-architect)"]
     E2 --> E3["3. Gel Contrats & Fitness\n(OpenAPI/Zod/TypeBox)"]
     E3 --> E4["4. Roadmap 6 Phases\n(Section 0 + CPM)"]
-    E4 --> E5["5. Handoff & Changelog\n(CHANGELOG.md)"]
+    E4 --> E5["5. Handoff & Archivage\n(CHANGELOG + archive_roadmap)"]
 ```
 
+### Étape 0 : Verrou d'Alignement Socratique & Inspection Visuelle (OBLIGATOIRE)
+1. **Avant de déléguer aux sous-agents** (`san-researcher`, `san-architect`), lever toute ambiguïté critique (cibles UI, périmètre MVP, contraintes) via **`ask_question`** (Antigravity) ou **`question`** (OpenCode V2) — jamais de supposition silencieuse.
+2. Si l'utilisateur cite une URL ou un site de référence, **capturer les pixels réels** avant toute spécification UI :
+   ```bash
+   node .agents/skills/san_designer/scripts/export_png.mjs --url=<https://...> --viewports=desktop,mobile
+   ```
+   Puis lire les PNG avec `read_file` / `view_file` et poser les questions de cadrage restantes.
+
 ### Étape 1 : Cartographie Factuelle Map-First via `san-researcher`
-1. Si le besoin amont est flou ou non chiffré, router d'abord vers [san_brainstorming](../san_brainstorming/SKILL.md).
-2. Spawner **`san-researcher`** via `swarm(action: "add", model: "gemini-4-hydrogen-xhigh", ...)` (jamais `invoke_subagent(Model: "inherit")` sur `Argon`/`Carbon`) en lisant d'abord `.agents/cache/REPO_MAP.md` pour auditer la codebase réelle :
+1. Si le besoin amont reste flou ou non chiffré, router d'abord vers [san_brainstorming](../san_brainstorming/SKILL.md).
+2. Spawner **`san-researcher`** en **Dual-Harness** (`swarm(action: "add", model: "gemini-4-hydrogen-xhigh", ...)` sous Antigravity par défaut ou le profil exécuteur `.agents/models.json` ; `subagent` sous OpenCode V2 via `san-framework models` — jamais `invoke_subagent(Model: "inherit")` sur `Argon`/`Carbon`) en lisant d'abord `.agents/cache/REPO_MAP.md` pour auditer la codebase réelle :
    - Schémas BDD existants, migrations, indexations et modules/frontières.
    - Points d'entrée API, contrats existants et état passant des suites de tests.
 
 ### Étape 2 : Pre-Mortem, Contract-First & Fitness Functions via `san-architect`
-1. Spawner **`san-architect`** via `swarm(action: "add", model: "gemini-4-hydrogen-xhigh", ...)` (lecture seule) pour livrer la **Section 0 obligatoire** :
+1. Spawner **`san-architect`** en lecture seule (`swarm` sous Antigravity | `subagent` sous OpenCode V2 selon `.agents/models.json`) pour livrer la **Section 0 obligatoire** :
    - **Mini-ADR (2 Architectures Viables) :** Comparer deux options réalistes avec compromis lucides (zéro option épouvantail).
    - **Pre-Mortem Systémique :** Anticiper les 3 causes exactes de rupture à 6 mois et leurs mitigations.
    - **Architecture Contract-First :** Spécifier les contrats partagés à **générer et geler** (OpenAPI 3.1 + schémas **Zod** / **TypeBox** + DTOs + Bruno `.bru`) **avant** tout codage parallèle Front/Back.

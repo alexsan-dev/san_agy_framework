@@ -1,19 +1,22 @@
 #!/usr/bin/env node
 // ==============================================================================
-// SCRIPT : export_png.mjs (v2.1.0)
+// SCRIPT : export_png.mjs (v2.2.0)
 // MODULES : san_designer & san_exporter
-// FRAMEWORK : Antigravity (san_*)
+// FRAMEWORK : Antigravity / Dual-Harness (san_*)
 // DESCRIPTION : Pipeline Playwright de capture PNG multi-viewports sur instance
-//               Chromium unique avec micro-serveur HTTP éphémère anti-CORS,
+//               Chromium unique : fichiers locaux HTML (micro-serveur HTTP
+//               éphémère anti-CORS) ET URLs web distantes (--url), mode --full-page,
 //               Linter Géométrique DOM (--audit-dom), rapport JSON (--report)
 //               et registre d'intégrité SHA-256.
 // ==============================================================================
 
 import http from 'node:http';
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import process from 'node:process';
+import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
 
 const ANSI = {
@@ -52,33 +55,57 @@ const VIEWPORT_PRESETS = {
 
 function printHelp() {
   console.log(`
-${ANSI.bold}${ANSI.blue}=== Moteur d'Exportation & Linter Géométrique DOM (export_png.mjs v2.1) ===${ANSI.reset}
+${ANSI.bold}${ANSI.blue}=== Moteur d'Exportation & Linter Géométrique DOM (export_png.mjs v2.2) ===${ANSI.reset}
 
 ${ANSI.bold}UTILISATION :${ANSI.reset}
   node export_png.mjs [options]
   node export_png.mjs --input <mockup.html> [--output <out.png>] [--target <cible>]
   node export_png.mjs --input <mockup.html> --viewports=mobile,tablet,desktop --audit-dom --report=audit.json
+  node export_png.mjs --url=<https://exemple.com[,https://...]> [--viewports=desktop,mobile] [--full-page]
 
 ${ANSI.bold}OPTIONS COMPATIBLES :${ANSI.reset}
   -i, --input, -f, --file <fichier>   Fichier HTML source à capturer
-  -o, --output, --out <fichier>       Chemin du PNG généré (copie du rendu principal si multi-viewports)
+  -u, --url <url[,url2,...]>          URL(s) distante(s) HTTP(S) à capturer en live (défaut: desktop,mobile)
+      --full-page                     Capture la page complète scrollable (fullPage: true)
+  -o, --output, --out <fichier|dir>   Chemin du PNG généré ou dossier de sortie (en mode --url)
   -t, --target <cible|dossier>        Preset (playstore, appstore, web, feature, desktop, print, ipad, banner) ou dossier
-  -d, --dir <dossier>                 Mode lot : exporte tous les .html d'un dossier
+  -d, --dir <dossier>                 Mode lot HTML (ou dossier de sortie en mode --url, défaut: design/references)
   -w, --width <px>                    Largeur explicite du viewport en pixels
       --height <px>                   Hauteur explicite du viewport en pixels
   -s, --scale <float>                 Facteur d'échelle DPI (deviceScaleFactor, défaut: 1 ou CANVAS_SPEC)
       --wait <ms>                     Délai de stabilisation après chargement/resize en ms (défaut: 250)
   -m, --manifest <fichier>            Registre SHA-256 (défaut: design/export_manifest.json, --no-manifest pour désactiver)
 
-${ANSI.bold}OPTIONS MULTI-VIEWPORTS & LINTER DOM (v2.1) :${ANSI.reset}
+${ANSI.bold}OPTIONS MULTI-VIEWPORTS & LINTER DOM (v2.2) :${ANSI.reset}
       --viewports <liste>             Liste CSV sur Chromium unique (ex: mobile,tablet,desktop ou 390x844)
       --multi-viewport                Raccourci pour --viewports=mobile,tablet,desktop (390x844, 820x1180, 1440x900)
-      --audit-dom                     Exécute le linter géométrique DOM via page.evaluate() (actif par défaut)
+      --audit-dom                     Exécute le linter géométrique DOM via page.evaluate() (actif par défaut sur HTML)
       --no-audit-dom                  Désactive le linter géométrique DOM
       --report <path.json>            Écrit le rapport JSON complet de l'audit géométrique DOM
       --strict-dom                    Retourne un code non-zéro si un horizontalOverflow bloquant est détecté
   -h, --help                          Affiche cette aide et termine l'exécution
 `);
+}
+
+function appendParsedUrls(targetList, rawValue) {
+  const tokens = String(rawValue || '').split(',').map(s => s.trim()).filter(Boolean);
+  if (tokens.length === 0) {
+    throw new Error('URL vide fournie pour --url.');
+  }
+  for (const token of tokens) {
+    let parsed;
+    try {
+      parsed = new URL(token);
+    } catch {
+      throw new Error(`URL invalide : ${token}`);
+    }
+    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+      throw new Error(`Protocole non supporté pour --url (http/https requis) : ${token}`);
+    }
+    if (!targetList.includes(token)) {
+      targetList.push(token);
+    }
+  }
 }
 
 /**
@@ -88,6 +115,8 @@ function parseCliArgs(argv) {
   const opts = {
     help: false,
     inputFile: '',
+    urls: [],
+    fullPage: false,
     targetDir: '',
     targetPresetName: '',
     rawTargetArg: '',
@@ -100,6 +129,7 @@ function parseCliArgs(argv) {
     viewportsRaw: '',
     multiViewport: false,
     auditDom: true,
+    auditDomExplicit: false,
     strictDom: false,
     reportPath: '',
     manifestPath: 'design/export_manifest.json',
@@ -127,6 +157,14 @@ function parseCliArgs(argv) {
       const { val, consumedNext } = readValue(arg, i);
       opts.inputFile = val;
       if (consumedNext) i++;
+    } else if (flag === '--url' || flag === '-u') {
+      const { val, consumedNext } = readValue(arg, i);
+      appendParsedUrls(opts.urls, val);
+      if (consumedNext) i++;
+    } else if (flag === '--full-page' || flag === '--fullpage') {
+      opts.fullPage = true;
+    } else if (flag === '--no-full-page') {
+      opts.fullPage = false;
     } else if (flag === '--target' || flag === '-t') {
       const { val, consumedNext } = readValue(arg, i);
       opts.rawTargetArg = val;
@@ -180,15 +218,19 @@ function parseCliArgs(argv) {
       opts.multiViewport = true;
     } else if (flag === '--audit-dom') {
       opts.auditDom = true;
+      opts.auditDomExplicit = true;
     } else if (flag === '--no-audit-dom') {
       opts.auditDom = false;
+      opts.auditDomExplicit = true;
     } else if (flag === '--strict-dom') {
       opts.strictDom = true;
       opts.auditDom = true;
+      opts.auditDomExplicit = true;
     } else if (flag === '--report') {
       const { val, consumedNext } = readValue(arg, i);
       opts.reportPath = val;
       opts.auditDom = true;
+      opts.auditDomExplicit = true;
       if (consumedNext) i++;
     } else if (flag === '--manifest' || flag === '-m') {
       const { val, consumedNext } = readValue(arg, i);
@@ -197,7 +239,9 @@ function parseCliArgs(argv) {
     } else if (flag === '--no-manifest') {
       opts.noManifest = true;
     } else if (!arg.startsWith('-')) {
-      if (fs.existsSync(arg) && fs.statSync(arg).isDirectory()) {
+      if (/^https?:\/\//i.test(arg)) {
+        appendParsedUrls(opts.urls, arg);
+      } else if (fs.existsSync(arg) && fs.statSync(arg).isDirectory()) {
         opts.targetDir = arg;
       } else if (!opts.inputFile) {
         opts.inputFile = arg;
@@ -217,11 +261,16 @@ function parseCliArgs(argv) {
     }
   }
 
+  // En mode --url, l'audit DOM ne s'exécute que s'il est explicitement demandé (--audit-dom / --report / --strict-dom)
+  if (opts.urls.length > 0 && !opts.inputFile && !opts.auditDomExplicit) {
+    opts.auditDom = false;
+  }
+
   return opts;
 }
 
 /**
- * Résout la liste ordonnée des viewports pour le mode Multi-Viewports.
+ * Résout la liste ordonnée des viewports pour le mode Multi-Viewports (et le défaut --url).
  */
 function resolveViewports(opts) {
   let tokens = [];
@@ -229,6 +278,16 @@ function resolveViewports(opts) {
     tokens = opts.viewportsRaw.split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
   } else if (opts.multiViewport) {
     tokens = ['mobile', 'tablet', 'desktop'];
+  } else if (opts.urls.length > 0 && !opts.inputFile) {
+    if (opts.targetPresetName && TARGET_PRESETS[opts.targetPresetName]) {
+      tokens = [opts.targetPresetName];
+    } else if (opts.cliWidth || opts.cliHeight) {
+      const w = opts.cliWidth || 1440;
+      const h = opts.cliHeight || 900;
+      return [{ name: `${w}x${h}`, width: w, height: h, label: `Custom (${w}x${h})` }];
+    } else {
+      tokens = ['desktop', 'mobile'];
+    }
   }
 
   if (tokens.length === 0) return [];
@@ -318,26 +377,159 @@ function computeSha256(filePath) {
 }
 
 /**
- * Résout Playwright depuis le script, le projet courant (mode --light) ou NODE_PATH.
+ * Collecte les répertoires parents jusqu'à la racine du système de fichiers.
+ */
+function collectAncestorDirs(startDir) {
+  const dirs = [];
+  let current = path.resolve(startDir);
+  while (current) {
+    dirs.push(current);
+    const parent = path.dirname(current);
+    if (parent === current) break;
+    current = parent;
+  }
+  return dirs;
+}
+
+/**
+ * Résout Playwright depuis le projet client, NODE_PATH, le script (ou realpath),
+ * le plugin Antigravity, san_agy_framework/node_modules ou le cache ~/.npm/_npx.
  */
 async function loadPlaywright() {
   const normalize = (mod) => (mod?.chromium ? mod : (mod?.default?.chromium ? mod.default : mod));
   try {
-    return normalize(await import('playwright'));
+    const primary = normalize(await import('playwright'));
+    if (primary && primary.chromium) return primary;
   } catch (primaryErr) {
-    const candidateBases = [process.cwd()];
+    const homeDir = os.homedir();
+    const candidateBases = [];
+    const seen = new Set();
+    const addBase = (dir) => {
+      if (!dir) return;
+      const resolved = path.resolve(dir);
+      const base = path.basename(resolved) === 'node_modules' ? path.dirname(resolved) : resolved;
+      if (!seen.has(base)) {
+        seen.add(base);
+        candidateBases.push(base);
+      }
+    };
+
+    for (const dir of collectAncestorDirs(process.cwd())) addBase(dir);
     if (process.env.NODE_PATH) {
-      candidateBases.push(...process.env.NODE_PATH.split(path.delimiter).filter(Boolean));
+      for (const p of process.env.NODE_PATH.split(path.delimiter).filter(Boolean)) addBase(p);
     }
 
-    for (const baseDir of candidateBases) {
-      try {
-        const req = createRequire(path.join(baseDir, '_san_resolve_.cjs'));
-        const mod = req('playwright');
-        if (mod && mod.chromium) return mod;
-      } catch {
-        // Essaie la base suivante
+    const scriptPath = fileURLToPath(import.meta.url);
+    for (const dir of collectAncestorDirs(path.dirname(scriptPath))) addBase(dir);
+    try {
+      const realScriptPath = fs.realpathSync(scriptPath);
+      if (realScriptPath !== scriptPath) {
+        for (const dir of collectAncestorDirs(path.dirname(realScriptPath))) addBase(dir);
       }
+    } catch {
+      // Ignore si realpath indisponible
+    }
+
+    addBase(path.join(homeDir, '.gemini', 'antigravity-cli', 'plugins', 'san-framework', 'node_modules'));
+    addBase('/home/alexsan-dev/PROJECTS/san_agy_framework/node_modules');
+    addBase(path.join(homeDir, '.npm-global', 'lib'));
+    addBase('/usr/local/lib');
+
+    const npxCacheDir = path.join(homeDir, '.npm', '_npx');
+    if (fs.existsSync(npxCacheDir)) {
+      try {
+        const entries = fs.readdirSync(npxCacheDir, { withFileTypes: true })
+          .filter(e => e.isDirectory())
+          .map(e => {
+            const fullPath = path.join(npxCacheDir, e.name);
+            let mtimeMs = 0;
+            try { mtimeMs = fs.statSync(fullPath).mtimeMs; } catch {}
+            return { fullPath, mtimeMs };
+          })
+          .sort((a, b) => b.mtimeMs - a.mtimeMs);
+        for (const entry of entries) addBase(entry.fullPath);
+      } catch {
+        // Ignore erreur lecture cache _npx
+      }
+    }
+
+    for (const pkgName of ['playwright', 'playwright-core']) {
+      for (const baseDir of candidateBases) {
+        try {
+          const req = createRequire(path.join(baseDir, '_san_resolve_.cjs'));
+          const mod = normalize(req(pkgName));
+          if (mod && mod.chromium) return mod;
+        } catch {
+          // Essaie la base suivante
+        }
+      }
+    }
+    throw primaryErr;
+  }
+}
+
+/**
+ * Localise un binaire Chromium dans ~/.cache/ms-playwright ou le système si besoin.
+ */
+function findCachedChromiumExecutable(chromium) {
+  const envExe = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH;
+  if (envExe && fs.existsSync(envExe)) return envExe;
+
+  try {
+    const defaultExe = chromium.executablePath();
+    if (defaultExe && fs.existsSync(defaultExe)) return defaultExe;
+  } catch {
+    // Ignore si executablePath() échoue
+  }
+
+  const browsersRoot = process.env.PLAYWRIGHT_BROWSERS_PATH || path.join(os.homedir(), '.cache', 'ms-playwright');
+  if (fs.existsSync(browsersRoot)) {
+    try {
+      const dirs = fs.readdirSync(browsersRoot, { withFileTypes: true })
+        .filter(d => d.isDirectory() && /^chromium(?:_headless_shell)?-\d+/.test(d.name))
+        .map(d => {
+          const rev = parseInt(d.name.split('-').pop(), 10) || 0;
+          const isHeadlessShell = d.name.startsWith('chromium_headless_shell');
+          return { name: d.name, rev, isHeadlessShell };
+        })
+        .sort((a, b) => (b.rev - a.rev) || (Number(a.isHeadlessShell) - Number(b.isHeadlessShell)));
+
+      const relCandidates = [
+        'chrome-linux64/chrome',
+        'chrome-linux/chrome',
+        'chrome-headless-shell-linux64/chrome-headless-shell',
+        'chrome-headless-shell-linux/chrome-headless-shell',
+        'chrome-mac/Chromium.app/Contents/MacOS/Chromium',
+        'chrome-win/chrome.exe'
+      ];
+      for (const dir of dirs) {
+        for (const rel of relCandidates) {
+          const candidate = path.join(browsersRoot, dir.name, rel);
+          if (fs.existsSync(candidate)) return candidate;
+        }
+      }
+    } catch {
+      // Ignore erreur parcours ms-playwright
+    }
+  }
+
+  for (const sysBin of ['/usr/bin/chromium', '/usr/bin/chromium-browser', '/usr/bin/google-chrome', '/usr/bin/google-chrome-stable']) {
+    if (fs.existsSync(sysBin)) return sysBin;
+  }
+  return null;
+}
+
+/**
+ * Lance Chromium headless avec fallback automatique sur ~/.cache/ms-playwright.
+ */
+async function launchChromiumBrowser(chromium) {
+  const args = ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'];
+  try {
+    return await chromium.launch({ headless: true, args });
+  } catch (primaryErr) {
+    const fallbackExe = findCachedChromiumExecutable(chromium);
+    if (fallbackExe) {
+      return chromium.launch({ headless: true, executablePath: fallbackExe, args });
     }
     throw primaryErr;
   }
@@ -627,12 +819,18 @@ function deriveViewportOutputPath(baseOutPath, viewportName) {
   return `${stem}-${viewportName}${ext}`;
 }
 
-function recordAssetManifest(manifestList, resolvedOutPath, absoluteHtmlPath, width, height, scale) {
+function formatSourceRef(sourcePathOrUrl) {
+  return /^https?:\/\//i.test(sourcePathOrUrl)
+    ? sourcePathOrUrl
+    : path.relative(process.cwd(), sourcePathOrUrl);
+}
+
+function recordAssetManifest(manifestList, resolvedOutPath, sourcePathOrUrl, width, height, scale) {
   const sha = computeSha256(resolvedOutPath);
   const stats = fs.statSync(resolvedOutPath);
   manifestList.push({
     file: path.relative(process.cwd(), resolvedOutPath),
-    source: path.relative(process.cwd(), absoluteHtmlPath),
+    source: formatSourceRef(sourcePathOrUrl),
     width: Math.round(width * scale),
     height: Math.round(height * scale),
     scale,
@@ -659,6 +857,58 @@ function printDomAuditSummary(label, domAudit) {
 }
 
 /**
+ * Exécute la boucle multi-viewports, captures PNG et audit DOM sur une page Chromium ouverte.
+ */
+async function captureViewportSet(page, activeViewports, opts, resolveOutPath, sourcePathOrUrl, scale, manifestList, auditResults) {
+  const renderedItems = [];
+  const sourceRef = formatSourceRef(sourcePathOrUrl);
+
+  for (const vp of activeViewports) {
+    const startTs = Date.now();
+    await page.setViewportSize({ width: vp.width, height: vp.height });
+    await page.evaluate(() => new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))));
+    if (opts.waitMs > 0) {
+      await page.waitForTimeout(opts.waitMs);
+    }
+
+    const outPath = resolveOutPath(vp);
+    fs.mkdirSync(path.dirname(outPath), { recursive: true });
+    await page.screenshot({ path: outPath, type: 'png', fullPage: opts.fullPage });
+
+    const { sha, sizeBytes } = recordAssetManifest(
+      manifestList,
+      outPath,
+      sourcePathOrUrl,
+      vp.width,
+      vp.height,
+      scale
+    );
+    const elapsed = Date.now() - startTs;
+
+    console.log(
+      `   ${ANSI.green}✔ EXPORT RÉUSSI${ANSI.reset} : ${path.relative(process.cwd(), outPath)} ` +
+      `[${vp.width}x${vp.height} @${scale}x | ${(sizeBytes / 1024).toFixed(1)} Ko | ${elapsed}ms | ${vp.label}]`
+    );
+    console.log(`   ${ANSI.gray}SHA-256 : ${sha.slice(0, 16)}...${ANSI.reset}`);
+
+    if (opts.auditDom) {
+      const domAudit = await runDomGeometricAudit(page);
+      printDomAuditSummary(vp.name, domAudit);
+      auditResults.push({
+        source: sourceRef,
+        output: path.relative(process.cwd(), outPath),
+        viewport: { name: vp.name, width: vp.width, height: vp.height, scale },
+        domAudit
+      });
+    }
+
+    renderedItems.push({ viewport: vp, outputPath: outPath });
+  }
+
+  return renderedItems;
+}
+
+/**
  * Capture un fichier HTML en mode mono-viewport ou multi-viewports sur une seule page Chromium.
  */
 async function captureHtmlFile(browser, filePath, baseOutPath, opts, viewports, serverBaseUrl, rootDir, manifestList, auditResults) {
@@ -682,8 +932,6 @@ async function captureHtmlFile(browser, filePath, baseOutPath, opts, viewports, 
   });
   const page = await context.newPage();
 
-  const renderedItems = [];
-
   try {
     const relativeToRoot = path.relative(rootDir, absoluteHtmlPath).split(path.sep).join('/');
     const fileUrl = `${serverBaseUrl}/${encodeURI(relativeToRoot)}`;
@@ -695,51 +943,16 @@ async function captureHtmlFile(browser, filePath, baseOutPath, opts, viewports, 
       }
     });
 
-    for (const vp of activeViewports) {
-      const startTs = Date.now();
-      await page.setViewportSize({ width: vp.width, height: vp.height });
-      await page.evaluate(() => new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))));
-      if (opts.waitMs > 0) {
-        await page.waitForTimeout(opts.waitMs);
-      }
-
-      const outPath = isMulti
-        ? deriveViewportOutputPath(baseOutPath, vp.name)
-        : path.resolve(baseOutPath);
-
-      fs.mkdirSync(path.dirname(outPath), { recursive: true });
-      await page.screenshot({ path: outPath, type: 'png', fullPage: false });
-
-      const { sha, sizeBytes } = recordAssetManifest(
-        manifestList,
-        outPath,
-        absoluteHtmlPath,
-        vp.width,
-        vp.height,
-        spec.scale
-      );
-      const elapsed = Date.now() - startTs;
-
-      console.log(
-        `   ${ANSI.green}✔ EXPORT RÉUSSI${ANSI.reset} : ${path.basename(outPath)} ` +
-        `[${vp.width}x${vp.height} @${spec.scale}x | ${(sizeBytes / 1024).toFixed(1)} Ko | ${elapsed}ms | ${vp.label}]`
-      );
-      console.log(`   ${ANSI.gray}SHA-256 : ${sha.slice(0, 16)}...${ANSI.reset}`);
-
-      let domAudit = null;
-      if (opts.auditDom) {
-        domAudit = await runDomGeometricAudit(page);
-        printDomAuditSummary(vp.name, domAudit);
-        auditResults.push({
-          source: path.relative(process.cwd(), absoluteHtmlPath),
-          output: path.relative(process.cwd(), outPath),
-          viewport: { name: vp.name, width: vp.width, height: vp.height, scale: spec.scale },
-          domAudit
-        });
-      }
-
-      renderedItems.push({ viewport: vp, outputPath: outPath });
-    }
+    const renderedItems = await captureViewportSet(
+      page,
+      activeViewports,
+      opts,
+      (vp) => (isMulti ? deriveViewportOutputPath(baseOutPath, vp.name) : path.resolve(baseOutPath)),
+      absoluteHtmlPath,
+      spec.scale,
+      manifestList,
+      auditResults
+    );
 
     // En mode multi-viewports avec --output/--out explicite sur fichier unique, copie le rendu principal vers --output
     if (isMulti && opts.hasExplicitOutput && opts.inputFile && renderedItems.length > 0) {
@@ -764,6 +977,108 @@ async function captureHtmlFile(browser, filePath, baseOutPath, opts, viewports, 
   }
 }
 
+function buildUrlSlug(urlStr) {
+  const u = new URL(urlStr);
+  const hostname = u.hostname.replace(/[^a-zA-Z0-9.-]/g, '_');
+  const rawPath = u.pathname.replace(/^\/+|\/+$/g, '');
+  const pathname = rawPath ? rawPath.replace(/[^a-zA-Z0-9._-]+/g, '-').replace(/^-+|-+$/g, '') : 'home';
+  const querySuffix = u.search
+    ? '-' + u.search.slice(1).replace(/[^a-zA-Z0-9_-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 32)
+    : '';
+  return `${hostname}-${pathname}${querySuffix}`;
+}
+
+function resolveUrlOutputPath(urlStr, vpName, opts, totalUrls, totalViewports) {
+  const slug = buildUrlSlug(urlStr);
+  if (opts.hasExplicitOutput) {
+    const out = opts.outputFile;
+    const isDirTarget = out.endsWith('/') || out.endsWith(path.sep) || (fs.existsSync(out) && fs.statSync(out).isDirectory());
+    if (isDirTarget) {
+      return path.resolve(out, `${slug}-${vpName}.png`);
+    }
+    if (totalUrls === 1) {
+      return totalViewports === 1 ? path.resolve(out) : deriveViewportOutputPath(out, vpName);
+    }
+    const resolved = path.resolve(out);
+    const ext = path.extname(resolved) || '.png';
+    const stem = path.extname(resolved) ? resolved.slice(0, -ext.length) : resolved;
+    return `${stem}-${slug}-${vpName}${ext}`;
+  }
+  const baseDir = opts.targetDir || 'design/references';
+  return path.resolve(baseDir, `${slug}-${vpName}.png`);
+}
+
+/**
+ * Capture une URL web distante en live via Playwright (domcontentloaded + networkidle 5s max + fonts.ready).
+ */
+async function captureLiveUrl(browser, targetUrl, opts, activeViewports, totalUrls, manifestList, auditResults) {
+  const scale = opts.cliScale || 1;
+  console.log(`\n${ANSI.bold}${ANSI.cyan}🌐 [export_png] Capture Live URL : ${targetUrl}${ANSI.reset}`);
+
+  const context = await browser.newContext({
+    viewport: { width: activeViewports[0].width, height: activeViewports[0].height },
+    deviceScaleFactor: scale,
+    ignoreHTTPSErrors: true
+  });
+  const page = await context.newPage();
+
+  try {
+    await page.goto(targetUrl, { waitUntil: 'domcontentloaded', timeout: 30000 });
+    try {
+      await page.waitForLoadState('networkidle', { timeout: 5000 });
+    } catch {
+      // Ne pas timeout sur les sites maintenant des flux analytics/SSE continus
+    }
+    try {
+      await page.evaluate(async () => {
+        if (document.fonts && document.fonts.ready) {
+          await Promise.race([
+            document.fonts.ready,
+            new Promise(r => setTimeout(r, 3000))
+          ]);
+        }
+      });
+    } catch {
+      // Ignore si document.fonts.ready indisponible
+    }
+
+    const renderedItems = await captureViewportSet(
+      page,
+      activeViewports,
+      opts,
+      (vp) => resolveUrlOutputPath(targetUrl, vp.name, opts, totalUrls, activeViewports.length),
+      targetUrl,
+      scale,
+      manifestList,
+      auditResults
+    );
+
+    if (opts.hasExplicitOutput && totalUrls === 1 && activeViewports.length > 1 && renderedItems.length > 0) {
+      const out = opts.outputFile;
+      const isDirTarget = out.endsWith('/') || out.endsWith(path.sep) || (fs.existsSync(out) && fs.statSync(out).isDirectory());
+      if (!isDirTarget) {
+        const resolvedExplicit = path.resolve(out);
+        const primary = renderedItems.find(r => r.viewport.name === 'desktop') || renderedItems[renderedItems.length - 1];
+        if (primary.outputPath !== resolvedExplicit) {
+          fs.mkdirSync(path.dirname(resolvedExplicit), { recursive: true });
+          fs.copyFileSync(primary.outputPath, resolvedExplicit);
+          recordAssetManifest(
+            manifestList,
+            resolvedExplicit,
+            targetUrl,
+            primary.viewport.width,
+            primary.viewport.height,
+            scale
+          );
+          console.log(`   ${ANSI.cyan}↳ Rendu principal (${primary.viewport.name}) copié vers :${ANSI.reset} ${path.relative(process.cwd(), resolvedExplicit)}`);
+        }
+      }
+    }
+  } finally {
+    await context.close();
+  }
+}
+
 function writeDomReportIfRequested(reportPath, auditResults, strictDom) {
   const summary = {
     filesAudited: new Set(auditResults.map(r => r.source)).size,
@@ -777,7 +1092,7 @@ function writeDomReportIfRequested(reportPath, auditResults, strictDom) {
   const blockingFailures = summary.totalHorizontalOverflow;
   const payload = {
     tool: 'san_designer/export_png.mjs',
-    version: '2.1.0',
+    version: '2.2.0',
     generatedAt: new Date().toISOString(),
     strictDom,
     passed: blockingFailures === 0,
@@ -820,7 +1135,7 @@ function updateIntegrityManifest(manifestPath, manifestList) {
 
   const payload = {
     updated_at: new Date().toISOString(),
-    engine: 'san_designer/san_exporter Playwright Headless v2.1',
+    engine: 'san_designer/san_exporter Playwright Headless v2.2',
     total_assets: combined.length,
     assets: combined
   };
@@ -836,14 +1151,14 @@ async function main() {
     process.exit(0);
   }
 
-  if (!opts.inputFile && !opts.targetDir) {
-    console.error(`${ANSI.red}❌ Vous devez spécifier --input <fichier.html> (ou --file) ou --dir / --target <dossier>.${ANSI.reset}`);
+  if (!opts.inputFile && !opts.targetDir && opts.urls.length === 0) {
+    console.error(`${ANSI.red}❌ Vous devez spécifier --input <fichier.html>, --url <https://...> ou --dir / --target <dossier>.${ANSI.reset}`);
     printHelp();
     process.exit(1);
   }
 
   const viewports = resolveViewports(opts);
-  console.log(`${ANSI.cyan}${ANSI.bold}=== ANTIGRAVITY STUDIO UI : PIPELINE PLAYWRIGHT EXPORT PNG v2.1 ===${ANSI.reset}`);
+  console.log(`${ANSI.cyan}${ANSI.bold}=== ANTIGRAVITY STUDIO UI : PIPELINE PLAYWRIGHT EXPORT PNG v2.2 ===${ANSI.reset}`);
 
   let chromium;
   try {
@@ -858,22 +1173,23 @@ async function main() {
 
   let browser;
   try {
-    browser = await chromium.launch({
-      headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
-    });
+    browser = await launchChromiumBrowser(chromium);
   } catch (launchErr) {
     console.error(`\n${ANSI.bold}${ANSI.red}❌ Impossible d'initialiser Chromium headless :${ANSI.reset} ${launchErr.message}`);
     console.error(`${ANSI.yellow}Exécutez : npx playwright install chromium${ANSI.reset}`);
     process.exit(1);
   }
 
-  const targetPath = opts.inputFile ? path.resolve(opts.inputFile) : path.resolve(opts.targetDir);
-  if (!fs.existsSync(targetPath)) {
-    await browser.close();
-    throw new Error(`Chemin cible introuvable : ${targetPath}`);
+  const hasHtmlMode = Boolean(opts.inputFile || (opts.targetDir && opts.urls.length === 0));
+  let serveRootDir = null;
+  if (hasHtmlMode) {
+    const targetPath = opts.inputFile ? path.resolve(opts.inputFile) : path.resolve(opts.targetDir);
+    if (!fs.existsSync(targetPath)) {
+      await browser.close();
+      throw new Error(`Chemin cible introuvable : ${targetPath}`);
+    }
+    serveRootDir = fs.statSync(targetPath).isDirectory() ? targetPath : path.dirname(targetPath);
   }
-  const serveRootDir = fs.statSync(targetPath).isDirectory() ? targetPath : path.dirname(targetPath);
 
   let ephemeralServer = null;
   const manifestList = [];
@@ -881,35 +1197,30 @@ async function main() {
   let blockingDomFailures = 0;
 
   try {
-    ephemeralServer = await createEphemeralServer(serveRootDir);
-    console.log(`${ANSI.gray}📡 Micro-serveur éphémère actif sur ${ephemeralServer.baseUrl} (anti-CORS)${ANSI.reset}`);
-
-    if (opts.inputFile) {
-      const defaultOut = opts.inputFile.replace(/\.html$/i, '.png');
-      const baseOut = opts.outputFile || (defaultOut === opts.inputFile ? `${opts.inputFile}.png` : defaultOut);
-      await captureHtmlFile(
-        browser,
-        opts.inputFile,
-        baseOut,
-        opts,
-        viewports,
-        ephemeralServer.baseUrl,
-        serveRootDir,
-        manifestList,
-        auditResults
-      );
-    } else if (opts.targetDir) {
-      const resolvedDir = path.resolve(opts.targetDir);
-      const files = fs.readdirSync(resolvedDir).filter(f => f.toLowerCase().endsWith('.html')).sort();
-      if (files.length === 0) {
-        console.warn(`${ANSI.yellow}⚠️ Aucun fichier .html trouvé dans ${resolvedDir}${ANSI.reset}`);
+    if (opts.urls.length > 0) {
+      for (const targetUrl of opts.urls) {
+        await captureLiveUrl(
+          browser,
+          targetUrl,
+          opts,
+          viewports,
+          opts.urls.length,
+          manifestList,
+          auditResults
+        );
       }
-      for (const f of files) {
-        const fullHtml = path.join(resolvedDir, f);
-        const baseOut = path.join(resolvedDir, f.replace(/\.html$/i, '.png'));
+    }
+
+    if (hasHtmlMode) {
+      ephemeralServer = await createEphemeralServer(serveRootDir);
+      console.log(`${ANSI.gray}📡 Micro-serveur éphémère actif sur ${ephemeralServer.baseUrl} (anti-CORS)${ANSI.reset}`);
+
+      if (opts.inputFile) {
+        const defaultOut = opts.inputFile.replace(/\.html$/i, '.png');
+        const baseOut = opts.outputFile || (defaultOut === opts.inputFile ? `${opts.inputFile}.png` : defaultOut);
         await captureHtmlFile(
           browser,
-          fullHtml,
+          opts.inputFile,
           baseOut,
           opts,
           viewports,
@@ -918,6 +1229,27 @@ async function main() {
           manifestList,
           auditResults
         );
+      } else if (opts.targetDir) {
+        const resolvedDir = path.resolve(opts.targetDir);
+        const files = fs.readdirSync(resolvedDir).filter(f => f.toLowerCase().endsWith('.html')).sort();
+        if (files.length === 0) {
+          console.warn(`${ANSI.yellow}⚠️ Aucun fichier .html trouvé dans ${resolvedDir}${ANSI.reset}`);
+        }
+        for (const f of files) {
+          const fullHtml = path.join(resolvedDir, f);
+          const baseOut = path.join(resolvedDir, f.replace(/\.html$/i, '.png'));
+          await captureHtmlFile(
+            browser,
+            fullHtml,
+            baseOut,
+            opts,
+            viewports,
+            ephemeralServer.baseUrl,
+            serveRootDir,
+            manifestList,
+            auditResults
+          );
+        }
       }
     }
 

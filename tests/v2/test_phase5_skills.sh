@@ -30,11 +30,11 @@ assert_true() {
 }
 
 echo "======================================================================"
-echo "  TEST PHASE 5 : RUNBOOKS DES 18 SKILLS, TAILLES, FRONTMATTERS & LIENS"
+echo "  TEST PHASE 5 : RUNBOOKS DES 19 SKILLS, TAILLES, FRONTMATTERS & LIENS"
 echo "======================================================================"
 echo ""
 
-# Liste exhaustive des 18 skills du framework Antigravity
+# Liste exhaustive des 19 skills du framework Antigravity
 ALL_SKILLS=(
   "san_backend_expert"
   "san_brainstorming"
@@ -53,6 +53,7 @@ ALL_SKILLS=(
   "san_searcher"
   "san_store_legal_expert"
   "san_subagent_manager"
+  "san_transcriber"
   "san_ux_ui_expert"
 )
 
@@ -193,14 +194,20 @@ assert_true "AUDITOR_PROMPT.md impose le verdict binaire LIVRABLE | RETOUR_ATELI
   'grep -qi "LIVRABLE" "'"${AUDITOR_TPL}"'" && grep -qi "RETOUR_ATELIER" "'"${AUDITOR_TPL}"'"'
 
 # ------------------------------------------------------------------------------
-# 6. Vérification des livrables v2.1 (Workflows Python, export_png v2, Studio Duel)
+# 6. Vérification des livrables v2.1 & v2.2 (Workflows Python, déduplication cmp -s,
+#    export_png --url, san_transcriber & wrappers v2.2.0)
 # ------------------------------------------------------------------------------
-info "6. Vérification des livrables v2.1 (Workflows Python, export_png v2, Studio Duel & Contract-First)"
+info "6. Vérification des livrables v2.1 / v2.2 (Workflows Python, déduplication cmp -s, transcriber & wrappers)"
 
 SLICE_WF="${SRC_SKILLS_DIR}/san_executer/scripts/autonomous_slice_workflow.py"
 INQ_WF="${SRC_SKILLS_DIR}/san_qa_security_expert/scripts/parallel_inquisition_workflow.py"
 EXP_DESIGNER="${SRC_SKILLS_DIR}/san_designer/scripts/export_png.mjs"
 EXP_EXPORTER="${SRC_SKILLS_DIR}/san_exporter/scripts/export_png.mjs"
+ARC_PLANNER="${SRC_SKILLS_DIR}/san_planner/scripts/archive_roadmap.sh"
+ARC_DOC_KEEPER="${SRC_SKILLS_DIR}/san_doc_keeper/scripts/archive_roadmap.sh"
+SVG_INIT="${SRC_SKILLS_DIR}/san_init/scripts/svg_to_png.mjs"
+SVG_EXPORTER="${SRC_SKILLS_DIR}/san_exporter/scripts/svg_to_png.mjs"
+TRANSCRIPT_HELPER="${SRC_SKILLS_DIR}/san_transcriber/scripts/transcript_helper.mjs"
 
 assert_true "autonomous_slice_workflow.py existe et est exécutable" \
   '[ -x "${SLICE_WF}" ]'
@@ -214,17 +221,105 @@ assert_true "parallel_inquisition_workflow.py existe et est exécutable" \
 assert_true "parallel_inquisition_workflow.py passe python3 -m py_compile et --self-test" \
   'python3 -m py_compile "${INQ_WF}" && python3 "${INQ_WF}" --self-test >/dev/null 2>&1'
 
-assert_true "export_png.mjs v2 passe node --check et est strictement synchronisé entre san_designer et san_exporter" \
-  'node --check "${EXP_DESIGNER}" && cmp -s "${EXP_DESIGNER}" "${EXP_EXPORTER}"'
+# Strict cmp -s non-divergence sur les 3 paires de scripts partagés
+assert_true "Paire 1 : export_png.mjs passe node --check et est strictement identique (cmp -s) entre san_designer et san_exporter" \
+  'node --check "${EXP_DESIGNER}" && node --check "${EXP_EXPORTER}" && cmp -s "${EXP_DESIGNER}" "${EXP_EXPORTER}"'
 
-assert_true "export_png.mjs v2 supporte --viewports et --audit-dom" \
-  'grep -q "viewports" "${EXP_DESIGNER}" && grep -q "audit-dom" "${EXP_DESIGNER}" && grep -q "horizontalOverflow" "${EXP_DESIGNER}"'
+assert_true "Paire 2 : archive_roadmap.sh passe bash -n et est strictement identique (cmp -s) entre san_planner et san_doc_keeper" \
+  'bash -n "${ARC_PLANNER}" && bash -n "${ARC_DOC_KEEPER}" && cmp -s "${ARC_PLANNER}" "${ARC_DOC_KEEPER}"'
 
-assert_true "san_designer/SKILL.md documente Studio Duel UI, swarm Hydrogen XHigh et 5 États" \
-  'grep -q "Studio Duel" "${SRC_SKILLS_DIR}/san_designer/SKILL.md" && grep -q "gemini-4-hydrogen-xhigh" "${SRC_SKILLS_DIR}/san_designer/SKILL.md" && grep -q "Stale-While-Revalidate" "${SRC_SKILLS_DIR}/san_designer/SKILL.md"'
+assert_true "Paire 3 : svg_to_png.mjs passe node --check et est strictement identique (cmp -s) entre san_init et san_exporter" \
+  'node --check "${SVG_INIT}" && node --check "${SVG_EXPORTER}" && cmp -s "${SVG_INIT}" "${SVG_EXPORTER}"'
 
-assert_true "san_planner/SKILL.md documente Contract-First et Architectural Fitness Functions" \
-  'grep -q "Contract-First" "${SRC_SKILLS_DIR}/san_planner/SKILL.md" && grep -q "Fitness Functions" "${SRC_SKILLS_DIR}/san_planner/SKILL.md"'
+assert_true "export_png.mjs v2.2 supporte --url, --full-page, --viewports, --audit-dom et loadPlaywright" \
+  'grep -q "viewports" "${EXP_DESIGNER}" && grep -q "audit-dom" "${EXP_DESIGNER}" && grep -q "horizontalOverflow" "${EXP_DESIGNER}" && grep -q "\-\-url" "${EXP_DESIGNER}" && grep -q "full-page" "${EXP_DESIGNER}" && grep -q "loadPlaywright" "${EXP_DESIGNER}"'
+
+assert_true "san_designer/SKILL.md documente Studio Duel UI, --url et 5 États" \
+  'grep -q "Studio Duel" "${SRC_SKILLS_DIR}/san_designer/SKILL.md" && grep -q "\-\-url" "${SRC_SKILLS_DIR}/san_designer/SKILL.md" && grep -q "Stale-While-Revalidate" "${SRC_SKILLS_DIR}/san_designer/SKILL.md"'
+
+assert_true "san_planner/SKILL.md documente Contract-First, Fitness Functions et alignement préalable" \
+  'grep -q "Contract-First" "${SRC_SKILLS_DIR}/san_planner/SKILL.md" && grep -q "Fitness Functions" "${SRC_SKILLS_DIR}/san_planner/SKILL.md" && grep -q "ask_question" "${SRC_SKILLS_DIR}/san_planner/SKILL.md"'
+
+# Test comportemental réel de transcript_helper.mjs (san_transcriber)
+assert_true "transcript_helper.mjs existe, est exécutable et passe node --check" \
+  '[ -x "${TRANSCRIPT_HELPER}" ] && node --check "${TRANSCRIPT_HELPER}"'
+
+TMP_TRANSCRIPT_WS=$(mktemp -d /tmp/san-phase5-transcript.XXXXXX)
+trap 'rm -rf "${TMP_TRANSCRIPT_WS}"' EXIT
+(
+  cd "${TMP_TRANSCRIPT_WS}"
+  git init -q
+  git config user.name "Transcriber Tester"
+  git config user.email "transcriber@alexsan.pro"
+  mkdir -p roadmaps .agents
+  cat << 'EOF' > .agents/models.json
+{
+  "version": "2.2.0",
+  "agy": { "orchestrator": "gemini-4-argon-high", "executor": "gemini-4-hydrogen-xhigh" },
+  "opencode": { "orchestrator": "opencode-go/hy4", "executor": "opencode-go/deepseek-v4-pro" }
+}
+EOF
+  cat << 'EOF' > roadmaps/ROADMAP_V22_TEST.md
+# Roadmap Test Relais
+- [x] Etape 1 verifiee
+- [ ] Etape 2 restante
+EOF
+  git add roadmaps/ROADMAP_V22_TEST.md
+  git commit -m "chore: init roadmap for transcriber test" -q
+)
+
+TRANSCRIPT_OUT_PATH=$(node "${TRANSCRIPT_HELPER}" \
+  --dir="${TMP_TRANSCRIPT_WS}" \
+  --summary="Auth module livré avec Zod" \
+  --why="Contract-First avant UI" \
+  --doubts="Tests de charge Redis non exécutés" \
+  --next="Implémenter refresh token et lancer npm test")
+
+assert_true "transcript_helper.mjs génère réellement un fichier dans roadmaps/transcripts/" \
+  '[ -n "${TRANSCRIPT_OUT_PATH}" ] && [ -f "${TRANSCRIPT_OUT_PATH}" ] && echo "${TRANSCRIPT_OUT_PATH}" | grep -q "/roadmaps/transcripts/TRANSCRIPT_ROADMAP_V22_TEST_"'
+
+if [ -f "${TRANSCRIPT_OUT_PATH}" ]; then
+  assert_true "Le transcript généré contient le Protocole de Relais Sceptique (Doubt & Verify)" \
+    'grep -qi "PROTOCOLE DE RELAIS SCEPTIQUE" "${TRANSCRIPT_OUT_PATH}" && grep -qi "DOUBT & VERIFY" "${TRANSCRIPT_OUT_PATH}" && grep -q "NE FAIS PAS CONFIANCE AVEUGLÉMENT AU PREMIER AGENT" "${TRANSCRIPT_OUT_PATH}"'
+
+  assert_true "Le transcript généré reflète les arguments réels (--summary, --why, --doubts, --next) et l'avancement roadmap" \
+    'grep -q "Auth module livré avec Zod" "${TRANSCRIPT_OUT_PATH}" && grep -q "Contract-First avant UI" "${TRANSCRIPT_OUT_PATH}" && grep -q "Tests de charge Redis non exécutés" "${TRANSCRIPT_OUT_PATH}" && grep -q "Implémenter refresh token" "${TRANSCRIPT_OUT_PATH}" && grep -q "ROADMAP_V22_TEST.md" "${TRANSCRIPT_OUT_PATH}"'
+fi
+
+rm -rf "${TMP_TRANSCRIPT_WS}"
+
+# Vérification des 19 wrappers skills/*.md et sub-skills/*.md (v2.2.0 strict)
+info "7. Contrôle des 19 wrappers skills/*.md et sub-skills/*.md (version: \"2.2.0\", zéro 2.0.0 / argon-latest-max)"
+
+for skill in "${ALL_SKILLS[@]}"; do
+  assert_true "Wrapper présent pour ${skill} dans skills/ ou sub-skills/" \
+    '[ -f "${SKILLS_DIR}/${skill}.md" ] || [ -f "${SUB_SKILLS_DIR}/${skill}.md" ]'
+done
+
+assert_true "Wrappers san_transcriber.md présents dans skills/ et sub-skills/" \
+  '[ -f "${SKILLS_DIR}/san_transcriber.md" ] && [ -f "${SUB_SKILLS_DIR}/san_transcriber.md" ]'
+
+WRAPPER_VERSION_ERRORS=0
+WRAPPER_LEGACY_ERRORS=0
+WRAPPER_COUNT=0
+while IFS= read -r wrapper_file; do
+  [ -z "${wrapper_file}" ] && continue
+  WRAPPER_COUNT=$((WRAPPER_COUNT + 1))
+  if ! grep -qE '^version:[[:space:]]*"2\.2\.0"[[:space:]]*$' "${wrapper_file}"; then
+    red "Wrapper sans version: \"2.2.0\" -> ${wrapper_file}"
+    WRAPPER_VERSION_ERRORS=$((WRAPPER_VERSION_ERRORS + 1))
+  fi
+  if grep -qE 'version:[[:space:]]*"2\.[01]\.0"|argon-latest-max' "${wrapper_file}"; then
+    red "Mention obsolète (version 2.0.0/2.1.0 ou argon-latest-max) dans ${wrapper_file}"
+    WRAPPER_LEGACY_ERRORS=$((WRAPPER_LEGACY_ERRORS + 1))
+  fi
+done < <(find "${SKILLS_DIR}" "${SUB_SKILLS_DIR}" -maxdepth 1 -type f -name "*.md" | sort)
+
+assert_true "Tous les ${WRAPPER_COUNT} wrappers skills/*.md et sub-skills/*.md sont en version: \"2.2.0\"" \
+  '[ "${WRAPPER_COUNT}" -ge 19 ] && [ "${WRAPPER_VERSION_ERRORS}" -eq 0 ]'
+
+assert_true "Zéro version: \"2.0.0\", \"2.1.0\" ou argon-latest-max dans skills/*.md et sub-skills/*.md" \
+  '[ "${WRAPPER_LEGACY_ERRORS}" -eq 0 ]'
 
 # ------------------------------------------------------------------------------
 # Bilan Récapitulatif

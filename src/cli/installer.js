@@ -3,7 +3,7 @@ import path from 'node:path';
 import os from 'node:os';
 import { execSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { WHATS_NEW, formatWhatsNewTerminal } from './whats_new.js';
+import { LATEST_WHATS_NEW_VERSION, WHATS_NEW, formatWhatsNewTerminal } from './whats_new.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -43,6 +43,25 @@ export const CANONICAL_HOOK_SCRIPTS = [
   'stop_guard.mjs'
 ];
 
+export const DEFAULT_MODELS_CONFIG = {
+  version: '2.2.0',
+  profile: 'unified-executor',
+  agy: {
+    orchestrator: 'gemini-4-argon-high',
+    executor: 'gemini-4-hydrogen-xhigh'
+  },
+  opencode: {
+    orchestrator: 'opencode-go/hy4',
+    executor: 'opencode-go/deepseek-v4-pro'
+  }
+};
+
+const READONLY_OPENCODE_AGENTS = new Set([
+  'san-researcher',
+  'san-architect',
+  'san-qa-auditor'
+]);
+
 export function getFrameworkVersion() {
   try {
     const pkgPath = path.resolve(FRAMEWORK_ROOT, 'package.json');
@@ -51,7 +70,7 @@ export function getFrameworkVersion() {
       if (pkg.version) return pkg.version;
     }
   } catch {}
-  return '2.1.0';
+  return '2.2.0';
 }
 
 function normalizeTargetOptions(targetDirOrOptions, maybeOptions = {}) {
@@ -403,6 +422,7 @@ export function generateAgentsContext(projectRoot, { skills = [], dryRun = false
     san_searcher: 'Documentation officielle et Context Shielding.',
     san_store_legal_expert: 'Conformité stores App/Play et RGPD.',
     san_subagent_manager: 'Calibrage des sous-agents hermétiques.',
+    san_transcriber: 'Relais fin de quota et doute sceptique.',
     san_ux_ui_expert: 'Composants front/mobile, 5 états et 60 fps.'
   };
 
@@ -418,11 +438,164 @@ export function generateAgentsContext(projectRoot, { skills = [], dryRun = false
   return { file: 'AGENTS.md', status: 'created' };
 }
 
+function normalizeModelsConfig(raw = {}) {
+  const src = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {};
+  const agySrc = src.agy && typeof src.agy === 'object' && !Array.isArray(src.agy) ? src.agy : {};
+  const ocSrc = src.opencode && typeof src.opencode === 'object' && !Array.isArray(src.opencode) ? src.opencode : {};
+
+  return {
+    ...src,
+    version: typeof src.version === 'string' && src.version.trim() ? src.version.trim() : DEFAULT_MODELS_CONFIG.version,
+    profile: typeof src.profile === 'string' && src.profile.trim() ? src.profile.trim() : DEFAULT_MODELS_CONFIG.profile,
+    agy: {
+      ...agySrc,
+      orchestrator:
+        typeof agySrc.orchestrator === 'string' && agySrc.orchestrator.trim()
+          ? agySrc.orchestrator.trim()
+          : DEFAULT_MODELS_CONFIG.agy.orchestrator,
+      executor:
+        typeof agySrc.executor === 'string' && agySrc.executor.trim()
+          ? agySrc.executor.trim()
+          : DEFAULT_MODELS_CONFIG.agy.executor
+    },
+    opencode: {
+      ...ocSrc,
+      orchestrator:
+        typeof ocSrc.orchestrator === 'string' && ocSrc.orchestrator.trim()
+          ? ocSrc.orchestrator.trim()
+          : DEFAULT_MODELS_CONFIG.opencode.orchestrator,
+      executor:
+        typeof ocSrc.executor === 'string' && ocSrc.executor.trim()
+          ? ocSrc.executor.trim()
+          : DEFAULT_MODELS_CONFIG.opencode.executor
+    }
+  };
+}
+
 /**
- * Fusionne la configuration opencode.json sans écraser les champs utilisateur.
+ * Lit .agents/models.json ou retourne la configuration par défaut normalisée.
  */
-export function mergeOpencodeConfig(projectRoot, { dryRun = false } = {}) {
-  const configPath = path.join(projectRoot, 'opencode.json');
+export function readModelsConfig(projectRoot = process.cwd()) {
+  const resolvedRoot = path.resolve(projectRoot || process.cwd());
+  const modelsPath = path.join(resolvedRoot, '.agents', 'models.json');
+  let exists = false;
+  let invalidJson = false;
+  let raw = {};
+
+  if (fs.existsSync(modelsPath)) {
+    exists = true;
+    try {
+      const parsed = JSON.parse(fs.readFileSync(modelsPath, 'utf8'));
+      if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+        raw = parsed;
+      } else {
+        invalidJson = true;
+      }
+    } catch {
+      invalidJson = true;
+    }
+  }
+
+  return {
+    exists,
+    invalidJson,
+    path: modelsPath,
+    config: normalizeModelsConfig(raw)
+  };
+}
+
+/**
+ * Crée .agents/models.json s'il n'existe pas ou met à jour sa clé version en préservant les choix utilisateur.
+ */
+export function ensureModelsConfig(projectRoot, { dryRun = false } = {}) {
+  const resolvedRoot = path.resolve(projectRoot || process.cwd());
+  const targetVersion = getFrameworkVersion();
+  const state = readModelsConfig(resolvedRoot);
+  const nextConfig = normalizeModelsConfig({ ...state.config, version: targetVersion });
+
+  if (!state.exists) {
+    if (!dryRun) {
+      fs.mkdirSync(path.dirname(state.path), { recursive: true });
+      fs.writeFileSync(state.path, JSON.stringify(nextConfig, null, 2) + '\n', 'utf8');
+    }
+    return {
+      file: '.agents/models.json',
+      path: state.path,
+      status: dryRun ? 'dry-run' : 'created',
+      config: nextConfig
+    };
+  }
+
+  const changed =
+    state.invalidJson ||
+    JSON.stringify(state.config) !== JSON.stringify(nextConfig) ||
+    state.config.version !== targetVersion;
+
+  if (changed && !dryRun) {
+    fs.mkdirSync(path.dirname(state.path), { recursive: true });
+    fs.writeFileSync(state.path, JSON.stringify(nextConfig, null, 2) + '\n', 'utf8');
+  }
+
+  return {
+    file: '.agents/models.json',
+    path: state.path,
+    status: changed ? (dryRun ? 'dry-run' : 'updated') : 'preserved',
+    config: nextConfig
+  };
+}
+
+function unquoteYamlValue(rawValue) {
+  const trimmed = String(rawValue || '').trim();
+  if (trimmed.length >= 2 && trimmed.startsWith('"') && trimmed.endsWith('"')) {
+    return trimmed.slice(1, -1).replace(/\\"/g, '"').replace(/\\\\/g, '\\');
+  }
+  if (trimmed.length >= 2 && trimmed.startsWith("'") && trimmed.endsWith("'")) {
+    return trimmed.slice(1, -1).replace(/''/g, "'");
+  }
+  return trimmed;
+}
+
+function parseAgentSpecForOpencode(agentFile, projectRoot) {
+  const localPath = path.join(projectRoot, '.agents', 'agents', agentFile);
+  const srcPath = path.join(AGENTS_SRC_DIR, agentFile);
+  const targetPath = fs.existsSync(localPath) ? localPath : srcPath;
+
+  if (!fs.existsSync(targetPath)) return null;
+
+  const rawContent = fs.readFileSync(targetPath, 'utf8');
+  const fmMatch = rawContent.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?/);
+  const fmText = fmMatch ? fmMatch[1] : '';
+  const body = (fmMatch ? rawContent.slice(fmMatch[0].length) : rawContent).trim();
+
+  const nameMatch = fmText.match(/^name:\s*(.+)$/m);
+  const descMatch = fmText.match(/^description:\s*(.+)$/m);
+  const agentName = nameMatch ? unquoteYamlValue(nameMatch[1]) : agentFile.replace(/\.md$/i, '');
+  const description = descMatch
+    ? unquoteYamlValue(descMatch[1])
+    : `Sous-agent Antigravity ${agentName}`;
+
+  return {
+    name: agentName,
+    description,
+    system: body
+  };
+}
+
+/**
+ * Fusionne la configuration opencode.json V2 native (instructions + 8 sous-agents san-*) sans écraser les champs utilisateur.
+ */
+export function mergeOpencodeConfig(projectRoot, optionsOrDryRun = {}) {
+  const options =
+    typeof optionsOrDryRun === 'boolean'
+      ? { dryRun: optionsOrDryRun }
+      : (optionsOrDryRun || {});
+  const dryRun = Boolean(options.dryRun);
+  const resolvedRoot = path.resolve(projectRoot || process.cwd());
+  const modelsConfig = options.modelsConfig
+    ? normalizeModelsConfig(options.modelsConfig)
+    : readModelsConfig(resolvedRoot).config;
+
+  const configPath = path.join(resolvedRoot, 'opencode.json');
   let config = { $schema: 'https://opencode.ai/config.json' };
   let existed = false;
 
@@ -436,23 +609,168 @@ export function mergeOpencodeConfig(projectRoot, { dryRun = false } = {}) {
     }
   }
 
+  if (!config.$schema) config.$schema = 'https://opencode.ai/config.json';
+
   const desiredSkillPath = '.agents/skills';
-  const existingPaths = Array.isArray(config.skills?.paths) ? config.skills.paths : [];
+  const existingPaths = Array.isArray(config.skills?.paths) ? [...config.skills.paths] : [];
   if (!existingPaths.includes(desiredSkillPath)) existingPaths.push(desiredSkillPath);
   config.skills = { ...(config.skills ?? {}), paths: existingPaths };
 
-  const instructions = Array.isArray(config.instructions) ? config.instructions : [];
-  for (const target of ['.agents/GEMINI.md']) {
+  const instructions = Array.isArray(config.instructions) ? [...config.instructions] : [];
+  for (const target of ['AGENTS.md', '.agents/rules/*.md', '.agents/GEMINI.md']) {
     if (!instructions.includes(target)) instructions.push(target);
   }
-  if (instructions.length) config.instructions = instructions;
+  config.instructions = instructions;
 
-  if (!config.$schema) config.$schema = 'https://opencode.ai/config.json';
+  const generatedAgents = {};
+  for (const agentFile of CANONICAL_AGENTS) {
+    const spec = parseAgentSpecForOpencode(agentFile, resolvedRoot);
+    if (!spec) continue;
+
+    const agentEntry = {
+      description: spec.description,
+      mode: 'subagent',
+      model: modelsConfig.opencode.executor,
+      system: spec.system
+    };
+
+    if (READONLY_OPENCODE_AGENTS.has(spec.name)) {
+      agentEntry.permissions = [{ action: 'edit', resource: '*', effect: 'deny' }];
+    }
+
+    generatedAgents[spec.name] = agentEntry;
+  }
+
+  const existingAgents =
+    config.agents && typeof config.agents === 'object' && !Array.isArray(config.agents)
+      ? config.agents
+      : {};
+  config.agents = {
+    ...existingAgents,
+    ...generatedAgents
+  };
 
   const next = JSON.stringify(config, null, 2) + '\n';
   if (!dryRun) fs.writeFileSync(configPath, next, 'utf8');
 
-  return { file: 'opencode.json', status: existed ? 'merged' : 'created' };
+  return {
+    file: 'opencode.json',
+    status: existed ? (dryRun ? 'dry-run-merged' : 'merged') : (dryRun ? 'dry-run-created' : 'created'),
+    agentsCount: Object.keys(generatedAgents).length,
+    model: modelsConfig.opencode.executor
+  };
+}
+
+/**
+ * Configure .agents/models.json (Profil Exécuteur Unifié) et resynchronise opencode.json V2.
+ */
+export function configureModels(targetDirOrOptions = {}, maybeOptions = {}) {
+  const options = normalizeTargetOptions(targetDirOrOptions, maybeOptions);
+  const dryRun = Boolean(options.dryRun);
+  const silent = Boolean(options.silent);
+  const projectRoot = options.targetDir ? path.resolve(options.targetDir) : process.cwd();
+  const state = readModelsConfig(projectRoot);
+  const config = normalizeModelsConfig({
+    ...state.config,
+    version: getFrameworkVersion()
+  });
+
+  const cleanOpt = (val) => (typeof val === 'string' && val.trim() ? val.trim() : null);
+  const setModel = cleanOpt(options.setModel);
+  const opencodeExecutor = cleanOpt(options.opencodeExecutor);
+  const agyExecutor = cleanOpt(options.agyExecutor);
+  const orchestrator = cleanOpt(options.orchestrator);
+  const opencodeOrchestrator = cleanOpt(options.opencodeOrchestrator);
+  const agyOrchestrator = cleanOpt(options.agyOrchestrator);
+
+  const hasMutations = Boolean(
+    setModel ||
+    opencodeExecutor ||
+    agyExecutor ||
+    orchestrator ||
+    opencodeOrchestrator ||
+    agyOrchestrator
+  );
+
+  if (setModel) {
+    if (setModel.includes('/')) {
+      config.opencode.executor = setModel;
+    } else {
+      config.agy.executor = setModel;
+    }
+  }
+  if (opencodeExecutor) config.opencode.executor = opencodeExecutor;
+  if (agyExecutor) config.agy.executor = agyExecutor;
+  if (orchestrator) {
+    if (orchestrator.includes('/')) {
+      config.opencode.orchestrator = orchestrator;
+    } else {
+      config.agy.orchestrator = orchestrator;
+    }
+  }
+  if (opencodeOrchestrator) config.opencode.orchestrator = opencodeOrchestrator;
+  if (agyOrchestrator) config.agy.orchestrator = agyOrchestrator;
+
+  let modelsStatus = state.exists ? 'active' : 'default';
+  let opencodeMerge = null;
+
+  if (hasMutations) {
+    if (!dryRun) {
+      fs.mkdirSync(path.dirname(state.path), { recursive: true });
+      fs.writeFileSync(state.path, JSON.stringify(config, null, 2) + '\n', 'utf8');
+      modelsStatus = state.exists ? 'updated' : 'created';
+    } else {
+      modelsStatus = 'dry-run';
+    }
+    opencodeMerge = mergeOpencodeConfig(projectRoot, { dryRun, modelsConfig: config });
+  }
+
+  if (!silent) {
+    const ocPath = path.join(projectRoot, 'opencode.json');
+    const ocExists = fs.existsSync(ocPath);
+    console.log('');
+    console.log(`${colors.cyan}============================================================${colors.reset}`);
+    console.log(`${colors.bold}${colors.brightCyan}  GOUVERNANCE MODÈLES DUAL-HARNESS (v${getFrameworkVersion()})${colors.reset}`);
+    console.log(`${colors.cyan}============================================================${colors.reset}`);
+    console.log(`  ${colors.bold}Projet${colors.reset}        : ${projectRoot}`);
+    console.log(`  ${colors.bold}Profil${colors.reset}        : ${colors.cyan}${config.profile}${colors.reset}`);
+    console.log(`  ${colors.bold}models.json${colors.reset}   : ${state.path} ${colors.gray}(${modelsStatus})${colors.reset}`);
+    if (dryRun) {
+      console.log(`  ${colors.yellow}${colors.bold}[DRY-RUN]${colors.reset} Mode simulation actif — aucun fichier écrit.`);
+    }
+    console.log('');
+    console.log(`  ${colors.bold}Google Antigravity (agy / swarm) :${colors.reset}`);
+    console.log(`    • orchestrator : ${colors.cyan}${config.agy.orchestrator}${colors.reset}`);
+    console.log(`    • executor     : ${colors.brightGreen}${config.agy.executor}${colors.reset}`);
+    console.log(`  ${colors.bold}OpenCode V2 (opencode.json / subagent) :${colors.reset}`);
+    console.log(`    • orchestrator : ${colors.cyan}${config.opencode.orchestrator}${colors.reset}`);
+    console.log(`    • executor     : ${colors.brightGreen}${config.opencode.executor}${colors.reset}`);
+
+    if (opencodeMerge) {
+      console.log('');
+      if (opencodeMerge.status === 'skipped-invalid') {
+        console.log(`  ${colors.yellow}[!] opencode.json ignoré (JSON existant invalide).${colors.reset}`);
+      } else {
+        console.log(`  ${colors.green}✔${colors.reset} ${colors.bold}opencode.json${colors.reset} resynchronisé (${opencodeMerge.status}, ${opencodeMerge.agentsCount} sous-agents -> ${colors.brightGreen}${opencodeMerge.model}${colors.reset})`);
+      }
+    } else if (ocExists) {
+      console.log('');
+      console.log(`  ${colors.green}✔${colors.reset} ${colors.bold}opencode.json${colors.reset} détecté à la racine`);
+    }
+    console.log(`${colors.cyan}============================================================${colors.reset}\n`);
+  }
+
+  return {
+    success: true,
+    projectRoot,
+    modelsPath: state.path,
+    existedBefore: state.exists,
+    mutated: hasMutations,
+    dryRun,
+    status: modelsStatus,
+    config,
+    opencodeMerge
+  };
 }
 
 /**
@@ -513,7 +831,7 @@ export function deploySkillsLight(agentsDir, { dryRun = false } = {}) {
  * Écrit le marqueur .agents/cache/whats_new_pending.json pour notification unique au 1er SessionStart.
  */
 export function writeWhatsNewPendingCache(agentsDir, { dryRun = false, version = getFrameworkVersion() } = {}) {
-  const entry = WHATS_NEW[version] || WHATS_NEW['2.1.0'];
+  const entry = WHATS_NEW[version] || WHATS_NEW[LATEST_WHATS_NEW_VERSION] || WHATS_NEW['2.2.0'];
   const pendingPayload = {
     version: entry ? entry.version : version,
     updatedAt: new Date().toISOString(),
@@ -808,12 +1126,13 @@ export function packageGlobalPlugin(targetDir, { dryRun = false, force = false }
 }
 
 /**
- * Diagnostic de santé officiel (doctor) : contrôle les 6 piliers v2.1
+ * Diagnostic de santé officiel (doctor) : contrôle les 6 piliers v2.2
  */
 export function runDoctor(targetDirOrOptions = {}, maybeOptions = {}) {
   const options = normalizeTargetOptions(targetDirOrOptions, maybeOptions);
   const projectRoot = options.targetDir ? path.resolve(options.targetDir) : process.cwd();
   const agentsDir = path.join(projectRoot, '.agents');
+  const expectedSkills = getAvailableSkills();
 
   const report = {
     projectRoot,
@@ -823,7 +1142,7 @@ export function runDoctor(targetDirOrOptions = {}, maybeOptions = {}) {
       rules: { title: '2. Règles normatives (.agents/rules/*.md)', passed: false, checks: [] },
       agents: { title: '3. Sous-agents natifs (.agents/agents/*.md)', passed: false, checks: [] },
       hooks: { title: '4. Garde-fous mécaniques (.agents/hooks.json & scripts)', passed: false, checks: [] },
-      skills: { title: '5. Catalogue des 18 skills (.agents/skills/ | skills.json <= 130 lignes)', passed: false, checks: [] },
+      skills: { title: `5. Catalogue des ${expectedSkills.length} skills (.agents/skills/ | skills.json <= 130 lignes)`, passed: false, checks: [] },
       gitHygiene: { title: '6. Étanchéité Git (.gitignore ou .git/info/exclude)', passed: false, checks: [] }
     }
   };
@@ -912,14 +1231,18 @@ export function runDoctor(targetDirOrOptions = {}, maybeOptions = {}) {
             report.pillars.agents.checks.push({ ok: false, msg: `Sous-agent ${a} invalide (frontmatter YAML manquant)` });
           } else if (
             /gemini-3\.8-flash-high|gemini-3\.1-pro-high/i.test(content) ||
-            !content.includes('gemini-4-hydrogen-xhigh')
+            (
+              !content.includes('gemini-4-hydrogen-xhigh') &&
+              !content.includes('models.json') &&
+              !content.includes('san-framework models')
+            )
           ) {
             report.pillars.agents.checks.push({
               ok: false,
-              msg: `Sous-agent ${a} en version v2.0 obsolète (manque gemini-4-hydrogen-xhigh) — exécutez "san-framework update"`
+              msg: `Sous-agent ${a} en version v2.0 obsolète (manque gemini-4-hydrogen-xhigh / models.json) — exécutez "san-framework update"`
             });
           } else {
-            report.pillars.agents.checks.push({ ok: true, msg: `Sous-agent ${a} présent et valide (v2.1 Hydrogen XHigh)` });
+            report.pillars.agents.checks.push({ ok: true, msg: `Sous-agent ${a} présent et valide (v2.2 Dual-Harness)` });
           }
         } catch (e) {
           report.pillars.agents.checks.push({ ok: false, msg: `Erreur lecture ${a} : ${e.message}` });
@@ -963,10 +1286,9 @@ export function runDoctor(targetDirOrOptions = {}, maybeOptions = {}) {
   }
   report.pillars.hooks.passed = report.pillars.hooks.checks.length >= (1 + expectedScripts.length) && report.pillars.hooks.checks.every(c => c.ok);
 
-  // Pilier 5 : Catalogue des 18 skills (.agents/skills/ ou .agents/skills.json <= 130 lignes)
+  // Pilier 5 : Catalogue des skills (.agents/skills/ ou .agents/skills.json <= 130 lignes)
   const skillsSubDir = path.join(agentsDir, 'skills');
   const skillsJsonPath = path.join(agentsDir, 'skills.json');
-  const expectedSkills = getAvailableSkills();
 
   const validateSkillInDir = (baseDir, skillName, sourceLabel) => {
     const skMd = path.join(baseDir, skillName, 'SKILL.md');
@@ -1124,7 +1446,7 @@ export function printDoctorReport(report) {
 }
 
 /**
- * Moteur de la commande `update` : migration & mise à jour non destructive vers v2.1
+ * Moteur de la commande `update` : migration & mise à jour non destructive vers v2.2
  */
 export async function updateFramework(targetDirOrOptions = {}, maybeOptions = {}) {
   const options = normalizeTargetOptions(targetDirOrOptions, maybeOptions);
@@ -1190,11 +1512,14 @@ export async function updateFramework(targetDirOrOptions = {}, maybeOptions = {}
     force
   });
 
-  // 7. opencode.json si existant ou si flag --opencode
+  // 6B. Configuration Dual-Harness .agents/models.json (préserve les choix utilisateur)
+  const modelsStatus = ensureModelsConfig(projectRoot, { dryRun });
+
+  // 7. opencode.json si existant ou si flag --opencode (génération/mise à jour V2 native des 8 agents)
   const hasOpencodeConfig = fs.existsSync(path.join(projectRoot, 'opencode.json'));
   let opencodeMerge = null;
   if (hasOpencodeConfig || options.opencode) {
-    opencodeMerge = mergeOpencodeConfig(projectRoot, { dryRun });
+    opencodeMerge = mergeOpencodeConfig(projectRoot, { dryRun, modelsConfig: modelsStatus.config });
   }
 
   // 8. Hygiène Git réversible
@@ -1263,6 +1588,10 @@ export async function updateFramework(targetDirOrOptions = {}, maybeOptions = {}
   console.log(`${colors.bold}📜 Gouvernance & Constitution racine :${colors.reset}`);
   console.log(`  • ${'AGENTS.md'.padEnd(14)} : ${agentsContext.status === 'preserved' ? `${colors.yellow}[PRÉSERVÉ]${colors.reset}` : `${colors.green}[SYNCHRONISÉ]${colors.reset}`}`);
   console.log(`  • ${'GEMINI.md'.padEnd(14)} : ${geminiStatus === 'preserved' ? `${colors.yellow}[PRÉSERVÉ]${colors.reset}` : `${colors.green}[SYNCHRONISÉ]${colors.reset}`}`);
+  console.log(`  • ${'models.json'.padEnd(14)} : ${colors.green}[${modelsStatus.status.toUpperCase()}]${colors.reset} (agy: ${modelsStatus.config.agy.executor} | opencode: ${modelsStatus.config.opencode.executor})`);
+  if (opencodeMerge) {
+    console.log(`  • ${'opencode.json'.padEnd(14)} : ${colors.green}[${opencodeMerge.status.toUpperCase()}]${colors.reset} (${opencodeMerge.agentsCount ?? 8} sous-agents -> ${opencodeMerge.model})`);
+  }
 
   if (hygiene.backupDir) {
     console.log('');
@@ -1289,6 +1618,7 @@ export async function updateFramework(targetDirOrOptions = {}, maybeOptions = {}
     rulesStatus,
     hooksStatus,
     agentsContext,
+    modelsStatus,
     opencodeMerge,
     hygiene
   };
@@ -1398,12 +1728,18 @@ export async function installFramework(options = {}) {
     force
   });
 
+  // 6B. Configuration Dual-Harness .agents/models.json
+  const modelsStatus = ensureModelsConfig(projectRoot, { dryRun });
+
   // 7. Hygiène Git réversible
   const hygiene = executeGitHygiene(projectRoot, { dryRun, preserveOpencode: opencode });
 
-  // 8. Couche opencode optionnelle
+  // 8. Couche opencode V2 optionnelle
+  const opencodeMerge = opencode
+    ? mergeOpencodeConfig(projectRoot, { dryRun, modelsConfig: modelsStatus.config })
+    : null;
   const opencodeContext = opencode
-    ? [agentsContext, mergeOpencodeConfig(projectRoot, { dryRun })].filter(Boolean)
+    ? [agentsContext, opencodeMerge].filter(Boolean)
     : [];
 
   // 9. Initialisation du cache cartographique (.agents/cache/)
@@ -1474,6 +1810,10 @@ export async function installFramework(options = {}) {
       : `${colors.green}[CRÉÉ]${colors.reset} (Index souverain AGENTS.md déployé à la racine)`;
     console.log(`  • ${'AGENTS.md'.padEnd(14)} : ${agentsBadge}`);
   }
+  console.log(`  • ${'models.json'.padEnd(14)} : ${colors.green}[${modelsStatus.status.toUpperCase()}]${colors.reset} (agy: ${modelsStatus.config.agy.executor} | opencode: ${modelsStatus.config.opencode.executor})`);
+  if (opencodeMerge) {
+    console.log(`  • ${'opencode.json'.padEnd(14)} : ${colors.green}[${opencodeMerge.status.toUpperCase()}]${colors.reset} (${opencodeMerge.agentsCount ?? 8} sous-agents -> ${opencodeMerge.model})`);
+  }
 
   console.log('');
   console.log(`${colors.bold}🧹 Hygiène & Isolation Git Réversible :${colors.reset}`);
@@ -1519,6 +1859,7 @@ export async function installFramework(options = {}) {
     hooksStatus,
     geminiStatus,
     agentsContext,
+    modelsStatus,
     hygiene,
     opencodeContext
   };

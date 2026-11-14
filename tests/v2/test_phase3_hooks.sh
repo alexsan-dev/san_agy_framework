@@ -34,6 +34,34 @@ assert_true() {
   fi
 }
 
+# Measure hook execution latency using CLOCK_MONOTONIC (performance.now)
+# to stay immune to wall-clock adjustments while capturing child spawn + run time.
+# Usage: run_hook_timed <out_var> <latency_var> <script_path> <stdin_payload>
+run_hook_timed() {
+  local __out_var="$1"
+  local __lat_var="$2"
+  local __script="$3"
+  local __payload="$4"
+  local __result
+  __result=$(node -e '
+    const { spawnSync } = require("child_process");
+    const t0 = performance.now();
+    const res = spawnSync(process.execPath, [process.argv[1]], {
+      input: process.argv[2],
+      encoding: "utf8",
+      stdio: ["pipe", "pipe", "inherit"],
+    });
+    const dt = Math.round(performance.now() - t0);
+    process.stdout.write(dt + "\n" + (res.stdout || "") + "\n__SAN_HOOK_END__");
+    if (res.error || res.status !== 0) process.exit(res.status || 1);
+  ' "${__script}" "${__payload}")
+  __result="${__result%$'\n__SAN_HOOK_END__'}"
+  local __lat="${__result%%$'\n'*}"
+  local __out="${__result#*$'\n'}"
+  printf -v "${__lat_var}" '%s' "${__lat}"
+  printf -v "${__out_var}" '%s' "${__out}"
+}
+
 echo "======================================================================"
 echo "  TEST PHASE 3 : GARDE-FOUS MÉCANIQUES DU CYCLE DE VIE (HOOKS NATIFS)"
 echo "======================================================================"
@@ -132,10 +160,7 @@ SESSION_START_INPUT=$(cat << EOF
 EOF
 )
 
-START_TIME=$(python3 -c "import time; print(int(time.time() * 1000))")
-SESSION_START_OUTPUT=$(echo "${SESSION_START_INPUT}" | node "${SCRIPTS_DIR}/session_start.mjs")
-END_TIME=$(python3 -c "import time; print(int(time.time() * 1000))")
-LATENCY=$((END_TIME - START_TIME))
+run_hook_timed SESSION_START_OUTPUT LATENCY "${SCRIPTS_DIR}/session_start.mjs" "${SESSION_START_INPUT}"
 
 assert_true "session_start.mjs répond en moins de 150ms (${LATENCY}ms)" \
   '[ "${LATENCY}" -lt 150 ]'
@@ -213,10 +238,7 @@ cat << 'EOF' > "${TEMP_WORKSPACE_README}/roadmaps/feature_template.md"
 - [ ] Feature task
 EOF
 
-START_TIME=$(python3 -c "import time; print(int(time.time() * 1000))")
-README_ROADMAP_OUTPUT=$(echo '{"workspacePaths":["'"${TEMP_WORKSPACE_README}"'"]}' | node "${SCRIPTS_DIR}/session_start.mjs")
-END_TIME=$(python3 -c "import time; print(int(time.time() * 1000))")
-LATENCY_README=$((END_TIME - START_TIME))
+run_hook_timed README_ROADMAP_OUTPUT LATENCY_README "${SCRIPTS_DIR}/session_start.mjs" '{"workspacePaths":["'"${TEMP_WORKSPACE_README}"'"]}'
 rm -rf "${TEMP_WORKSPACE_README}"
 
 README_ROADMAP_IGNORED=$(echo "${README_ROADMAP_OUTPUT}" | python3 -c "
@@ -258,12 +280,12 @@ TEMP_WS_WHATSNEW=$(mktemp -d /tmp/san-ws-whatsnew.XXXXXX)
 mkdir -p "${TEMP_WS_WHATSNEW}/.agents/cache"
 cat << 'EOF' > "${TEMP_WS_WHATSNEW}/.agents/cache/whats_new_pending.json"
 {
-  "version": "2.1.0",
+  "version": "2.2.0",
   "updatedAt": "2026-11-14T10:00:00.000Z",
   "seen": false,
   "highlights": [
-    "Swarm gemini-4-hydrogen-xhigh autonome",
-    "Hook Stop avec Circuit Breaker anti-boucle"
+    "Dual-Harness Antigravity + OpenCode V2 et san-framework models",
+    "19e skill san_transcriber avec Protocole de Relais Sceptique"
   ]
 }
 EOF
@@ -273,10 +295,10 @@ WN_FIRST_HAS_BANNER=$(echo "${WN_OUT_1}" | python3 -c "
 import sys, json
 data = json.load(sys.stdin)
 msg = data['injectSteps'][0]['systemMessage']['systemMessage']
-ok = (\"[WHAT'S NEW ON SAN.AGY v2.1.0]\" in msg and 'Swarm gemini-4-hydrogen-xhigh autonome' in msg)
+ok = (\"[WHAT'S NEW ON SAN.AGY v2.2.0]\" in msg and 'Dual-Harness Antigravity + OpenCode V2' in msg)
 print('true' if ok else 'false')
 ")
-assert_true "session_start.mjs injecte [WHAT'S NEW ON SAN.AGY v2.1.0] au 1er démarrage quand seen=false" \
+assert_true "session_start.mjs injecte [WHAT'S NEW ON SAN.AGY v2.2.0] au 1er démarrage quand seen=false" \
   '[ "${WN_FIRST_HAS_BANNER}" = "true" ]'
 
 WN_SEEN_MARKED=$(python3 -c "
@@ -293,12 +315,41 @@ WN_SECOND_SKIPPED=$(echo "${WN_OUT_2}" | python3 -c "
 import sys, json
 data = json.load(sys.stdin)
 msg = data['injectSteps'][0]['systemMessage']['systemMessage']
-print('true' if \"[WHAT'S NEW ON SAN.AGY v2.1.0]\" not in msg else 'false')
+print('true' if \"[WHAT'S NEW ON SAN.AGY v2.2.0]\" not in msg else 'false')
 ")
-assert_true "session_start.mjs n'injecte plus [WHAT'S NEW ON SAN.AGY v2.1.0] au 2ème démarrage (one-shot)" \
+assert_true "session_start.mjs n'injecte plus [WHAT'S NEW ON SAN.AGY v2.2.0] au 2ème démarrage (one-shot)" \
   '[ "${WN_SECOND_SKIPPED}" = "true" ]'
 
 rm -rf "${TEMP_WS_WHATSNEW}"
+
+# Test de session_start.mjs avec roadmaps/transcripts/TRANSCRIPT_TEST.md (Relais Sceptique)
+TEMP_WS_TRANSCRIPT=$(mktemp -d /tmp/san-ws-transcript.XXXXXX)
+mkdir -p "${TEMP_WS_TRANSCRIPT}/roadmaps/transcripts"
+echo "# Transcript Test" > "${TEMP_WS_TRANSCRIPT}/roadmaps/transcripts/TRANSCRIPT_TEST.md"
+echo "# Readme Ignored" > "${TEMP_WS_TRANSCRIPT}/roadmaps/transcripts/README.md"
+
+TRANSCRIPT_SS_OUT=$(echo '{"workspacePaths":["'"${TEMP_WS_TRANSCRIPT}"'"]}' | node "${SCRIPTS_DIR}/session_start.mjs")
+TRANSCRIPT_DETECTED=$(echo "${TRANSCRIPT_SS_OUT}" | python3 -c "
+import sys, json
+data = json.load(sys.stdin)
+msg = data['injectSteps'][0]['systemMessage']['systemMessage']
+ok = ('Active Relay Transcript:' in msg and 'roadmaps/transcripts/TRANSCRIPT_TEST.md' in msg and 'SKEPTICAL RELAY PROTOCOL' in msg)
+print('true' if ok else 'false')
+")
+assert_true "session_start.mjs détecte roadmaps/transcripts/TRANSCRIPT_TEST.md et injecte 'Active Relay Transcript:'" \
+  '[ "${TRANSCRIPT_DETECTED}" = "true" ]'
+
+rm -f "${TEMP_WS_TRANSCRIPT}/roadmaps/transcripts/TRANSCRIPT_TEST.md"
+TRANSCRIPT_README_IGNORED=$(echo '{"workspacePaths":["'"${TEMP_WS_TRANSCRIPT}"'"]}' | node "${SCRIPTS_DIR}/session_start.mjs" | python3 -c "
+import sys, json
+data = json.load(sys.stdin)
+msg = data['injectSteps'][0]['systemMessage']['systemMessage']
+print('true' if 'Active Relay Transcript:' not in msg else 'false')
+")
+assert_true "session_start.mjs ignore README.md dans roadmaps/transcripts/" \
+  '[ "${TRANSCRIPT_README_IGNORED}" = "true" ]'
+
+rm -rf "${TEMP_WS_TRANSCRIPT}"
 
 # ------------------------------------------------------------------------------
 # 5. Test du script PreInvocation (pre_invocation.mjs)
@@ -314,10 +365,7 @@ PRE_INV_FEATURE_INPUT=$(cat << EOF
 EOF
 )
 
-START_TIME=$(python3 -c "import time; print(int(time.time() * 1000))")
-PRE_INV_FEATURE_OUTPUT=$(echo "${PRE_INV_FEATURE_INPUT}" | node "${SCRIPTS_DIR}/pre_invocation.mjs")
-END_TIME=$(python3 -c "import time; print(int(time.time() * 1000))")
-LATENCY_FEATURE=$((END_TIME - START_TIME))
+run_hook_timed PRE_INV_FEATURE_OUTPUT LATENCY_FEATURE "${SCRIPTS_DIR}/pre_invocation.mjs" "${PRE_INV_FEATURE_INPUT}"
 
 assert_true "pre_invocation.mjs répond en moins de 150ms pour feature prompt (${LATENCY_FEATURE}ms)" \
   '[ "${LATENCY_FEATURE}" -lt 150 ]'
@@ -377,10 +425,7 @@ PRE_INV_NEUTRAL_INPUT=$(cat << EOF
 EOF
 )
 
-START_TIME=$(python3 -c "import time; print(int(time.time() * 1000))")
-PRE_INV_NEUTRAL_OUTPUT=$(echo "${PRE_INV_NEUTRAL_INPUT}" | node "${SCRIPTS_DIR}/pre_invocation.mjs")
-END_TIME=$(python3 -c "import time; print(int(time.time() * 1000))")
-LATENCY_NEUTRAL=$((END_TIME - START_TIME))
+run_hook_timed PRE_INV_NEUTRAL_OUTPUT LATENCY_NEUTRAL "${SCRIPTS_DIR}/pre_invocation.mjs" "${PRE_INV_NEUTRAL_INPUT}"
 
 assert_true "pre_invocation.mjs répond en moins de 150ms pour prompt neutre (${LATENCY_NEUTRAL}ms)" \
   '[ "${LATENCY_NEUTRAL}" -lt 150 ]'
@@ -417,10 +462,7 @@ ARCHIVE_DENY_INPUT=$(cat << EOF
 EOF
 )
 
-START_TIME=$(python3 -c "import time; print(int(time.time() * 1000))")
-ARCHIVE_DENY_OUTPUT=$(echo "${ARCHIVE_DENY_INPUT}" | node "${SCRIPTS_DIR}/pre_tool_guard.mjs")
-END_TIME=$(python3 -c "import time; print(int(time.time() * 1000))")
-LATENCY=$((END_TIME - START_TIME))
+run_hook_timed ARCHIVE_DENY_OUTPUT LATENCY "${SCRIPTS_DIR}/pre_tool_guard.mjs" "${ARCHIVE_DENY_INPUT}"
 
 assert_true "pre_tool_guard.mjs répond en moins de 150ms (${LATENCY}ms)" \
   '[ "${LATENCY}" -lt 150 ]'
@@ -666,10 +708,7 @@ POST_INDEX_INPUT=$(cat << EOF
 EOF
 )
 
-START_TIME=$(python3 -c "import time; print(int(time.time() * 1000))")
-POST_INDEX_OUTPUT=$(echo "${POST_INDEX_INPUT}" | node "${SCRIPTS_DIR}/post_tool_indexer.mjs")
-END_TIME=$(python3 -c "import time; print(int(time.time() * 1000))")
-LATENCY=$((END_TIME - START_TIME))
+run_hook_timed POST_INDEX_OUTPUT LATENCY "${SCRIPTS_DIR}/post_tool_indexer.mjs" "${POST_INDEX_INPUT}"
 
 assert_true "post_tool_indexer.mjs répond en moins de 250ms (${LATENCY}ms)" \
   '[ "${LATENCY}" -lt 250 ]'
@@ -704,10 +743,7 @@ STOP_WS=$(mktemp -d /tmp/san-stop-guard-ws.XXXXXX)
 )
 
 # 6C.1 Repo propre -> {}
-START_TIME=$(python3 -c "import time; print(int(time.time() * 1000))")
-STOP_CLEAN_OUT=$(echo '{"workspacePaths":["'"${STOP_WS}"'"],"terminationReason":"NO_TOOL_CALL","continuationActive":false}' | node "${SCRIPTS_DIR}/stop_guard.mjs")
-END_TIME=$(python3 -c "import time; print(int(time.time() * 1000))")
-LATENCY=$((END_TIME - START_TIME))
+run_hook_timed STOP_CLEAN_OUT LATENCY "${SCRIPTS_DIR}/stop_guard.mjs" '{"workspacePaths":["'"${STOP_WS}"'"],"terminationReason":"NO_TOOL_CALL","continuationActive":false}'
 
 assert_true "stop_guard.mjs répond en moins de 150ms (${LATENCY}ms)" \
   '[ "${LATENCY}" -lt 150 ]'
@@ -771,6 +807,46 @@ assert_true "stop_guard.mjs supporte forceBlockForTest: true pour tests détermi
 
 rm -rf "${STOP_WS}"
 
+# 6C.8 Exemptions v2.2.0 (design/BRAND.md, design/*.html, opencode.json) & filtre mtimeMs sur vieux fichiers sales
+STOP_WS_V22=$(mktemp -d /tmp/san-stop-guard-v22.XXXXXX)
+(
+  cd "${STOP_WS_V22}"
+  git init -q
+  git config user.name "Stop V22 Tester"
+  git config user.email "stop-v22@alexsan.pro"
+  mkdir -p src design logos .agents/cache
+  echo "export const oldDirty = 1;" > src/old_dirty.js
+  echo "# Initial" > README.md
+  git add .
+  git commit -m "init v22" -q
+)
+
+# A. Fichier dans design/BRAND.md (+ design/mockup.html + opencode.json) ne bloque PAS
+echo "# Brand Spec" > "${STOP_WS_V22}/design/BRAND.md"
+echo "<div>Preview</div>" > "${STOP_WS_V22}/design/mockup.html"
+echo '{"$schema":"https://opencode.ai/config.json"}' > "${STOP_WS_V22}/opencode.json"
+STOP_DESIGN_OUT=$(echo '{"workspacePaths":["'"${STOP_WS_V22}"'"],"terminationReason":"CONVERSATION_TURN_COMPLETE","continuationActive":false}' | node "${SCRIPTS_DIR}/stop_guard.mjs")
+STOP_DESIGN_OK=$(echo "${STOP_DESIGN_OUT}" | python3 -c "import sys,json; print('true' if json.load(sys.stdin) == {} else 'false')")
+assert_true "stop_guard.mjs ne bloque PAS un fichier dans design/BRAND.md (et design/*.html, opencode.json)" \
+  '[ "${STOP_DESIGN_OK}" = "true" ]'
+
+# B. Vieux fichier applicatif modifié (touch -d "20 minutes ago") ne bloque PAS
+echo "export const oldDirty = 2;" > "${STOP_WS_V22}/src/old_dirty.js"
+touch -d "20 minutes ago" "${STOP_WS_V22}/src/old_dirty.js"
+STOP_STALE_OUT=$(echo '{"workspacePaths":["'"${STOP_WS_V22}"'"],"terminationReason":"CONVERSATION_TURN_COMPLETE","continuationActive":false}' | node "${SCRIPTS_DIR}/stop_guard.mjs")
+STOP_STALE_OK=$(echo "${STOP_STALE_OUT}" | python3 -c "import sys,json; print('true' if json.load(sys.stdin) == {} else 'false')")
+assert_true "stop_guard.mjs ne bloque PAS un vieux fichier modifié (src/old_dirty.js modifié il y a 20 minutes)" \
+  '[ "${STOP_STALE_OK}" = "true" ]'
+
+# C. Contre-épreuve Anti-Testing Theater : si src/old_dirty.js est touché à l'instant, stop_guard DOIT bloquer
+touch "${STOP_WS_V22}/src/old_dirty.js"
+STOP_FRESH_OUT=$(echo '{"workspacePaths":["'"${STOP_WS_V22}"'"],"conversationId":"stop-v22-fresh","terminationReason":"CONVERSATION_TURN_COMPLETE","continuationActive":false}' | node "${SCRIPTS_DIR}/stop_guard.mjs")
+STOP_FRESH_OK=$(echo "${STOP_FRESH_OUT}" | python3 -c "import sys,json; print('true' if json.load(sys.stdin).get('decision') == 'continue' else 'false')")
+assert_true "stop_guard.mjs bloque bien (decision: continue) si src/old_dirty.js est modifié récemment" \
+  '[ "${STOP_FRESH_OK}" = "true" ]'
+
+rm -rf "${STOP_WS_V22}"
+
 # ------------------------------------------------------------------------------
 # 7. Validation officielle Antigravity Plugin Engine (agy plugin validate)
 # ------------------------------------------------------------------------------
@@ -784,8 +860,8 @@ mkdir -p "${TMP_PLUGIN_DIR}/assets" "${TMP_PLUGIN_DIR}/hooks/scripts"
 cat << 'EOF' > "${TMP_PLUGIN_DIR}/plugin.json"
 {
   "name": "san-framework",
-  "version": "2.1.0",
-  "description": "Framework Antigravity san_* v2.1 - Cycle de vie & Garde-fous d'orchestration",
+  "version": "2.2.0",
+  "description": "Framework Antigravity san_* v2.2 - Cycle de vie & Garde-fous d'orchestration",
   "logo": "assets/logo.svg"
 }
 EOF

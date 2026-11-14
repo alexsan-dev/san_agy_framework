@@ -122,8 +122,8 @@ assert_true "Plugin global : 5 règles avec frontmatter dans rules/ (${GLOBAL_RU
   '[ "${GLOBAL_RULES_COUNT}" -ge 1 ] && [ "${GLOBAL_RULES_COUNT}" -eq 5 ]'
 
 GLOBAL_SKILLS_COUNT=$(find "${TMP_GLOBAL}/skills" -mindepth 1 -maxdepth 1 -type d -name "san_*" | wc -l)
-assert_true "Plugin global : exactement 18 skills dans skills/ (${GLOBAL_SKILLS_COUNT}/18)" \
-  '[ "${GLOBAL_SKILLS_COUNT}" -eq 18 ]'
+assert_true "Plugin global : exactement 19 skills dans skills/ (${GLOBAL_SKILLS_COUNT}/19)" \
+  '[ "${GLOBAL_SKILLS_COUNT}" -eq 19 ]'
 
 # 1.3 Validation officielle Google Antigravity Plugin Engine
 if command -v agy >/dev/null 2>&1; then
@@ -148,8 +148,8 @@ if command -v agy >/dev/null 2>&1; then
     '[ "${AGY_RULES}" -ge 1 ]'
 
   AGY_SKILLS=$(echo "${AGY_VAL_JSON}" | node -e "const d=JSON.parse(fs.readFileSync(0,'utf8')); console.log(d.components?.skills ?? 0)")
-  assert_true "agy plugin validate détecte exactement 18 skills (détectés: ${AGY_SKILLS})" \
-    '[ "${AGY_SKILLS}" -eq 18 ]'
+  assert_true "agy plugin validate détecte exactement 19 skills (détectés: ${AGY_SKILLS})" \
+    '[ "${AGY_SKILLS}" -eq 19 ]'
 
   AGY_FINDINGS=$(echo "${AGY_VAL_JSON}" | node -e "const d=JSON.parse(fs.readFileSync(0,'utf8')); console.log((d.findings ?? []).length)")
   assert_true "agy plugin validate relève 0 finding (0 warning, 0 note, findings: [])" \
@@ -265,8 +265,8 @@ assert_true "doctor valide le Pilier 3 (Sous-agents natifs .agents/agents/*.md)"
 assert_true "doctor valide le Pilier 4 (Garde-fous mécaniques hooks.json & scripts)" \
   'echo "${DOCTOR_OUT}" | grep -E "✔.*Garde-fous mécaniques"'
 
-assert_true "doctor valide le Pilier 5 (Catalogue des 18 skills <= 130 lignes)" \
-  'echo "${DOCTOR_OUT}" | grep -E "✔.*Catalogue des 18 skills"'
+assert_true "doctor valide le Pilier 5 (Catalogue des 19 skills <= 130 lignes)" \
+  'echo "${DOCTOR_OUT}" | grep -E "✔.*Catalogue des 19 skills"'
 
 assert_true "doctor valide le Pilier 6 (Étanchéité Git)" \
   'echo "${DOCTOR_OUT}" | grep -E "✔.*Étanchéité Git"'
@@ -328,10 +328,10 @@ echo "v1 obsolete skill" > "${TMP_V1}/.agents/skills/san_init/SKILL.md"
 # 3.1 Exécution de update
 UPDATE_OUT=$(node "${CLI_INDEX}" update --dir="${TMP_V1}")
 assert_true "update s'exécute avec succès sur le repo legacy v1.0" \
-  'echo "${UPDATE_OUT}" | grep -q "MIGRATION & MISE À JOUR v2.1"'
+  'echo "${UPDATE_OUT}" | grep -q "MIGRATION & MISE À JOUR v2.2"'
 
-assert_true "update crée .agents/cache/whats_new_pending.json (version 2.1.0, seen=false)" \
-  'python3 -c "import json; d=json.load(open(\"${TMP_V1}/.agents/cache/whats_new_pending.json\")); assert d[\"version\"]==\"2.1.0\" and d[\"seen\"] is False"'
+assert_true "update crée .agents/cache/whats_new_pending.json (version 2.2.0, seen=false)" \
+  'python3 -c "import json; d=json.load(open(\"${TMP_V1}/.agents/cache/whats_new_pending.json\")); assert d[\"version\"]==\"2.2.0\" and d[\"seen\"] is False"'
 
 # 3.2 Vérifications Smart Merge sur BRAND.md
 BRAND_MIGRATED=$(cat "${TMP_V1}/.agents/rules/BRAND.md")
@@ -367,8 +367,8 @@ assert_true "Fichier .agents/hooks.json installé et valide" \
   '[ -f "${TMP_V1}/.agents/hooks.json" ]'
 
 V1_SKILLS_COUNT=$(find "${TMP_V1}/.agents/skills" -mindepth 1 -maxdepth 1 -type d -name "san_*" 2>/dev/null | wc -l)
-assert_true "18 compétences resynchronisées dans .agents/skills/ (${V1_SKILLS_COUNT}/18)" \
-  '[ "${V1_SKILLS_COUNT}" -eq 18 ]'
+assert_true "19 compétences resynchronisées dans .agents/skills/ (${V1_SKILLS_COUNT}/19)" \
+  '[ "${V1_SKILLS_COUNT}" -eq 19 ]'
 
 assert_true "Constitution souveraine <root>/AGENTS.md créée à la racine" \
   '[ -f "${TMP_V1}/AGENTS.md" ]'

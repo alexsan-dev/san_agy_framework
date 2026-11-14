@@ -79,6 +79,41 @@ const profileDisplay = projectProfile ? ` (Profile: ${projectProfile})` : '';
 
 let message = `[SAN.AGY CONSTITUTION v2.0] Active Harness: 8 native subagents (san-*), mandatory pre-mortem & adversarial QA inquisition, zero solo-coding policy. Roadmap: ${roadmapDisplay}${profileDisplay}.`;
 
+// Detect recent Skeptical Relay Transcript in roadmaps/transcripts/*.md
+try {
+  const transcriptsDir = path.join(workspaceRoot, 'roadmaps', 'transcripts');
+  if (fs.existsSync(transcriptsDir)) {
+    const MAX_TRANSCRIPT_AGE_MS = 7 * 24 * 60 * 60 * 1000;
+    const nowMs = Date.now();
+    const tEntries = fs.readdirSync(transcriptsDir, { withFileTypes: true });
+    const recentTranscripts = tEntries
+      .filter(
+        entry =>
+          entry.isFile() &&
+          entry.name.endsWith('.md') &&
+          !/^(?:readme|.*template.*)\.md$/i.test(entry.name)
+      )
+      .map(entry => {
+        const fullPath = path.join(transcriptsDir, entry.name);
+        let mtime = 0;
+        try {
+          mtime = fs.statSync(fullPath).mtimeMs;
+        } catch {
+          mtime = 0;
+        }
+        return { name: entry.name, mtime };
+      })
+      .filter(item => item.mtime > 0 && nowMs - item.mtime <= MAX_TRANSCRIPT_AGE_MS)
+      .sort((a, b) => b.mtime - a.mtime);
+
+    if (recentTranscripts.length > 0) {
+      message += `\nActive Relay Transcript: roadmaps/transcripts/${recentTranscripts[0].name} (APPLY SKEPTICAL RELAY PROTOCOL: verify git diff & tests before trusting prior agent).`;
+    }
+  }
+} catch {
+  // Fail-safe: ignore transcript lookup errors without breaking session_start
+}
+
 // Cartographer radar: only run if .agents directory already exists
 const agentsDir = path.join(workspaceRoot, '.agents');
 if (fs.existsSync(agentsDir)) {

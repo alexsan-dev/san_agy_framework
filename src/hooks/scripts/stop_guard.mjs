@@ -5,6 +5,7 @@ import { execFileSync } from 'node:child_process';
 
 const MAX_RETRIES = 2;
 const GATE_MAX_AGE_MS = 30 * 60 * 1000;
+const RECENT_MOD_WINDOW_MS = 10 * 60 * 1000;
 const NORMAL_TERMINATION_REASONS = new Set([
   'CONVERSATION_TURN_COMPLETE',
   'NO_TOOL_CALL'
@@ -152,10 +153,14 @@ function getModifiedPaths(workspaceRoot) {
 function isDocOrConfigExempt(relPath) {
   const p = relPath.replace(/\\/g, '/').replace(/^\.\//, '');
   if (!p) return true;
-  if (/\.(?:md|mdx)$/i.test(p)) return true;
+  if (/\.(?:md|mdx|txt)$/i.test(p)) return true;
   if (/^roadmaps(?:\/|$)/i.test(p)) return true;
   if (/^docs(?:\/|$)/i.test(p)) return true;
+  if (/^design(?:\/|$)/i.test(p)) return true;
+  if (/^logos(?:\/|$)/i.test(p)) return true;
   if (/(?:^|\/)\.agents(?:\/|$)/i.test(p)) return true;
+  if (/(?:^|\/)\.opencode(?:\/|$)/i.test(p)) return true;
+  if (/(?:^|\/)(?:opencode\.jsonc?|\.gitignore)$/i.test(p)) return true;
   return false;
 }
 
@@ -177,17 +182,50 @@ function parseTimestampMs(rawTs) {
   return null;
 }
 
-function hasValidRecentQualityGate(gateStatusFile) {
+function readGateStatus(gateStatusFile) {
   try {
-    if (!fs.existsSync(gateStatusFile)) return false;
+    if (!fs.existsSync(gateStatusFile)) {
+      return { passed: false, timestampMs: null, isRecentValid: false };
+    }
     const gate = JSON.parse(fs.readFileSync(gateStatusFile, 'utf8'));
-    if (!gate || gate.passed !== true) return false;
+    if (!gate || gate.passed !== true) {
+      return { passed: false, timestampMs: null, isRecentValid: false };
+    }
     const tsMs = parseTimestampMs(gate.timestamp);
-    if (tsMs === null) return false;
+    if (tsMs === null) {
+      return { passed: true, timestampMs: null, isRecentValid: false };
+    }
     const ageMs = Date.now() - tsMs;
-    return ageMs >= -60_000 && ageMs < GATE_MAX_AGE_MS;
+    return {
+      passed: true,
+      timestampMs: tsMs,
+      isRecentValid: ageMs >= -60_000 && ageMs < GATE_MAX_AGE_MS
+    };
   } catch {
-    return false;
+    return { passed: false, timestampMs: null, isRecentValid: false };
+  }
+}
+
+function isRecentAppCodeChange(workspaceRoot, relPath, gateStatus, nowMs) {
+  if (isDocOrConfigExempt(relPath)) return false;
+  const fullPath = path.join(workspaceRoot, relPath);
+  if (!fs.existsSync(fullPath)) {
+    return true;
+  }
+  try {
+    const stat = fs.statSync(fullPath);
+    if (nowMs - stat.mtimeMs > RECENT_MOD_WINDOW_MS) {
+      return false;
+    }
+    if (gateStatus.passed && gateStatus.timestampMs !== null) {
+      // Allow +1ms tolerance for sub-millisecond ISO timestamp truncation
+      if (stat.mtimeMs <= gateStatus.timestampMs + 1) {
+        return false;
+      }
+    }
+    return true;
+  } catch {
+    return true;
   }
 }
 
@@ -237,7 +275,7 @@ try {
     triggerStopBlock(stateFile, currentRetryCount, conversationId);
   }
 
-  // 5. Inspect workspace changes: exempt greenfield / non-git / clean / DOC_ONLY sessions
+  // 5. Inspect workspace changes: exempt greenfield / non-git / clean / DOC_ONLY / stale dirty files
   const modifiedPaths = getModifiedPaths(workspaceRoot);
   if (modifiedPaths === null || modifiedPaths.length === 0) {
     if (currentRetryCount > 0) {
@@ -246,16 +284,26 @@ try {
     allowStop();
   }
 
-  const hasAppCodeChanges = modifiedPaths.some(p => !isDocOrConfigExempt(p));
-  if (!hasAppCodeChanges) {
+  const gateStatus = readGateStatus(gateStatusFile);
+  const nowMs = Date.now();
+  const recentAppChanges = modifiedPaths.filter(p =>
+    isRecentAppCodeChange(workspaceRoot, p, gateStatus, nowMs)
+  );
+  if (recentAppChanges.length === 0) {
     if (currentRetryCount > 0) {
-      resetStateIfPresent(stateFile, conversationId, 'doc_only');
+      resetStateIfPresent(stateFile, conversationId, 'doc_only_or_stale');
     }
     allowStop();
   }
 
   // 6. Verify fresh passing Quality Gate proof (.agents/cache/last-gate-status.json)
-  if (hasValidRecentQualityGate(gateStatusFile)) {
+  // If an existing app file was modified strictly after the passing gate, require a fresh gate run.
+  const hasExistingEditAfterGate =
+    gateStatus.passed &&
+    gateStatus.timestampMs !== null &&
+    recentAppChanges.some(p => fs.existsSync(path.join(workspaceRoot, p)));
+
+  if (gateStatus.isRecentValid && !hasExistingEditAfterGate) {
     if (currentRetryCount > 0) {
       resetStateIfPresent(stateFile, conversationId, 'quality_gate_passed');
     }

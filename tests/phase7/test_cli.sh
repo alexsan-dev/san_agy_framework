@@ -48,14 +48,14 @@ fi
 echo "  [OK] Commande --version validée."
 
 node "${CLI_BIN}" list > "${TMP_DIR}/list.log" 2>&1
-for expected_skill in "san_init" "san_planner" "san_qa_security_expert" "san_backend_expert" "san_subagent_manager"; do
+for expected_skill in "san_init" "san_planner" "san_qa_security_expert" "san_backend_expert" "san_subagent_manager" "san_transcriber"; do
   if ! grep -q "${expected_skill}" "${TMP_DIR}/list.log"; then
     echo "[-] ÉCHEC: Le skill ${expected_skill} n'apparaît pas dans 'list' !"
     cat "${TMP_DIR}/list.log"
     exit 1
   fi
 done
-echo "  [OK] Commande 'list' liste les 18 modules du catalogue."
+echo "  [OK] Commande 'list' liste les 19 modules du catalogue."
 
 # ------------------------------------------------------------------------------
 # TEST 2 : Installation complète en mode local (--local --all) avec Smart Merge
@@ -91,11 +91,11 @@ if [[ ! -f ".agents/skills/san_init/SKILL.md" ]] || [[ ! -f ".agents/skills/san_
 fi
 
 SKILL_COUNT=$(find .agents/skills -mindepth 1 -maxdepth 1 -type d | wc -l)
-if [[ "${SKILL_COUNT}" -ne 18 ]]; then
-  echo "[-] ÉCHEC: Nombre de skills installés incorrect (${SKILL_COUNT} au lieu de 18) !"
+if [[ "${SKILL_COUNT}" -ne 19 ]]; then
+  echo "[-] ÉCHEC: Nombre de skills installés incorrect (${SKILL_COUNT} au lieu de 19) !"
   exit 1
 fi
-echo "  [OK] 18 skills copiés dans .agents/skills/ avec succès."
+echo "  [OK] 19 skills copiés dans .agents/skills/ avec succès."
 
 # B. Smart Merge : BRAND.md personnalisé n'a PAS été écrasé
 if ! grep -q "MON BRAND PERSONNALISÉ CLIENT INTACT" .agents/rules/BRAND.md; then
@@ -178,8 +178,8 @@ echo "  [OK] Mode Dry-Run validé (zéro écriture sur le disque)."
 
 echo "[5/5] Test de whats-new et du mode --light (.agents/skills.json)..."
 WHATS_NEW_OUT=$(node "${CLI_BIN}" whats-new)
-if ! echo "${WHATS_NEW_OUT}" | grep -q "What's New on san-agy v2.1.0"; then
-  echo "[-] ÉCHEC: whats-new n'affiche pas What's New on san-agy v2.1.0 !"
+if ! echo "${WHATS_NEW_OUT}" | grep -q "What's New on san-agy v2.2.0"; then
+  echo "[-] ÉCHEC: whats-new n'affiche pas What's New on san-agy v2.2.0 !"
   exit 1
 fi
 

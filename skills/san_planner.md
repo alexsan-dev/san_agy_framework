@@ -1,17 +1,19 @@
 ---
 name: san_planner
 title: Expert en Planification de Projet, Architecture de Roadmaps et Ordonnancement
-version: 2.0.0
+version: "2.2.0"
 type: entry_point
-harness: google_antigravity_cli
+harness: dual_harness
+models_config: ".agents/models.json"
 routing:
-  orchestrator:
-    nominal: "argon-latest-max"
-    fallback_1: "gemini-3.1-pro-high"
-    fallback_2: "gemini-3.8-flash-high"
-  subagents:
-    analysis_and_architecture: "inherit"
-    script_and_formatting: "flash"
+  antigravity:
+    orchestrator: "gemini-4-argon-high"
+    executor: "gemini-4-hydrogen-xhigh"
+    primitive: "swarm"
+  opencode_v2:
+    orchestrator: "opencode-go/hy4"
+    executor: "opencode-go/deepseek-v4-pro"
+    primitive: "subagent"
 ---
 
 # `san_planner` — Expert en Planification de Projet, Architecture de Roadmaps et Ordonnancement
@@ -36,10 +38,10 @@ routing:
 ## 2. CE QU'IL FAIT / CE QU'IL NE FAIT PAS
 
 ### Ce qu'il FAIT :
-1. **Évaluation de Clarté Amont (Garde-Fou) :** Vérifie que la spécification soumise est suffisamment claire et mature ; si elle est ambiguë ou incomplète, il passe obligatoirement le relais à [san_brainstorming](san_brainstorming.md) avant d'écrire la moindre ligne de roadmap.
-2. **Cartographie Factuelle & Mini-ADR Pre-Mortem :** Déploie le tandem d'excellence v2.0 :
-   - `san-researcher` (`Model: 'flash'`) : Audit de l'état réel de la codebase, schémas de BDD, routes et état des tests.
-   - `san-architect` (`Model: 'pro'`) : Conçoit le **mini-ADR (confrontation de 2 architectures viables)** et le **Pre-Mortem (anticipation des 3 risques majeurs d'échec)** gravés en **Section 0** de la roadmap.
+1. **Verrou d'Alignement Socratique & Capture Live (`Étape 0`) :** Avant de déléguer aux sous-agents, lève toute ambiguïté produit/UI via `ask_question` (Antigravity) ou `question` (OpenCode V2), et capture en PNG toute URL de référence (`export_png.mjs --url=<https://...> --viewports=desktop,mobile`) lue via `read_file`. Si le besoin reste flou, passe le relais à [san_brainstorming](san_brainstorming.md).
+2. **Cartographie Factuelle & Mini-ADR Pre-Mortem (Dual-Harness) :** Déploie le tandem v2.2 via `swarm` (`gemini-4-hydrogen-xhigh`) ou `subagent` OpenCode V2 (`.agents/models.json`) — jamais `invoke_subagent(Model: "inherit")` sur `Argon`/`Carbon` :
+   - `san-researcher` : Audit de l'état réel de la codebase, schémas de BDD, routes et état des tests.
+   - `san-architect` : Conçoit le **mini-ADR (confrontation de 2 architectures viables)** et le **Pre-Mortem (anticipation des 3 risques majeurs d'échec)** gravés en **Section 0** de la roadmap.
 3. **Calcul du Chemin Critique (CPM) Adapté au Profil :** Découpe l'effort en 6 phases séquentielles étanches, adaptées au `PROJECT_PROFILE` (tranches verticales *Tracer Bullet* permises sur `cli_devtools`, renfort 3G/MoMo sur `emerging_market`).
 4. **Politique de Tests Obligatoire par Stack :** Intègre les suites d'assurance qualité adaptées à la technologie hôte (Jest, Vitest, Pest, PHPUnit, Japa, Go test, Pytest, Playwright et collections Bruno).
 5. **Génération de la Roadmap Standardisée :** Rédige le document `/roadmaps/[PHASE]_[PROBLEMATIQUE]_[JJMMAAAA].md` selon le gabarit `ROADMAP_TEMPLATE.md`.
@@ -314,9 +316,9 @@ Afin d'économiser la latence réseau, de respecter les quotas de tokens et d'é
 | **Cochage d'une tâche prouvée (`- [x]`)** | **Orchestrateur Suprême** | Fast-Track direct (édition de fichier) sans sous-agent. |
 | **Archivage d'une roadmap (`archive_roadmap.sh`)** | **Orchestrateur Suprême** | Fast-Track direct via exécution bash. |
 | **Mise à jour de `CHANGELOG.md`** | **Orchestrateur Suprême** | Fast-Track direct sans sous-agent. |
-| **Création d'un contrat d'endpoint (`.bru`, `endpoints/*.md`)** | **Orchestrateur Suprême** | Fast-Track direct ou sous-agent `Model: 'flash'`. |
-| **Écriture de code applicatif (Back / Front / Migrations)** | **Sous-Agents Spécialisés** | **STRICTEMENT DÉLÉGUÉ** sous `Model: 'flash'`. |
-| **Audits d'Architecture, Sécurité OWASP & Pentest** | **Sous-Agents Spécialisés** | **STRICTEMENT DÉLÉGUÉ** sous `Model: 'inherit'`. |
+| **Création d'un contrat d'endpoint (`.bru`, `endpoints/*.md`)** | **Orchestrateur Suprême** | Fast-Track direct ou worker Dual-Harness (`swarm` / `subagent`). |
+| **Écriture de code applicatif (Back / Front / Migrations)** | **Sous-Agents Spécialisés** | **STRICTEMENT DÉLÉGUÉ** via `swarm` (`gemini-4-hydrogen-xhigh`) ou `subagent` (`.agents/models.json`). |
+| **Audits d'Architecture, Sécurité OWASP & Pentest** | **Sous-Agents Spécialisés** | **STRICTEMENT DÉLÉGUÉ** en lecture seule via `swarm` (`gemini-4-hydrogen-xhigh`) ou `subagent` (jamais `Model: 'inherit'`). |
 
 ### La Règle Inaltérable de l'Orchestrateur :
 > *« L'orchestrateur est un stratège et un greffier d'hygiène : il ne code jamais les fonctionnalités métier lui-même, mais il gère directement et sans délai la tenue des registres, le cochage des preuves et l'archivage. »*
@@ -327,13 +329,13 @@ Afin d'économiser la latence réseau, de respecter les quotas de tokens et d'é
 
 ```mermaid
 flowchart TD
-    Start(["Intention / Besoin Métier"]) --> Step0{"Spécification Mature et Délimitée ?"}
+    Start(["Intention / Besoin Métier"]) --> Step0{"Alignement Socratique & Capture PNG OK ?"}
     
     Step0 -->|"NON (Flou / Idée Brute)"| CallBrainstorm["Redirection vers san_brainstorming"]
     CallBrainstorm --> FicheIdea["Fiche /roadmaps/ideas/*.md"]
     FicheIdea --> Step1
     
-    Step0 -->|"OUI"| Step1["Étape 1 : Double Diagnostic (UX & Technique - 'inherit')"]
+    Step0 -->|"OUI"| Step1["Étape 1 : Double Diagnostic Dual-Harness (swarm / subagent)"]
     
     Step1 --> Step2["Étape 2 : Veille & Vérification Versions (san_searcher)"]
     Step2 --> Step3["Étape 3 : Calcul du Chemin Critique (6 phases CPM)"]
@@ -342,15 +344,15 @@ flowchart TD
     Step5 --> EndVal(["Roadmap Prête pour Prise en Charge san_executer"])
 ```
 
-### Étape 0 : Évaluation de Maturité & Aiguillage
-- Examiner la demande. Si le périmètre est indéterminé ou si des questions de monétisation ou de choix d'architecture restent ouvertes, déléguer immédiatement à [san_brainstorming](san_brainstorming.md).
-- Si la demande s'appuie sur une fiche `/roadmaps/ideas/*.md` validée ou un cahier des charges clair, engager l'Étape 1.
+### Étape 0 : Alignement Socratique, Inspection Visuelle Live & Aiguillage
+- **Verrou `ask_question` / `question` :** Avant de spawner `san-researcher` ou `san-architect`, poser toute question d'alignement critique sur le périmètre et capturer en PNG toute URL citée via `export_png.mjs --url=<https://...> --viewports=desktop,mobile` (lecture directe avec `read_file`).
+- Si le besoin reste exploratoire, déléguer à [san_brainstorming](san_brainstorming.md) ; sinon engager l'Étape 1.
 
 ### Étape 1 : Cartographie Factuelle via `san-researcher`
-- Déployer `san-researcher` (`Model: 'flash'`, sandbox) pour inspecter les modèles BDD, migrations, routes et commandes de tests réelles.
+- Déployer `san-researcher` via `swarm(action: "add", model: "gemini-4-hydrogen-xhigh")` (Antigravity) ou `subagent` (OpenCode V2 via `.agents/models.json`) pour inspecter les modèles BDD, migrations, routes et commandes de tests réelles.
 
-### Étape 2 : Mini-ADR & Pre-Mortem via `san-architect` (`Model: 'pro'`)
-- Déployer `san-architect` pour arbitrer entre 2 architectures viables (sans option C épouvantail) et rédiger le Pre-Mortem des 3 causes de rupture systémique pour la **Section 0** de la roadmap.
+### Étape 2 : Mini-ADR & Pre-Mortem via `san-architect` (lecture seule)
+- Déployer `san-architect` (`swarm` / `subagent`) pour arbitrer entre 2 architectures viables (sans option C épouvantail) et rédiger le Pre-Mortem des 3 causes de rupture systémique pour la **Section 0** de la roadmap.
 
 ### Étape 3 : Calcul du Chemin Critique & Découpage en 6 Phases Adapté au Profil
 - Établir les dépendances strictes : Contrats $\rightarrow$ Backend Core $\rightarrow$ Frontend UI $\rightarrow$ E2E Dégradé $\rightarrow$ Audits $\rightarrow$ Clôture.

@@ -1,17 +1,21 @@
 ---
 name: san_cartographer
 title: Moteur Hybride de Cartographie & Cache du Repo
-version: 2.0.0
+version: "2.2.0"
 type: sub_skill
 role: Codebase Cartographer & Hybrid Cache Architect
-harness: google_antigravity_cli
+harness: dual_harness
+models_config: ".agents/models.json"
 routing:
-  orchestrator:
-    nominal: "argon-latest-max"
-    fallback_1: "gemini-3.1-pro-high"
-    fallback_2: "gemini-3.8-flash-high"
+  antigravity:
+    orchestrator: "gemini-4-argon-high"
+    executor: "gemini-4-hydrogen-xhigh"
+    primitive: "swarm"
+  opencode_v2:
+    orchestrator: "opencode-go/hy4"
+    executor: "opencode-go/deepseek-v4-pro"
+    primitive: "subagent"
   dedicated_agent: "san-researcher"
-  agent_model: "flash"
 triggers:
   - "san_cartographer"
   - "cartographie la codebase"
@@ -208,7 +212,7 @@ Pour éviter la congestion de la fenêtre contextuelle, `san_cartographer` sépa
 ### Phase 1 : Injection du Radar Niveau 1 (< 1.5 KB)
 Au démarrage d'une session ou en amorce de plan, l'agent intègre uniquement la section Radar :
 ```markdown
-# 🧭 REPO RADAR (v2.0)
+# 🧭 REPO RADAR (v2.2)
 - **Fichiers**: 48 | **Symboles**: 264 | **Horodatage**: 2026-11-07T03:00:00.000Z
 - **Langages**: typescript (75%), php (17%), sql (8%)
 - **Points d'Entrée**: `src/index.ts`, `routes/api.php`

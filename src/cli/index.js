@@ -4,7 +4,7 @@
  * ==============================================================================
  * CLI UNIVERSEL D'INSTALLATION & GOUVERNANCE — FRAMEWORK ANTIGRAVITY (san_*)
  * Auteur : Alexsan.pro
- * Architecture v2.1 : 4 Couches, 8 Sous-Agents, 18 Skills, 5 Hooks, Doctor
+ * Architecture v2.2 : 4 Couches, 8 Sous-Agents, 19 Skills, 5 Hooks, Dual-Harness
  * ==============================================================================
  */
 
@@ -24,6 +24,8 @@ import {
   updateFramework,
   runDoctor,
   printDoctorReport,
+  readModelsConfig,
+  configureModels,
   colors
 } from './installer.js';
 import { formatWhatsNewTerminal } from './whats_new.js';
@@ -32,7 +34,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Lecture de la version dynamique depuis package.json
-let frameworkVersion = '2.1.0';
+let frameworkVersion = '2.2.0';
 try {
   const pkgPath = path.resolve(FRAMEWORK_ROOT, 'package.json');
   if (fs.existsSync(pkgPath)) {
@@ -59,41 +61,52 @@ export function showBanner() {
  */
 export function showHelp() {
   showBanner();
-  console.log(`${colors.bold}FRAMEWORK UNIVERSEL GOOGLE ANTIGRAVITY (san_*)${colors.reset}`);
-  console.log(`${colors.gray}Alexsan.pro · Cartesian Engineering & Cognitive Harness · v${frameworkVersion}${colors.reset}\n`);
+  const skillCount = getAvailableSkills().length || 19;
+  const minorLabel = frameworkVersion.split('.').slice(0, 2).join('.') || '2.2';
+  console.log(`${colors.bold}FRAMEWORK UNIVERSEL GOOGLE ANTIGRAVITY & OPENCODE V2 (san_*)${colors.reset}`);
+  console.log(`${colors.gray}Alexsan.pro · Cartesian Engineering & Dual-Harness · v${frameworkVersion}${colors.reset}\n`);
   console.log(`${colors.bold}UTILISATION :${colors.reset}`);
   console.log(`  npx @alexsan/agy-framework <commande> [options]`);
   console.log(`  agy-framework <commande> [options]`);
   console.log(`  san-framework <commande> [options]\n`);
   console.log(`${colors.bold}COMMANDES OFFICIELLES :${colors.reset}`);
-  console.log(`  ${colors.brightCyan}init${colors.reset}                     Installer le framework v2.1 (local 4 couches ou global plugin)`);
-  console.log(`  ${colors.brightCyan}update${colors.reset}                   Mettre à jour vers v2.1 (Smart Merge frontmatter, 8 agents, 5 hooks)`);
-  console.log(`  ${colors.brightCyan}doctor${colors.reset}                   Contrôler les 6 piliers de santé v2.1 et l'intégrité de l'environnement`);
+  console.log(`  ${colors.brightCyan}init${colors.reset}                     Installer le framework v${minorLabel} (local 4 couches ou global plugin)`);
+  console.log(`  ${colors.brightCyan}update${colors.reset}                   Mettre à jour vers v${minorLabel} (Smart Merge, 8 agents, 5 hooks, opencode.json)`);
+  console.log(`  ${colors.brightCyan}models${colors.reset}                   Afficher/configurer les modèles (.agents/models.json & opencode.json V2)`);
+  console.log(`  ${colors.brightCyan}doctor${colors.reset}                   Contrôler les 6 piliers de santé v${minorLabel} et l'intégrité de l'environnement`);
   console.log(`  ${colors.brightCyan}whats-new${colors.reset}                Afficher les notes de version (What's New on san-agy)`);
-  console.log(`  ${colors.brightCyan}list${colors.reset}                     Lister l'ensemble des 18 skills du catalogue`);
+  console.log(`  ${colors.brightCyan}list${colors.reset}                     Lister l'ensemble des ${skillCount} skills du catalogue`);
   console.log(`  ${colors.brightCyan}version, -v, --version${colors.reset}   Afficher la version installée`);
   console.log(`  ${colors.brightCyan}help, -h, --help${colors.reset}         Afficher ce guide d'aide\n`);
   console.log(`${colors.bold}OPTIONS GÉNÉRALES :${colors.reset}`);
   console.log(`  ${colors.cyan}--local${colors.reset}                  Installer dans le projet local (.agents/) [Défaut en non-interactif]`);
   console.log(`  ${colors.cyan}--global${colors.reset}                 Installer sous forme de Plugin global Antigravity`);
-  console.log(`  ${colors.cyan}--light${colors.reset}                  Mode héritage léger (.agents/skills.json "inherits" sans copier les 18 skills)`);
-  console.log(`  ${colors.cyan}--all${colors.reset}                    Installer l'intégralité des 18 skills du catalogue`);
+  console.log(`  ${colors.cyan}--light${colors.reset}                  Mode héritage léger (.agents/skills.json "inherits" sans copier les ${skillCount} skills)`);
+  console.log(`  ${colors.cyan}--all${colors.reset}                    Installer l'intégralité des ${skillCount} skills du catalogue`);
   console.log(`  ${colors.cyan}--skills=<liste>${colors.reset}         Sélection granulaire de skills (ex: --skills=san_init,san_planner)`);
   console.log(`  ${colors.cyan}--dry-run${colors.reset}                Mode simulation (zéro écriture sur le disque)`);
   console.log(`  ${colors.cyan}--force${colors.reset}                  Forcer la réécriture des composants existants`);
-  console.log(`  ${colors.cyan}--opencode${colors.reset}               Génère également le contexte opencode.json`);
-  console.log(`  ${colors.cyan}--dir=<chemin>${colors.reset}            Spécifier manuellement le répertoire cible\n`);
+  console.log(`  ${colors.cyan}--opencode${colors.reset}               Génère/met à jour opencode.json V2 (8 sous-agents natifs)`);
+  console.log(`  ${colors.cyan}--dir=<chemin>${colors.reset}           Spécifier manuellement le répertoire cible\n`);
+  console.log(`${colors.bold}OPTIONS DE LA COMMANDE models :${colors.reset}`);
+  console.log(`  ${colors.cyan}--opencode=<model>${colors.reset}       Définir opencode.executor (ex: opencode-go/deepseek-v4-pro)`);
+  console.log(`  ${colors.cyan}--agy=<model>${colors.reset}            Définir agy.executor (ex: gemini-4-hydrogen-xhigh)`);
+  console.log(`  ${colors.cyan}--orchestrator=<model>${colors.reset}   Définir l'orchestrateur correspondant (avec ou sans '/')`);
+  console.log(`  ${colors.cyan}--set=<model>${colors.reset}            Détection automatique ('/' -> OpenCode, sinon Antigravity)`);
+  console.log(`  ${colors.cyan}--interactive, -i${colors.reset}        Assistant interactif (TTY uniquement)\n`);
   console.log(`${colors.bold}EXEMPLES D'UTILISATION :${colors.reset}`);
-  console.log(`  ${colors.gray}# 1. Déploiement complet des 4 couches v2.1 dans le projet courant${colors.reset}`);
+  console.log(`  ${colors.gray}# 1. Déploiement complet des 4 couches v${minorLabel} dans le projet courant${colors.reset}`);
   console.log(`  san-framework init --local --all\n`);
-  console.log(`  ${colors.gray}# 2. Déploiement léger (skills hérités via .agents/skills.json)${colors.reset}`);
-  console.log(`  san-framework init --local --light\n`);
-  console.log(`  ${colors.gray}# 3. Vérification de santé et conformité des 6 piliers${colors.reset}`);
-  console.log(`  san-framework doctor\n`);
-  console.log(`  ${colors.gray}# 4. Mise à jour non-destructive et affichage des nouveautés${colors.reset}`);
+  console.log(`  ${colors.gray}# 2. Déploiement Dual-Harness (Antigravity + OpenCode V2)${colors.reset}`);
+  console.log(`  san-framework init --local --all --opencode\n`);
+  console.log(`  ${colors.gray}# 3. Basculer le Profil Exécuteur Unifié (OpenCode V2 & Antigravity)${colors.reset}`);
+  console.log(`  san-framework models --opencode=opencode-go/deepseek-v4-pro`);
+  console.log(`  san-framework models --opencode=opencode-go/qwen3.8-flash`);
+  console.log(`  san-framework models --agy=gemini-4-hydrogen-xhigh\n`);
+  console.log(`  ${colors.gray}# 4. Déploiement léger (skills hérités via .agents/skills.json) & Doctor${colors.reset}`);
+  console.log(`  san-framework init --local --light && san-framework doctor\n`);
+  console.log(`  ${colors.gray}# 5. Mise à jour non-destructive et affichage des nouveautés${colors.reset}`);
   console.log(`  san-framework update && san-framework whats-new\n`);
-  console.log(`  ${colors.gray}# 5. Packaging Plugin global Antigravity CLI${colors.reset}`);
-  console.log(`  san-framework init --global --all\n`);
 }
 
 /**
@@ -119,7 +132,8 @@ async function runInteractivePrompt(availableSkills, initialTargetMode = null) {
   const rl = readline.createInterface({ input, output });
 
   try {
-    console.log(`${colors.brightCyan}${colors.bold}--- Assistant Interactif d'Installation Antigravity v2.1 ---${colors.reset}\n`);
+    const minorLabel = frameworkVersion.split('.').slice(0, 2).join('.') || '2.2';
+    console.log(`${colors.brightCyan}${colors.bold}--- Assistant Interactif d'Installation Antigravity v${minorLabel} ---${colors.reset}\n`);
 
     let targetMode = initialTargetMode;
     if (!targetMode) {
@@ -132,7 +146,7 @@ async function runInteractivePrompt(availableSkills, initialTargetMode = null) {
     }
 
     console.log(`\n${colors.bold}2. Sélection des compétences (Skills) :${colors.reset}`);
-    console.log(`   [1] Tous les skills ${colors.green}[Recommandé - 18 modules du framework v2.1]${colors.reset}`);
+    console.log(`   [1] Tous les skills ${colors.green}[Recommandé - ${availableSkills.length} modules du framework v${minorLabel}]${colors.reset}`);
     console.log(`   [2] Socle Onboarding & Cadrage (san_init, san_brainstorming, san_planner)`);
     console.log(`   [3] Sélection manuelle personnalisée\n`);
 
@@ -174,12 +188,58 @@ async function runInteractivePrompt(availableSkills, initialTargetMode = null) {
   }
 }
 
+function printModelsQuickExamples() {
+  console.log(`${colors.bold}Exemples rapides :${colors.reset}`);
+  console.log(`  ${colors.brightCyan}san-framework models --opencode=opencode-go/deepseek-v4-pro${colors.reset}`);
+  console.log(`  ${colors.brightCyan}san-framework models --opencode=opencode-go/qwen3.8-flash${colors.reset}`);
+  console.log(`  ${colors.brightCyan}san-framework models --agy=gemini-4-hydrogen-xhigh${colors.reset}`);
+  console.log(`  ${colors.brightCyan}san-framework models --set=opencode-go/glm-5.3-flash${colors.reset}`);
+  console.log(`  ${colors.brightCyan}san-framework models --orchestrator=opencode-go/hy4${colors.reset}\n`);
+}
+
+function validateModelFlag(flagName, value) {
+  if (value === undefined) return undefined;
+  if (typeof value !== 'string' || !value.trim() || value.trim().startsWith('-')) {
+    throw new Error(`L'option --${flagName} requiert un nom de modèle valide (ex: --${flagName}=opencode-go/deepseek-v4-pro).`);
+  }
+  return value.trim();
+}
+
+async function runModelsInteractivePrompt(currentConfig) {
+  const rl = readline.createInterface({ input, output });
+  try {
+    console.log(`${colors.brightCyan}${colors.bold}--- Assistant Interactif san-framework models ---${colors.reset}\n`);
+    const ocExec = (await rl.question(
+      `${colors.cyan}Exécuteur OpenCode V2 [${currentConfig.opencode.executor}] : ${colors.reset}`
+    )).trim();
+    const agyExec = (await rl.question(
+      `${colors.cyan}Exécuteur Antigravity [${currentConfig.agy.executor}] : ${colors.reset}`
+    )).trim();
+    const ocOrch = (await rl.question(
+      `${colors.cyan}Orchestrateur OpenCode V2 [${currentConfig.opencode.orchestrator}] : ${colors.reset}`
+    )).trim();
+    const agyOrch = (await rl.question(
+      `${colors.cyan}Orchestrateur Antigravity [${currentConfig.agy.orchestrator}] : ${colors.reset}`
+    )).trim();
+
+    return {
+      opencodeExecutor: ocExec || currentConfig.opencode.executor,
+      agyExecutor: agyExec || currentConfig.agy.executor,
+      opencodeOrchestrator: ocOrch || currentConfig.opencode.orchestrator,
+      agyOrchestrator: agyOrch || currentConfig.agy.orchestrator
+    };
+  } finally {
+    rl.close();
+  }
+}
+
 /**
  * Point d'entrée principal CLI
  */
 async function main() {
+  const rawArgs = process.argv.slice(2);
   const { values, positionals } = parseArgs({
-    args: process.argv.slice(2),
+    args: rawArgs,
     options: {
       help: { type: 'boolean', short: 'h' },
       version: { type: 'boolean', short: 'v' },
@@ -226,7 +286,79 @@ async function main() {
     process.exit(0);
   }
 
-  // 4. Commande Doctor (contrôle officiel des 6 piliers de santé v2.1)
+  // 3B. Commande Models (.agents/models.json & opencode.json V2)
+  if (command === 'models') {
+    const { values: mValues } = parseArgs({
+      args: rawArgs,
+      options: {
+        help: { type: 'boolean', short: 'h' },
+        opencode: { type: 'string' },
+        agy: { type: 'string' },
+        orchestrator: { type: 'string' },
+        'agy-orchestrator': { type: 'string' },
+        'opencode-orchestrator': { type: 'string' },
+        set: { type: 'string' },
+        dir: { type: 'string' },
+        'dry-run': { type: 'boolean' },
+        interactive: { type: 'boolean', short: 'i' }
+      },
+      allowPositionals: true,
+      strict: false
+    });
+
+    if (mValues.help) {
+      showHelp();
+      process.exit(0);
+    }
+
+    const opencodeExecutor = validateModelFlag('opencode', mValues.opencode);
+    const agyExecutor = validateModelFlag('agy', mValues.agy);
+    const orchestrator = validateModelFlag('orchestrator', mValues.orchestrator);
+    const agyOrchestrator = validateModelFlag('agy-orchestrator', mValues['agy-orchestrator']);
+    const opencodeOrchestrator = validateModelFlag('opencode-orchestrator', mValues['opencode-orchestrator']);
+    const setModel = validateModelFlag('set', mValues.set);
+    const targetDir = mValues.dir;
+    const dryRun = Boolean(mValues['dry-run']);
+
+    const hasMutationFlags = Boolean(
+      opencodeExecutor ||
+      agyExecutor ||
+      orchestrator ||
+      agyOrchestrator ||
+      opencodeOrchestrator ||
+      setModel
+    );
+
+    if (!hasMutationFlags && mValues.interactive && process.stdin.isTTY) {
+      const current = readModelsConfig(targetDir).config;
+      const answers = await runModelsInteractivePrompt(current);
+      configureModels({
+        targetDir,
+        ...answers,
+        dryRun
+      });
+      process.exit(0);
+    }
+
+    configureModels({
+      targetDir,
+      opencodeExecutor,
+      agyExecutor,
+      orchestrator,
+      agyOrchestrator,
+      opencodeOrchestrator,
+      setModel,
+      dryRun
+    });
+
+    if (!hasMutationFlags) {
+      printModelsQuickExamples();
+    }
+
+    process.exit(0);
+  }
+
+  // 4. Commande Doctor (contrôle officiel des 6 piliers de santé v2.2)
   if (command === 'doctor') {
     showBanner();
     const report = runDoctor({ targetDir: values.dir });
@@ -234,7 +366,7 @@ async function main() {
     process.exit(report.allPassed ? 0 : 1);
   }
 
-  // 5. Commande Update (migration & mise à jour v2.1 non destructive)
+  // 5. Commande Update (migration & mise à jour v2.2 non destructive)
   if (command === 'update') {
     showBanner();
     const availableSkills = getAvailableSkills();

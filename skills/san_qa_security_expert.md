@@ -1,8 +1,10 @@
 ---
 name: san_qa_security_expert
 description: Juge de paix unique et exclusif du framework Antigravity pour les tests E2E, les audits de sécurité OWASP (Web Top 10, API Top 10 2023, Mobile Top 10 2024) et l'ingénierie de performance (Core Web Vitals, 3G/EDGE dégradé). Verdict binaire strict LIVRABLE / NON LIVRABLE avec fiches de bugs reproductibles.
-version: 2.0.0
-role: Lead QA, Security & Performance Engineer (Quality Gatekeeper v2.0)
+version: "2.2.0"
+role: Lead QA, Security & Performance Engineer (Quality Gatekeeper v2.2 Dual-Harness)
+harness: dual_harness
+models_config: ".agents/models.json"
 triggers:
   - "san_qa_security_expert"
   - "audite la sécurité"
@@ -10,9 +12,15 @@ triggers:
   - "benchmark la performance"
   - "évalue la conformité OWASP"
   - "valide le verdict de livraison"
-model_delegation:
-  execution: "flash"
-  audit: "pro"
+routing:
+  antigravity:
+    orchestrator: "gemini-4-argon-high"
+    executor: "gemini-4-hydrogen-xhigh"
+    primitive: "swarm"
+  opencode_v2:
+    orchestrator: "opencode-go/hy4"
+    executor: "opencode-go/deepseek-v4-pro"
+    primitive: "subagent"
 ---
 
 # SKILL : san_qa_security_expert — Lead QA, Sécurité OWASP & Performance (Quality Gatekeeper)
@@ -134,7 +142,7 @@ Action Requise : Correction immédiate par san_backend_expert puis contre-visite
 flowchart TD
     A["1. Cartographie d'Attaque & Périmètre (Routes, Écrans, Flux MoMo)"] --> B["2. Étage 1 : Quality Gate Scripté (Zéro Token LLM)"]
     B -->|Échec Tests / CVE / Lint| C["ARRÊT IMMÉDIAT : Renvoi Erreurs Brutes aux Développeurs"]
-    B -->|100% Validé Déterministe| D["3. Étage 2 : 3 Auditeurs Parallèles Cognitifs ('inherit')"]
+    B -->|100% Validé Déterministe| D["3. Étage 2 : 3 Auditeurs Parallèles (swarm / subagent)"]
     D --> D1["Auditeur E2E (Playwright 3G Throttling)"]
     D --> D2["Auditeur Pentest (OWASP API 2023 & Mobile)"]
     D --> D3["Auditeur Performance (Core Web Vitals, p95)"]
@@ -155,7 +163,7 @@ Exécution du script `scripts/qa_security_gate.sh` :
 * Exécution des suites de tests unitaires et d'intégration existantes (`pest`, `phpunit`, `jest`).
 * **Garde-fou anti-gaspillage :** Si l'Étage 1 échoue, l'audit cognitif est **immédiatement avorté**. Les logs bruts sont renvoyés à [`san_backend_expert`](san_backend_expert.md) ou [`san_ux_ui_expert`](san_ux_ui_expert.md) pour résolution.
 
-### Phase 3 : Étage 2 — 3 Auditeurs Spécialisés Parallèles (`Model: 'inherit'`)
+### Phase 3 : Étage 2 — 3 Auditeurs Spécialisés Parallèles (Dual-Harness `swarm` / `subagent`)
 Dès validation complète de l'Étage 1, mobilisation simultanée de 3 instances cognitives :
 1. **Auditeur E2E Fonctionnel :**
    * Exécution des scénarios nominaux et limites via Playwright.
@@ -177,7 +185,7 @@ Dès validation complète de l'Étage 1, mobilisation simultanée de 3 instances
    Toute anomalie fait l'objet d'un ticket médico-légal standardisé (voir Section 8).
 
 ### Phase 5 : Contre-Visite & Clôture Fast-Track
-1. Après intervention corrective par les sous-agents de développement (`Model: 'flash'`), contre-visite ciblée sur les fiches d'anomalies émises.
+1. Après intervention corrective par les workers de développement (`swarm` / `subagent`), contre-visite ciblée sur les fiches d'anomalies émises.
 2. Dès franchissement des seuils d'excellence : émission officielle du verdict `LIVRABLE`, archivage des rapports dans `docs/` et passage de relais à [`san_devops_expert`](san_devops_expert.md).
 
 ---
@@ -603,5 +611,5 @@ graph LR
 * [`san_devops_expert.md`](san_devops_expert.md) : Reçoit le feu vert officiel `VERDICT: LIVRABLE` pour engager les pipelines de déploiement en production.
 
 ### Gouvernance et Compétences Transversales
-* [`san_subagent_manager.md`](../sub-skills/san_subagent_manager.md) : Déploie les 3 auditeurs cognitifs spécialisés avec leurs prompts dédiés en mode `Model: 'inherit'`.
+* [`san_subagent_manager.md`](../sub-skills/san_subagent_manager.md) : Déploie les auditeurs cognitifs spécialisés avec leurs prompts dédiés en Dual-Harness (`swarm` / `subagent` via `.agents/models.json`).
 * [`san_searcher.md`](../sub-skills/san_searcher.md) : Recherche les bulletins CVE récents et les correctifs officiels sur les dépendances du projet.

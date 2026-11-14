@@ -17,6 +17,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2.2.0] - 2026-11-14
+
+### Added
+- **1. Dual-Harness Architecture (`Antigravity` + `OpenCode V2`) & `san-framework models` Command:**
+  - Native **OpenCode V2 (`v2.2.7+` / `2.3.0`)** support in `mergeOpencodeConfig()` (`src/cli/installer.js`) automatically generating and merging the `"agents"` key inside `opencode.json` for all 8 `san-*` subagents (`mode: "subagent"`, `description`, `model`, `system`, and read-only edit-deny `permissions` for `san-researcher`, `san-architect`, and `san-qa-auditor`), invoked via the `subagent` tool alongside Antigravity's `swarm` engine.
+  - New model profile manager **`.agents/models.json`** (`DEFAULT_MODELS_CONFIG`, `profile: "unified-executor"`) and CLI command **`san-framework models`** (`--opencode=<model>`, `--agy=<model>`, `--orchestrator=<model>`, `--set=<model>`, `--dir=<path>`) managing the **Unified Executor Profile**: e.g., `opencode-go/deepseek-v4-pro` or `opencode-go/qwen3.8-flash` (orchestrator `opencode-go/hy4`) on OpenCode V2, and `gemini-4-hydrogen-xhigh` (orchestrator `gemini-4-argon-high`) on Google Antigravity, with instant resynchronization of `opencode.json`.
+  - Automatic resynchronization of `opencode.json` during `san-framework update` when `opencode.json` already exists or when `--opencode` is passed.
+- **2. New 19th Skill: `san_transcriber` (`src/skills/san_transcriber/`, `roadmaps/transcripts/`):**
+  - Quota-exhaustion handoff skill invoked via `/san_transcriber` (`SKILL.md <= 130` lines, `scripts/transcript_helper.mjs`, `templates/TRANSCRIPT_TEMPLATE.md`).
+  - Generates deterministic transcripts in `roadmaps/transcripts/TRANSCRIPT_<ROADMAP>_<DATE>.md` linked to active roadmaps (`roadmaps/*.md`), capturing Git state and `- [x]` / `- [ ]` task progress.
+  - Enforces the **Skeptical Handoff Protocol (*Doubt & Verify*)**, prompting the incoming agent to audit, verify from source/tests, and challenge the outgoing agent's work.
+  - Automatic startup detection of the latest transcript in `roadmaps/transcripts/*.md` by `src/hooks/scripts/session_start.mjs` (`[SAN.AGY CONSTITUTION v2.2]` banner).
+- **3. Live Web Capture (`export_png.mjs --url`) & Universal Playwright Resolution:**
+  - Added `--url=<https://...>` (single URL or comma-separated list) and `--full-page` flags to `export_png.mjs` (`san_designer` and `san_exporter`) to capture real rendered pixels from inspiration websites via Playwright (defaulting to `desktop` `1440×900` + `mobile` `390×844` into `design/references/<hostname>-<pathname>-<viewport>.png`, with `--audit-dom` support).
+  - Extended `loadPlaywright()` resolution across local project `cwd`, `NODE_PATH`, script ancestry (`import.meta.url` / `realpathSync`), global plugin (`~/.gemini/antigravity-cli/plugins/san-framework/node_modules`), and `~/.npm/_npx` cache.
+
+### Changed
+- **Cognitive De-Lobotomization & Socratic Alignment (`AGENTS_INDEX_TEMPLATE.md`, `PROJECT_TEMPLATE.md`, `san_planner`, `san_brainstorming`, `san_designer`):**
+  - Replaced blind immediate-delegation directives with the **Socratic & Visual Alignment Rule** (Stage 0): the Orchestrator (`Argon 4` / `hy4`) must align key design/product decisions directly with the user via `ask_question` / `question` and inspect real visual captures (`export_png.mjs --url`) before delegating roadmap authoring or mockup implementation to subagents.
+- **Dual-Harness Unification & Byte-Identical Script Deduplication (HY4 Audit):**
+  - Expanded catalog from **18 to 19 skills** (`package.json`, `src/plugin/plugin.json`, `src/cli/whats_new.js`, `src/cli/index.js`, `src/cli/installer.js`) and replaced mono-vendor coupling with the **Unified Executor Profile** (`Antigravity` `swarm` | `OpenCode V2` `subagent`) across all 8 subagents and 19 skills.
+  - Byte-identical unification (`cmp -s` = 0) of the 3 shared script pairs: `export_png.mjs` (`san_designer` $\leftrightarrow$ `san_exporter`), `archive_roadmap.sh` (`san_planner` $\leftrightarrow$ `san_doc_keeper`, preserving `roadmaps/archives/<BASENAME>` and SHA-256 certification header), and `svg_to_png.mjs` (`san_init` $\leftrightarrow$ `san_exporter`, including Apple `ITMS-90717` alpha-channel flattening).
+  - Synchronized all 19 `skills/*.md` and `sub-skills/*.md` wrappers to `version: "2.2.0"` (including `san_transcriber.md`).
+
+### Fixed
+- **Eliminated false positives in `stop_guard.mjs` (`src/hooks/scripts/stop_guard.mjs`):**
+  - Added `mtimeMs` timestamp filtering to ignore pre-existing dirty files (older than 10 minutes or predating `last-gate-status.json`), preventing spurious blocks during scoping and planning sessions on repos with uncommitted pre-existing changes.
+  - Expanded exemptions to non-application paths and docs: `design/**`, `logos/**`, `.opencode/**`, `opencode.json`, `opencode.jsonc`, `.gitignore`, `*.md`, `*.mdx`, `*.txt`, `roadmaps/**`, `docs/**`, `.agents/**`.
+- **Python `.gitignore` Hygiene (HY4 Audit):**
+  - Added `__pycache__/`, `*.py[cod]`, and `*$py.class` to the root `.gitignore` and to the isolation block injected by `src/skills/san_init/scripts/git_ai_hygiene.sh`.
+
+---
+
 ## [2.1.0] - 2026-11-14
 
 ### Added

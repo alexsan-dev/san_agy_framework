@@ -1,8 +1,8 @@
 {
   "name": "san-framework",
   "displayName": "SAN Antigravity Framework",
-  "version": "2.1.0",
-  "description": "Cartesian cognitive harness & fail-closed engineering framework for Google Antigravity & opencode. Autonomous Orchestrator (Argon) + Gemini 4 Hydrogen XHigh Swarm, 8 subagents, 18 skills, 5 lifecycle hooks and Studio UI Engine.",
+  "version": "2.2.0",
+  "description": "Cartesian cognitive harness & fail-closed engineering framework for Google Antigravity & OpenCode V2. Dual-Harness (Swarm + Subagents), san-framework models CLI, 8 subagents, 19 skills (incl. san_transcriber), 5 lifecycle hooks and Studio UI Engine.",
   "author": {
     "name": "Alexsan.pro",
     "url": "https://github.com/alexsan-dev/san_agy_framework"

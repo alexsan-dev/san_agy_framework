@@ -1,16 +1,20 @@
 ---
 name: san_doc_keeper
 title: Gardien de l'Intégrité Documentaire, Synchronisation et Hygiène de Versioning
-version: 2.0.0
+version: "2.2.0"
 type: sub_skill
 role: Documentation Integrity Keeper & Release Archivist
-harness: google_antigravity_cli
+harness: dual_harness
+models_config: ".agents/models.json"
 routing:
-  orchestrator:
-    nominal: "argon-latest-max"
-    fallback_1: "gemini-3.1-pro-high"
-    fallback_2: "gemini-3.8-flash-high"
-  fast_track_worker: "flash"
+  antigravity:
+    orchestrator: "gemini-4-argon-high"
+    executor: "gemini-4-hydrogen-xhigh"
+    primitive: "swarm"
+  opencode_v2:
+    orchestrator: "opencode-go/hy4"
+    executor: "opencode-go/deepseek-v4-pro"
+    primitive: "subagent"
 triggers:
   - "san_doc_keeper"
   - "mets à jour le changelog"
@@ -40,7 +44,7 @@ description: "Sous-skill transversal d'hygiène documentaire continue et d'archi
 
 ### Pour Quoi ?
 - **Prévenir la pourriture documentaire (*Documentation Rot*) :** lorsque le code évolue mais que la documentation stagne, les agents futurs sont induits en erreur par des informations périmées, entraînant hallucinations et régressions.
-- **Garantir le protocole « Fast-Track d'Hygiène » (*Zero-Token Waste*) :** les opérations ménagères (cochage de cases de tâches prouvées, déplacement de fichiers via `mv`, insertion d'entrées textuelles dans le changelog) sont exécutées directement par l'orchestrateur ou par un ouvrier ultra-rapide en **`Model: 'flash'`**, évitant de mobiliser des modèles lourds pour de la simple tenue de registre.
+- **Garantir le protocole « Fast-Track d'Hygiène » (*Zero-Token Waste*) :** les opérations ménagères (cochage de cases de tâches prouvées, déplacement via `archive_roadmap.sh` unifié vers `roadmaps/archives/<BASENAME>` avec en-tête SHA-256, insertion d'entrées changelog) sont exécutées directement par l'orchestrateur ou via un worker Dual-Harness (`swarm` avec `gemini-4-hydrogen-xhigh` | `subagent` OpenCode V2), sans jamais appeler `invoke_subagent(Model: 'inherit')`.
 - **Assurer la clôture déterministe des roadmaps :** aucune roadmap active ne traîne indéfiniment dans `/roadmaps/` une fois terminée ; elle est formellement vérifiée (100 % de cases cochées sur preuves de code) puis migrée vers `/roadmaps/archives/`.
 
 ---
@@ -53,7 +57,7 @@ description: "Sous-skill transversal d'hygiène documentaire continue et d'archi
 | **Synchronisation du `README.md` :** Met à jour les versions de runtimes, variables d'environnement (`.env.example`) et commandes d'amorçage/test réelles. | N'archive JAMAIS une roadmap incomplète : la présence d'une seule case non cochée `- [ ]` ou non prouvée entraîne le refus catégorique d'archivage. |
 | **Audit et Archivage Cartésien des Roadmaps :** Inspecte le fichier cible dans `/roadmaps/*.md`, s'assure que **100 % des cases `- [x]` sont cochées**, calcule l'empreinte SHA-256 et déplace le fichier vers `/roadmaps/archives/`. | Ne supprime JAMAIS de fichiers de roadmap (`rm`) : l'archivage est toujours une opération de préservation d'historique (`mv`). |
 | **Mise à Jour de la Base de Règles Décentralisée :** Actualise `.agents/rules/PROJECT.md` et `.agents/rules/API.md` lors de l'ajout d'une commande ou d'une évolution de contrat. | Ne modifie JAMAIS le code source applicatif (`.ts`, `.php`, `.tsx`, `.sql`) : son périmètre est strictement documentaire. |
-| **Mode d'Exécution Fast-Track Sobre en Tokens :** Autorise l'orchestrateur à agir directement avec `edit_file` / `run_command` ou assigne strictement `Model: 'flash'` en cas de délégation. | Ne mobilise JAMAIS de modèle lourd (`Model: 'inherit'`) pour éditer du markdown ménager ou déplacer des fichiers. |
+| **Mode d'Exécution Fast-Track Sobre en Tokens :** Autorise l'orchestrateur à agir directement avec `edit_file` / `run_command` ou délègue via Dual-Harness (`swarm` / `subagent`). | N'appelle JAMAIS `invoke_subagent(Model: 'inherit')` pour éditer du markdown ménager ou déplacer des fichiers. |
 
 ---
 
@@ -66,10 +70,10 @@ flowchart TD
     Init["san_init\n(Onboarding projet)"] --> Bootstrap["Amorçage initial\nCHANGELOG & .agents/rules/"]
     
     FastTrack -->|"Direct Orchestrateur (0 token subagent)"| DirectAction["edit_file / run_command (mv)"]
-    FastTrack -->|"Délégation ponctuelle"| FlashWorker["san_doc_keeper (Model: 'flash')"]
+    FastTrack -->|"Délégation ponctuelle"| DocWorker["san_doc_keeper (swarm / subagent)"]
     
     DirectAction --> Task1["1. Mise à jour CHANGELOG.md\n(Sections SemVer & 7 Catégories)"]
-    FlashWorker --> Task1
+    DocWorker --> Task1
     
     Task1 --> Task2["2. Synchronisation README.md & .agents/rules/"]
     Task2 --> Task3["3. Contrôle 100% cases cochées (- [x])"]
@@ -414,7 +418,7 @@ Aucune liberté stylistique désordonnée n'est tolérée dans le `CHANGELOG.md`
 Les roadmaps achevées, fiches d'idées concrétisées et rapports de tests validés ne sont jamais détruits via `rm`. Ils sont déplacés dans des répertoires d'archives dédiés (`/roadmaps/archives/`, `docs/research/`) pour conserver la mémoire infalsifiable de l'évolution du produit.
 
 ### 4. Invariant Fast-Track & Sobriété en Tokens (*Token-Light Hygiene*)
-Les opérations de maintenance documentaire doivent s'exécuter avec le coût cognitif minimal : soit directement par l'orchestrateur (Fast-Track sans sous-agent), soit via un sous-agent d'exécution rapide `Model: 'flash'`. L'utilisation d'un modèle lourd pour éditer du markdown ménager est formellement bannie.
+Les opérations de maintenance documentaire doivent s'exécuter directement par l'orchestrateur (Fast-Track sans sous-agent), ou via un worker Dual-Harness (`swarm` / `subagent` via `.agents/models.json`, jamais `invoke_subagent(Model: 'inherit')`).
 
 ### 5. Invariant d'Intégrité de Clôture (*100% Checkbox Completeness*)
 Aucun fichier de roadmap ne peut rejoindre `/roadmaps/archives/` s'il contient ne serait-ce qu'une seule case non cochée `- [ ]`. Si une tâche est abandonnée d'un commun accord avec le développeur, elle doit être explicitement rayée ou annotée `[ANNULÉ : justification]` avant archivage.
@@ -448,7 +452,7 @@ flowchart TD
     san_qa_security_expert -->|Alimente entrées Security| san_doc_keeper
     san_devops_expert -->|Alimente RUNBOOKS & ENV| san_doc_keeper
     
-    san_doc_keeper -.->|Exécuté via Fast-Track flash| san_subagent_manager
+    san_doc_keeper -.->|Exécuté via Fast-Track Dual-Harness| san_subagent_manager
     san_searcher -.->|Transmet fiches techniques| san_doc_keeper
 ```
 
@@ -460,5 +464,5 @@ flowchart TD
 - [`../skills/san_devops_expert.md`](../skills/san_devops_expert.md) : Fournit les instructions de déploiement et les variables d'environnement à synchroniser dans le `README.md`.
 
 ### Synergies avec les autres sous-skills :
-- [`san_subagent_manager.md`](san_subagent_manager.md) : Utilisé pour instancier un ouvrier documentaire dédié en `Model: 'flash'` si l'orchestrateur préfère déléguer la mise à jour sans polluer son tour d'action.
+- [`san_subagent_manager.md`](san_subagent_manager.md) : Utilisé pour instancier un worker documentaire dédié via Dual-Harness (`swarm` / `subagent`) si l'orchestrateur délègue la mise à jour.
 - [`san_searcher.md`](san_searcher.md) : Fournit des fiches de synthèse archivées dans `docs/research/`, indexées et référencées par `san_doc_keeper` dans la documentation technique globale.

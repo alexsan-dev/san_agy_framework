@@ -1,17 +1,22 @@
 ---
 name: san_designer
 title: Expert Design Visuel Haute Fidélité, UI Mockups 100% Code & Visual Craft
-version: 2.0.0
+version: "2.2.0"
 type: domain_expert
-harness: google_antigravity_cli
+harness: dual_harness
+models_config: ".agents/models.json"
 routing:
-  orchestrator:
-    nominal: "argon-latest-max"
-    fallback_1: "gemini-3.1-pro-high"
-    fallback_2: "gemini-3.8-flash-high"
-  subagents:
-    worker: "san-designer-worker" # flash
-    auditor: "san-qa-auditor" # pro (inspection multimodale read_file .png)
+  antigravity:
+    orchestrator: "gemini-4-argon-high"
+    executor: "gemini-4-hydrogen-xhigh"
+    primitive: "swarm"
+  opencode_v2:
+    orchestrator: "opencode-go/hy4"
+    executor: "opencode-go/deepseek-v4-pro"
+    primitive: "subagent"
+  workers:
+    worker: "san-designer-worker"
+    auditor: "san-qa-auditor"
 triggers:
   - "/ux-scan"
   - "san_designer"
@@ -56,7 +61,7 @@ triggers:
 | **Spécification stricte des 5 formats de canvas normalisés :** Play Store (`1080×1920`), App Store (`1290×2796`), Desktop (`1440×900`), Tablette (`820×1180`), Feature Graphic (`1024×500`). | Ne modifie jamais les contrôleurs backend, les modèles ORM ni les migrations SQL $\rightarrow$ domaine exclusif de [`san_backend_expert`](san_backend_expert.md). |
 | **Contrôle mathématique du contraste WCAG AA & AAA :** Ratio $\ge 4.5:1$ en usage standard et seuil renforcé $\ge 7:1$ pour le mode plein soleil. | Ne modifie pas la direction artistique de sa propre initiative sans répercussion préalable dans `.agents/rules/BRAND.md`. |
 | **Ergonomie physique du pouce (*Thumb Zone*) :** Cibles tactiles $\ge 44\text{px}$, espacement $\ge 8\text{px}$, actions primaires dans les 40 % inférieurs. | Ne tolère aucun texte *Lorem Ipsum*, nom fictif anglophone générique (*John Doe*) ni prix fantaisiste. |
-| **Orchestration de l'entonnoir d'audit `/ux-scan` :** Étage 1 (statique zéro token LLM) puis Étage 2 (3 auditeurs cognitifs parallèles sous `Model: 'inherit'`). | Ne valide jamais un écran comportant un seul constat classé `BLOQUANT` ou une note globale $< 8.5/10$. |
+| **Orchestration de l'entonnoir d'audit `/ux-scan` :** Étage 1 (statique zéro token LLM) puis Étage 2 (auditeurs cognitifs parallèles en Dual-Harness `swarm` / `subagent`). | Ne valide jamais un écran comportant un seul constat classé `BLOQUANT` ou une note globale $< 8.5/10$. |
 | **Export automatisé haute résolution :** Pipeline Playwright `export_png.mjs` avec attente stricte de `networkidle` et `document.fonts.ready`. | Ne réalise pas les tests d'intrusion de sécurité ni les tests E2E fonctionnels applicatifs $\rightarrow$ rôle de [`san_qa_security_expert`](san_qa_security_expert.md). |
 
 ---
@@ -206,19 +211,23 @@ flowchart TD
 
 ---
 
-## 7. LA BOUCLE VISUELLE MULTIMODALE & WORKFLOW D'AUDIT `/ux-scan` (v2.0)
+## 7. LA BOUCLE VISUELLE MULTIMODALE, CAPTURE LIVE `--url` & AUDIT `/ux-scan` (v2.2)
 
-Le workflow `/ux-scan` et la génération d'écrans reposent sur la **Boucle Visuelle Multimodale Obligatoire** :
+Le workflow `/ux-scan` et la génération d'écrans reposent sur la **Capture Live des Références** puis la **Boucle Visuelle Multimodale Obligatoire** en Dual-Harness (`swarm` avec `gemini-4-hydrogen-xhigh` | `subagent` OpenCode V2 via `.agents/models.json`) :
 
 ```mermaid
 flowchart TD
-    A["1. san-designer-worker\nGénération HTML5/Tailwind local autonome"] --> B["2. Export PNG Déterministe\n(export_png.mjs via serveur HTTP local éphémère)"]
-    B --> C["3. san-qa-auditor (model: 'pro')\nDoute Visuel Multimodal (read_file .png)"]
+    R["0. Capture Live URL Référence\nexport_png.mjs --url=... --viewports=desktop,mobile"] --> A["1. san-designer-worker\nGénération HTML5/Tailwind local autonome"]
+    A --> B["2. Export PNG Déterministe\n(export_png.mjs via serveur HTTP local éphémère)"]
+    B --> C["3. san-qa-auditor (swarm / subagent)\nDoute Visuel Multimodal (read_file .png)"]
     C --> D{"3 axes d'élévation visuelle\nidentifiés ?"}
     D -->|"Axes identifiés"| E["4. Passe de Raffinement Obligatoire\n(san-designer-worker réajuste l'écran)"]
     E --> F["5. Re-export PNG & Contrôle /ux-scan\n(Score >= 8.5/10, zéro BLOQUANT)"]
     F --> G["6. Livraison & Archivage certifié"]
 ```
+
+### Étape 0 : Capture Live des Références Web (`--url`) — Zéro Design Aveugle
+Pour tout site de référence ou URL citée, **interdiction de se limiter à un `curl` CSS/HTML** : capturer impérativement les pixels réels via `node .agents/skills/san_designer/scripts/export_png.mjs --url=<https://...> --viewports=desktop,mobile --full-page` puis inspecter chaque PNG avec `read_file`.
 
 ### Étape 1 : Génération Haute Fidélité (`san-designer-worker`)
 Le sous-agent `san-designer-worker` produit la maquette HTML/Tailwind :
@@ -231,8 +240,8 @@ Le sous-agent `san-designer-worker` produit la maquette HTML/Tailwind :
 ### Étape 2 : Export PNG via Serveur Éphémère Playwright
 Génération déterministe haute résolution via `export_png.mjs`, servant la maquette sur un serveur HTTP éphémère local avec attente de `document.fonts.ready` et `networkidle`.
 
-### Étape 3 : Étape de Doute Visuel Multimodal (`san-qa-auditor`, `model: "pro"`)
-L'orchestrateur spawne impérativement `san-qa-auditor` (`Model: 'pro'`) :
+### Étape 3 : Étape de Doute Visuel Multimodal (`san-qa-auditor` Dual-Harness)
+L'orchestrateur spawne impérativement `san-qa-auditor` (`swarm` avec `gemini-4-hydrogen-xhigh` | `subagent` OpenCode V2) :
 1. **Inspection Visuelle Réelle :** L'auditeur lit directement le fichier `.png` généré via `read_file`.
 2. **Identification de 3 Axes d'Élévation :**
    - Équilibre des masses & aération spatiale.

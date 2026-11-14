@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # scripts/validate_subagent_spec.sh
-# Validation déterministe v2.1.0 des définitions d'agents (src/agents/*.md) et prompts fermés (san_*).
-# Usage: ./validate_subagent_spec.sh <path/to/spec.md> [gemini-4-hydrogen-xhigh|pro]
+# Validation déterministe v2.2.0 Dual-Harness (Antigravity swarm + OpenCode V2 subagent)
+# des définitions d'agents (src/agents/*.md) et prompts fermés (san_*).
+# Usage: ./validate_subagent_spec.sh <path/to/spec.md> [gemini-4-hydrogen-xhigh|pro|unified-executor|<provider/model>]
 # Options:
 #   -h, --help    Affiche l'aide et quitte
 
@@ -20,8 +21,11 @@ Usage: validate_subagent_spec.sh <SPEC_FILE> [MODEL_TARGET]
 
 Arguments:
   SPEC_FILE       Chemin vers un agent natif (src/agents/*.md) ou un prompt de sous-agent.
-  MODEL_TARGET    Modèle cible v2.1 : 'gemini-4-hydrogen-xhigh' (défaut) ou 'pro' (compat YAML).
-                  Les valeurs 'inherit' et 'flash' sont interdites en v2.1.0.
+  MODEL_TARGET    Modèle cible v2.2 Dual-Harness :
+                  - 'gemini-4-hydrogen-xhigh' (défaut Antigravity swarm)
+                  - 'pro' (compat YAML Antigravity CLI)
+                  - 'unified-executor' ou '<provider>/<model>' (ex: opencode-go/deepseek-v4-pro)
+                  Les valeurs 'inherit' et 'flash' sont strictement interdites.
 
 Exemples:
   ./validate_subagent_spec.sh src/agents/san-architect.md
@@ -50,25 +54,33 @@ if [[ ! -f "${PROMPT_FILE}" ]]; then
   exit 1
 fi
 
-echo -e "${BLUE}🔍 [san_subagent_manager v2.1] Audit cartésien : ${CYAN}${PROMPT_FILE}${NC} (Modèle visé : ${CYAN}${MODEL_TARGET}${NC})"
+echo -e "${BLUE}🔍 [san_subagent_manager v2.2] Audit cartésien : ${CYAN}${PROMPT_FILE}${NC} (Modèle visé : ${CYAN}${MODEL_TARGET}${NC})"
 ERRORS=0
 WARNINGS=0
 
-# 1. Contrôle strict de la doctrine modèle v2.1.0 (interdiction inherit/flash/3.1-pro/3.8-flash)
+# 1. Contrôle strict de la doctrine Dual-Harness v2.2 (interdiction inherit/flash/3.1-pro/3.8-flash)
 case "${MODEL_TARGET}" in
-  gemini-4-hydrogen-xhigh|pro)
-    echo -e "${GREEN}  ✓ Cible de modèle conforme v2.1.0 : '${MODEL_TARGET}' (Gemini 4 Hydrogen XHigh).${NC}"
+  gemini-4-hydrogen-xhigh|pro|unified-executor)
+    echo -e "${GREEN}  ✓ Cible de modèle conforme v2.2 Dual-Harness : '${MODEL_TARGET}'.${NC}"
+    ;;
+  */*)
+    if [[ "${MODEL_TARGET}" =~ ^[a-zA-Z0-9._-]+/[a-zA-Z0-9._:-]+$ ]]; then
+      echo -e "${GREEN}  ✓ Cible OpenCode V2 conforme Dual-Harness : '${MODEL_TARGET}'.${NC}"
+    else
+      echo -e "${RED}  ❌ Format provider/model OpenCode invalide : '${MODEL_TARGET}'.${NC}"
+      ERRORS=$((ERRORS + 1))
+    fi
     ;;
   inherit)
-    echo -e "${RED}  ❌ Violation critique v2.1.0 : 'inherit' est FORMELLEMENT INTERDIT sur Argon/Carbon (protection du quota hebdomadaire). Utilisez 'gemini-4-hydrogen-xhigh' via swarm.${NC}"
+    echo -e "${RED}  ❌ Violation critique : 'inherit' est FORMELLEMENT INTERDIT sur Argon/Carbon (protection du quota hebdomadaire). Utilisez 'gemini-4-hydrogen-xhigh' (swarm) ou .agents/models.json.${NC}"
     ERRORS=$((ERRORS + 1))
     ;;
   flash)
-    echo -e "${RED}  ❌ Violation v2.1.0 : 'flash' est obsolète (bascule silencieuse vers gemini-3.8-flash-tiered). Utilisez 'gemini-4-hydrogen-xhigh' via swarm (et model: \"pro\" en frontmatter YAML).${NC}"
+    echo -e "${RED}  ❌ Violation : 'flash' est obsolète (bascule silencieuse vers gemini-3.8-flash-tiered). Utilisez 'gemini-4-hydrogen-xhigh' (swarm), '<provider>/<model>' (OpenCode V2) et 'model: \"pro\"' en YAML.${NC}"
     ERRORS=$((ERRORS + 1))
     ;;
   *)
-    echo -e "${RED}  ❌ Modèle cible non reconnu : '${MODEL_TARGET}'. Valeurs acceptées : 'gemini-4-hydrogen-xhigh' ou 'pro'.${NC}"
+    echo -e "${RED}  ❌ Modèle cible non reconnu : '${MODEL_TARGET}'. Valeurs acceptées : 'gemini-4-hydrogen-xhigh', 'pro', 'unified-executor' ou '<provider>/<model>'.${NC}"
     ERRORS=$((ERRORS + 1))
     ;;
 esac
@@ -103,21 +115,21 @@ if [[ "${IS_NATIVE_AGENT}" -eq 1 ]]; then
     fi
   done
 
-  # 3b. Frontmatter model doit être "pro" pour compatibilité ascendante du parser CLI
+  # 3b. Frontmatter model doit être "pro" (compat Antigravity CLI) ou "<provider>/<model>" (OpenCode V2)
   FM_MODEL=$(echo "${FRONTMATTER}" | grep -E "^model:" | head -n 1 | sed -E 's/^model:[[:space:]]*["'\'']?([^"'\''[:space:]]+)["'\'']?/\1/' || true)
-  if [[ "${FM_MODEL}" != "pro" ]]; then
-    echo -e "${RED}  ❌ Frontmatter YAML 'model' invalide ('${FM_MODEL}') : doit être '\"pro\"' pour compatibilité ascendante du parser CLI (jamais 'flash' ni 'inherit').${NC}"
+  if [[ "${FM_MODEL}" != "pro" ]] && [[ ! "${FM_MODEL}" =~ ^[a-zA-Z0-9._-]+/[a-zA-Z0-9._:-]+$ ]]; then
+    echo -e "${RED}  ❌ Frontmatter YAML 'model' invalide ('${FM_MODEL}') : doit être '\"pro\"' (Antigravity CLI) ou '<provider>/<model>' (OpenCode V2), jamais 'flash' ni 'inherit'.${NC}"
     ERRORS=$((ERRORS + 1))
   else
-    echo -e "${GREEN}  ✓ Frontmatter YAML 'model: \"pro\"' conforme pour compatibilité CLI.${NC}"
+    echo -e "${GREEN}  ✓ Frontmatter YAML 'model: \"${FM_MODEL}\"' conforme Dual-Harness.${NC}"
   fi
 
-  # 3c. Présence explicite de gemini-4-hydrogen-xhigh dans le corps de l'agent
-  if ! echo "${BODY}" | grep -q "gemini-4-hydrogen-xhigh"; then
-    echo -e "${RED}  ❌ Corps d'agent incomplet : 'gemini-4-hydrogen-xhigh' doit être explicitement spécifié dans le corps Markdown.${NC}"
+  # 3c. Présence explicite de gemini-4-hydrogen-xhigh ou .agents/models.json dans le corps de l'agent
+  if ! echo "${BODY}" | grep -qE "(gemini-4-hydrogen-xhigh|\.agents/models\.json)"; then
+    echo -e "${RED}  ❌ Corps d'agent incomplet : 'gemini-4-hydrogen-xhigh' ou '.agents/models.json' doit être spécifié dans le corps Markdown.${NC}"
     ERRORS=$((ERRORS + 1))
   else
-    echo -e "${GREEN}  ✓ Doctrine runtime vérifiée : 'gemini-4-hydrogen-xhigh' présent dans le corps.${NC}"
+    echo -e "${GREEN}  ✓ Doctrine runtime Dual-Harness vérifiée dans le corps.${NC}"
   fi
 
   # 3d. Sections structurelles de l'agent natif
@@ -224,9 +236,9 @@ if [[ ${ERRORS} -gt 0 ]]; then
   exit 1
 else
   if [[ ${WARNINGS} -gt 0 ]]; then
-    echo -e "${GREEN}✅ [san_subagent_manager] Spécification CONFORME (${WARNINGS} avertissement(s) mineur(s)). Prêt pour swarm (gemini-4-hydrogen-xhigh).${NC}"
+    echo -e "${GREEN}✅ [san_subagent_manager] Spécification CONFORME (${WARNINGS} avertissement(s) mineur(s)). Prêt pour Dual-Harness (swarm / subagent).${NC}"
   else
-    echo -e "${GREEN}✅ [san_subagent_manager] Spécification 100% CONFORME. Prêt pour swarm (gemini-4-hydrogen-xhigh).${NC}"
+    echo -e "${GREEN}✅ [san_subagent_manager] Spécification 100% CONFORME. Prêt pour Dual-Harness (swarm / subagent).${NC}"
   fi
   exit 0
 fi

@@ -1,17 +1,19 @@
 ---
 name: san_brainstorming
 title: Spécialiste de l'Idéation Amont, du Cadrage Stratégique et du Triage d'Idées
-version: 2.0.0
+version: "2.2.0"
 type: entry_point
-harness: google_antigravity_cli
+harness: dual_harness
+models_config: ".agents/models.json"
 routing:
-  orchestrator:
-    nominal: "argon-latest-max"
-    fallback_1: "gemini-3.1-pro-high"
-    fallback_2: "gemini-3.8-flash-high"
-  subagents:
-    market_and_cognitive_research: "inherit"
-    script_and_formatting: "flash"
+  antigravity:
+    orchestrator: "gemini-4-argon-high"
+    executor: "gemini-4-hydrogen-xhigh"
+    primitive: "swarm"
+  opencode_v2:
+    orchestrator: "opencode-go/hy4"
+    executor: "opencode-go/deepseek-v4-pro"
+    primitive: "subagent"
 ---
 
 # `san_brainstorming` — Spécialiste de l'Idéation Amont, du Cadrage Stratégique et du Triage d'Idées
@@ -38,7 +40,7 @@ routing:
 1. **Entonnoir Socratique en 5 Questions Fermées :** Pose un questionnaire précis pour verrouiller l'objectif de monétisation, la cible utilisateur, le canal transactionnel, le vecteur d'usage et les verrous réglementaires.
 2. **Matrice d'Évaluation sur 40 Points :** Note rigoureusement chaque piste selon 4 critères pondérés (Impact Business, Effort Technique inversé, Réalité Terrain Afrique/Marchés émergents, Risques & Dépendances inversés).
 3. **Application des Seuils d'Exclusion Go / No-Go :** Élimine sans compromis toute idée ayant une note Terrain $< 4/10$ ou Risque $< 3/10$, ou un score cumulé $< 26/40$.
-4. **Exploration Parallèle & Pre-Mortem Architecte :** Mobilise en parallèle `san-researcher` (`Model: 'flash'`) pour les benchmarks et `san-architect` (`Model: 'pro'`) pour un audit *Pre-Mortem* anticipant les risques de rupture systémique.
+4. **Exploration Parallèle & Pre-Mortem Architecte (Dual-Harness) :** Mobilise en parallèle `san-researcher` et `san-architect` via `swarm` (`gemini-4-hydrogen-xhigh`) ou `subagent` OpenCode V2 (`.agents/models.json`) pour les benchmarks terrain, captures URL et l'audit *Pre-Mortem* des risques systémiques.
 5. **Confrontation de 3 Pistes Réellement Viables :** Interdiction formelle de l'Option C « épouvantail » ; chaque piste proposée représente une stratégie défendable avec ses compromis lucides.
 6. **Formalisation Standardisée :** Rédige la fiche d'idée normative dans `/roadmaps/ideas/[THEME]_[JJMMAAAA].md` avec scoring profilé (`score_idea.py --profile`).
 7. **Protocole de Transmission vers `san_planner` :** Fournit un bordereau de transfert prêt à l'ingestion contenant le périmètre du MVP et les prérequis techniques.
@@ -395,8 +397,8 @@ Dès que le développeur répond positivement à la question d'arbitrage (ex: *�
 
 ```mermaid
 flowchart TD
-    Start(["Intention Floue"]) --> Step1["Étape 1 : Questionnaire Socratique 5 Questions"]
-    Step1 --> Step2["Étape 2 : Veille & Benchmark Marché (san_searcher - 'inherit')"]
+    Start(["Intention Floue"]) --> Step1["Étape 1 : Entonnoir Socratique (ask_question / question)"]
+    Step1 --> Step2["Étape 2 : Veille & Benchmark Marché (san-researcher + san-architect)"]
     Step2 --> Step3["Étape 3 : Dérivation de 3 Options & Calcul Matrice 40 Points"]
     Step3 --> Step4["Étape 4 : Rédaction de la Fiche /roadmaps/ideas/*.md"]
     Step4 --> DevDecision{"Arbitrage du Développeur"}
@@ -407,11 +409,11 @@ flowchart TD
 ```
 
 ### Étape 1 : Questionnaire Socratique
-- Poser les 5 questions fermées ou extraire les réponses de `.agents/rules/PRODUCT.md`.
-- Verrouiller les contraintes terrain non négociables.
+- Poser les 5 questions fermées via `ask_question` (Antigravity) ou `question` (OpenCode V2), ou extraire les réponses de `.agents/rules/PRODUCT.md`.
+- Verrouiller les contraintes terrain non négociables (et capturer les URLs de référence via `export_png.mjs --url` si applicables).
 
-### Étape 2 : Exploration Parallèle & Pre-Mortem
-- Lancer simultanément `san-researcher` (`Model: 'flash'`) pour les benchmarks et retours d'expérience, et `san-architect` (`Model: 'pro'`) pour un audit Pre-Mortem détectant les causes potentielles d'échec structurel.
+### Étape 2 : Exploration Parallèle & Pre-Mortem (Dual-Harness)
+- Lancer simultanément `san-researcher` et `san-architect` via `swarm` (`gemini-4-hydrogen-xhigh`) ou `subagent` OpenCode V2 (`.agents/models.json`) pour les benchmarks terrain et l'audit Pre-Mortem détectant les causes potentielles d'échec structurel.
 
 ### Étape 3 : Modélisation des 3 Options Viables & Calcul de Score
 - Concevoir 3 options distinctes, réalistes et exploitables (interdiction formelle de l'Option C « épouvantail »).

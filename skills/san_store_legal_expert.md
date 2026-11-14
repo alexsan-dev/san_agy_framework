@@ -1,8 +1,10 @@
 ---
 name: san_store_legal_expert
 description: Expert en conformité de distribution sur les stores (Google Play Store, Apple App Store), prévention absolue des rejets, audit statique des permissions et SDKs réels, et rédaction technique de documents juridiques (Politique de Confidentialité, CGU, Data Map, Checklist Store) dérivés exclusivement de la réalité du code source.
-version: 2.0.0
-role: Lead Store Compliance & Legal Engineering Auditor (v2.0 Harness Enforced)
+version: "2.2.0"
+role: Lead Store Compliance & Legal Engineering Auditor (v2.2 Dual-Harness)
+harness: dual_harness
+models_config: ".agents/models.json"
 triggers:
   - "san_store_legal_expert"
   - "scanne les permissions"
@@ -10,9 +12,15 @@ triggers:
   - "vérifie la checklist store"
   - "prépare la soumission App Store / Play Store"
   - "valide la suppression de compte Apple 5.1.1"
-model_delegation:
-  execution: "flash"
-  audit: "pro"
+routing:
+  antigravity:
+    orchestrator: "gemini-4-argon-high"
+    executor: "gemini-4-hydrogen-xhigh"
+    primitive: "swarm"
+  opencode_v2:
+    orchestrator: "opencode-go/hy4"
+    executor: "opencode-go/deepseek-v4-pro"
+    primitive: "subagent"
 ---
 
 # SKILL : san_store_legal_expert — Conformité Stores (Apple / Google) & Ingénierie Légale Technique
@@ -117,7 +125,7 @@ docs/
 ```mermaid
 flowchart TD
     A["1. Scan Statique Automatisé (scan_app_permissions.sh)"] --> B["2. Vérification des Politiques Stores à Jour (san_searcher)"]
-    B --> C["3. Rédaction Documentaire Dérivée du Code ('flash')"]
+    B --> C["3. Rédaction Documentaire Dérivée du Code (swarm / subagent)"]
     C --> D["4. Entonnoir de Contrôle & Checklist Anti-Rejet en 2 Étages"]
     D -->|Étage 1| E["Contrôle Technique Déterministe (Compte Test & Liens HTTP 200)"]
     D -->|Étage 2| F["Revue Critique Anti-Rejet (Directive Apple 5.1.1 & Permissions)"]
@@ -137,7 +145,7 @@ flowchart TD
 1. Mobilisation de [`san_searcher`](../sub-skills/san_searcher.md) pour vérifier les dernières exigences d'Apple (App Store Review Guidelines) et de Google (Play Console Policy).
 2. Détection des obligations spécifiques récentes (ex. déclarations relatives aux fonctionnalités IA, exigences de SDKs de consentement, formats d'exportation de données).
 
-### Phase 3 : Rédaction Documentaire Dérivée du Code (`Model: 'flash'`)
+### Phase 3 : Rédaction Documentaire Dérivée du Code (Dual-Harness `swarm` / `subagent`)
 1. Génération de `docs/DATA_MAP.md`, `docs/PRIVACY_POLICY.md`, `docs/TERMS.md` et `docs/STORE_CHECKLIST.md`.
 2. Chaque clause est directement rattachée à un composant ou un SDK réel extrait en Phase 1.
 3. Insertion systématique du bandeau de transparence d'ingénierie légale :
@@ -147,7 +155,7 @@ flowchart TD
 * **Étage 1 (Contrôle Technique Déterministe — Zéro Token LLM) :**
   - Vérification de la validité des URLs publiques hébergeant la politique de confidentialité (code HTTP 200 obligatoire, interdiction des liens morts ou pages 404).
   - Vérification de la présence d'identifiants de test valides pour les examinateurs sans dépendance à un numéro de téléphone réel.
-* **Étage 2 (Revue Critique Anti-Rejet — `Model: 'inherit'`) :**
+* **Étage 2 (Revue Critique Anti-Rejet — Dual-Harness `swarm` / `subagent`) :**
   - Contrôle strict de la **directive Apple 5.1.1** : présence dans l'UI d'un bouton de suppression de compte accessible en moins de 3 taps depuis les paramètres du profil.
   - Vérification que l'API de suppression déclenche une purge réelle ou une anonymisation irréversible (interdiction du simple flag `is_deleted = true` conservant toutes les données nominatives indéfiniment sans justification légale).
   - Présence d'un texte d'explication convaincant pour chaque permission déclarée.

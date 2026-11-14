@@ -1,18 +1,23 @@
 ---
 name: san_exporter
 title: Artisan Exportation Headless, Rendu Graphique & Pipeline d'Assets
-version: 2.0.0
+version: "2.2.0"
 type: sub_skill
 role: Headless Export Engineer & Graphical Asset Pipeline Specialist
-harness: google_antigravity_cli
+harness: dual_harness
+models_config: ".agents/models.json"
 routing:
-  orchestrator:
-    nominal: "argon-latest-max"
-    fallback_1: "gemini-3.1-pro-high"
-    fallback_2: "gemini-3.8-flash-high"
-  subagents:
-    worker: "san-designer-worker" # flash
-    auditor: "san-qa-auditor" # pro (conformité géométrique & alpha iOS ITMS-90717)
+  antigravity:
+    orchestrator: "gemini-4-argon-high"
+    executor: "gemini-4-hydrogen-xhigh"
+    primitive: "swarm"
+  opencode_v2:
+    orchestrator: "opencode-go/hy4"
+    executor: "opencode-go/deepseek-v4-pro"
+    primitive: "subagent"
+  workers:
+    worker: "san-designer-worker"
+    auditor: "san-qa-auditor"
 triggers:
   - "san_exporter"
   - "exporte en png"
@@ -115,8 +120,8 @@ Lors du déploiement au sein d'une codebase sous Antigravity CLI, le sous-skill 
 │   ├── HTML_CANVAS_SPEC_HEADER.html         # En-tête de spécification canvas à insérer dans les maquettes
 │   └── EXPORT_MANIFEST_TEMPLATE.json        # Schéma du registre d'intégrité avec signatures SHA-256
 └── scripts/
-    ├── export_png.mjs                       # Moteur de capture headless Playwright avec attente synchrone
-    └── svg_to_png.mjs                       # Compilateur vectoriel matriciel multi-formats via Sharp
+    ├── export_png.mjs                       # Moteur Playwright v2.2 (HTML local anti-CORS, --url live, --full-page, --audit-dom)
+    └── svg_to_png.mjs                       # Compilateur Sharp v2.2 unifié (--output-dir / --sizes & --out-dir ITMS-90717)
 ```
 
 ---
@@ -178,14 +183,13 @@ sequenceDiagram
     participant Sharp as Moteur Sharp
     participant FS as Disque Local & Manifeste
 
-    Caller->>Exporter: Déclenchement export (Mockup HTML ou SVG)
-    alt Capture de Mockup HTML
-        Exporter->>Playwright: Initialisation browser headless
-        Playwright->>Playwright: Parsing balise CANVAS_SPEC (width, height, scale)
-        Playwright->>Playwright: Chargement file://...
-        Playwright->>Playwright: Attente networkidle + document.fonts.ready
-        Playwright->>Playwright: Pause stabilisatrice 150ms
-        Playwright->>FS: Écriture screenshot PNG haute résolution
+    Caller->>Exporter: Déclenchement export (Mockup HTML, --url Live ou SVG)
+    alt Capture de Mockup HTML ou URL (--url)
+        Exporter->>Playwright: Initialisation Chromium unique (résolution auto node_modules / _npx)
+        Playwright->>Playwright: Parsing CANVAS_SPEC ou viewports (--viewports / --full-page)
+        Playwright->>Playwright: Chargement HTTP local anti-CORS ou URL distante
+        Playwright->>Playwright: Attente networkidle (<= 5s en --url) + document.fonts.ready + audit DOM
+        Playwright->>FS: Écriture PNG haute résolution + design/references/
     else Déclinaison de Logo Vectoriel
         Exporter->>Sharp: Lecture logo.svg
         Sharp->>Sharp: Rendu multi-tailles (favicons, PWA, play store)

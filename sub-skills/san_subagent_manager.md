@@ -1,18 +1,20 @@
 ---
 name: san_subagent_manager
-title: Usine de Conception, Calibrage et Supervision de Sous-Agents Chirurgicaux
-version: 2.0.0
+title: Usine de Conception, Calibrage et Supervision de Workers Dual-Harness
+version: "2.2.0"
 type: sub_skill
-role: Subagent Architect & Task Metrologist (v2.0 Harness Enforced)
-harness: google_antigravity_cli
+role: Subagent Architect & Task Metrologist (v2.2 Dual-Harness)
+harness: dual_harness
+models_config: ".agents/models.json"
 routing:
-  orchestrator:
-    nominal: "argon-latest-max"
-    fallback_1: "gemini-3.1-pro-high"
-    fallback_2: "gemini-3.8-flash-high"
-  generated_subagents:
-    atomic_execution: "flash"
-    audit_architecture_pentest: "inherit"
+  antigravity:
+    orchestrator: "gemini-4-argon-high"
+    executor: "gemini-4-hydrogen-xhigh"
+    primitive: "swarm"
+  opencode_v2:
+    orchestrator: "opencode-go/hy4"
+    executor: "opencode-go/deepseek-v4-pro"
+    primitive: "subagent"
 triggers:
   - "san_subagent_manager"
   - "délègue à un sous-agent"
@@ -20,7 +22,7 @@ triggers:
   - "lance un sous-agent"
   - "calibre le prompt système"
   - "supervise l'agent éphémère"
-description: "Moteur cartésien de conception, calibrage, supervision et clôture de sous-agents éphémères spécialisés pour Antigravity CLI v2.0. Configure les rôles chirurgicaux, assemble des prompts système hermétiques et fermés intégrant la Dialectique Avant Frappe (comparaison de 2 approches viables) pour les bâtisseurs et la Présomption de Défaut (verdict binaire LIVRABLE | RETOUR_ATELIER) pour les auditeurs, applique la matrice d'allocation stricte (flash vs inherit/pro) et verrouille le protocole de reddition par send_message."
+description: "Moteur cartésien de conception, calibrage, supervision et clôture de workers spécialisés Dual-Harness (Antigravity swarm + OpenCode V2 subagent configurés via .agents/models.json / san-framework models). Assemble des prompts hermétiques intégrant la Dialectique Avant Frappe (2 approches viables) et la Présomption de Défaut (verdict binaire LIVRABLE | RETOUR_ATELIER), interdit invoke_subagent(Model: 'inherit') sur Argon/Carbon et valide via validate_subagent_spec.sh v2.2."
 ---
 
 # `san_subagent_manager` — Usine de Conception, Calibrage et Supervision de Sous-Agents Chirurgicaux
@@ -41,7 +43,7 @@ description: "Moteur cartésien de conception, calibrage, supervision et clôtur
 - **Pour le développeur :** qui bénéficie d'une vitesse d'exécution accrue, d'une prédictibilité totale et de logs d'agents parfaitement structurés.
 
 ### Pour Quoi ?
-- **Éradiquer le gaspillage de tokens (*Token Frugality*) :** en appliquant la stricte séparation entre le pôle de réflexion/audit (`Model: 'inherit'`) et le pôle d'exécution atomique (`Model: 'flash'`).
+- **Sanctuariser le quota & unifier Dual-Harness :** en routant les workers Antigravity vers **`swarm(action: "add", model: "gemini-4-hydrogen-xhigh")`** et les workers OpenCode V2 vers **`subagent`** via `.agents/models.json` (`san-framework models`) — avec **interdiction formelle** d'`invoke_subagent(Model: 'inherit')` sur `Argon`/`Carbon`.
 - **Supprimer le flou d'instruction (*Zero-Ambiguity Guardrail*) :** en injectant des prompts de sous-agents fermés contenant obligatoirement le contexte exact, les fichiers cibles, les règles non négociables et le format de retour attendu.
 - **Appliquer le principe de moindre privilège (*Least Privilege Tooling*) :** en refusant d'accorder à un sous-agent des outils dont il n'a pas strictement besoin (ex: interdire les outils web à un sous-agent d'implémentation de contrôleur local, interdire les outils d'écriture à un sous-agent d'audit).
 - **Bannir les boucles infinies et les hallucinations :** en contraignant chaque mission avec des bornes d'arrêt strictes et un rapport final obligatoire transmis au parent via `send_message`.
@@ -53,8 +55,8 @@ description: "Moteur cartésien de conception, calibrage, supervision et clôtur
 | CE QU'IL FAIT STRICTEMENT | CE QU'IL NE FAIT ABSOLUMENT PAS |
 | :--- | :--- |
 | **Calibrage Sémantique de Mission :** Formalise la demande selon le standard normatif : Rôle précis (2 à 5 mots), Objectif unique, Entrées et sorties formelles, Contraintes strictes. | N'exécute JAMAIS de code métier lui-même $\rightarrow$ il conçoit et arme les agents ; il ne code ni contrôleurs, ni écrans, ni requêtes SQL. |
-| **Attribution Algorithmique du Modèle (`routing`) :** Affecte strictement `Model: 'flash'` pour l'implémentation atomique / code et `Model: 'inherit'` pour les audits, la sécurité et la réflexion architecturale. | N'autorise JAMAIS l'utilisation de `Model: 'inherit'` pour de l'écriture de code applicatif ou du boilerplate $\rightarrow$ considéré comme une faute d'ingénierie majeure. |
-| **Sélection Restrictive des Outils (*Tool Sandboxing*) :** Ouvre uniquement les capacités indispensables (interdiction formelle des outils récursifs `invoke_subagent`, `define_subagent` et de la navigation web inutile). | N'instancie JAMAIS un sous-agent avec un prompt flou ou incomplet (chemins relatifs vagues, absence de commande de test, format de restitution libre). |
+| **Routage Dual-Harness (`.agents/models.json`) :** Affecte `gemini-4-hydrogen-xhigh` via `swarm` (Antigravity) ou le profil `<provider>/<model>` configuré via `san-framework models` sur `subagent` (OpenCode V2). | N'appelle JAMAIS `invoke_subagent(Model: 'inherit')` ou `'flash'` sur `Argon`/`Carbon` (risque de fallback silencieux `gemini-3.8-flash-tiered` ou fuite de quota). |
+| **Sélection Restrictive des Outils (*Tool Sandboxing*) :** Ouvre uniquement les capacités indispensables (interdiction des appels récursifs non encadrés et de la navigation web inutile pour les codeurs). | N'instancie JAMAIS un worker avec un prompt flou ou incomplet (chemins relatifs vagues, absence de commande de test, format de restitution libre). |
 | **Injection de Garde-Fous Anti-Hallucination :** Verrouille dans le prompt l'obligation de se baser sur du code vérifié, l'interdiction d'inventer des packages tiers et l'usage exclusif de `send_message`. | N'autorise JAMAIS la récursion sauvage : `EnableSubagentTools` est désactivé par défaut pour éliminer toute arborescence d'agents incontrôlée. |
 | **Supervision Événementielle Réactive :** Invoque le sous-agent en mode non-bloquant (zéro polling) et libère les ressources via `manage_subagents(action: 'kill')` dès clôture. | Ne se substitue JAMAIS au Fast-Track de l'orchestrateur pour les tâches ménagères immédiates (cochage d'une case, déplacement d'un fichier). |
 
@@ -68,34 +70,34 @@ flowchart TD
     
     Req --> Manager["san_subagent_manager"]
     
-    Manager --> ModelDecision{"Nature de la Mission ?"}
-    ModelDecision -->|"Écriture de code / Composants / Migrations / Tests unitaires"| RouteFlash["Model: 'flash'\n(Vitesse, Précision syntaxique, Économie de tokens)"]
-    ModelDecision -->|"Audit OWASP / Pentest / Architecture E2E / Psychologie UX"| RouteInherit["Model: 'inherit'\n(Argon / Pro de session, Raisonnement profond)"]
+    Manager --> ModelDecision{"Harnais & Profil Actif ?"}
+    ModelDecision -->|"Antigravity (swarm)"| RouteSwarm["swarm(action: add, model: gemini-4-hydrogen-xhigh)\nSanctuarise Argon/Carbon, Workspace partagé si éditions //"]
+    ModelDecision -->|"OpenCode V2 (subagent)"| RouteOpenCode["subagent (.agents/models.json via san-framework models)\nExécuteur provider/model configuré"]
     
-    RouteFlash --> Sandbox["Sélection Restrictive des Outils (Least Privilege)\n+ Assemblage du Prompt Fermé Hermétique"]
-    RouteInherit --> Sandbox
+    RouteSwarm --> Sandbox["Sélection Restrictive des Outils (Least Privilege)\n+ Assemblage du Prompt Fermé Hermétique"]
+    RouteOpenCode --> Sandbox
     
-    Sandbox --> Launch["invoke_subagent(TypeName, Role, Model, Prompt)"]
-    Launch --> Execution["Exécution Autonome du Sous-Agent Éphémère"]
-    Execution --> Report["send_message(Recipient: parent_id, Rapport Structuré)"]
-    Report --> Wakeup["Réveil Réactif de l'Orchestrateur & Vérification"]
-    Wakeup --> Cleanup["manage_subagents(action: 'kill', ConversationIds)"]
+    Sandbox --> Launch["Instanciation Worker (swarm / subagent)"]
+    Launch --> Execution["Exécution Autonome du Worker Spécialisé"]
+    Execution --> Report["post_message / Rapport Structuré"]
+    Report --> Wakeup["Réveil Réactif (swarm_wait) & Vérification"]
+    Wakeup --> Cleanup["swarm(action: 'kill', name) / Clôture Session"]
 ```
 
 ### Invocations Concrètes par les Rôles Directeurs
 
 #### 1. Mobilisation par [`san_executer`](../skills/san_executer.md)
-`san_executer` est le premier consommateur de sous-agents pour dérouler les paliers de roadmap :
-- **Artisan Backend (`flash`) :** Migrations, modèles, services métier, FormRequests, tests Pest/PHPUnit, requêtes Bruno.
-- **Artisan Frontend (`flash`) :** Composants React/React Native, gestion des 5 états UI, animations 60 fps, intégration des contrats d'API.
-- **Auditeur d'Intégration E2E (`inherit`) :** Vérification croisée des contrats, simulation de coupures réseau 3G, idempotence des requêtes, conformité des statuts HTTP.
+`san_executer` est le premier consommateur de workers pour dérouler les paliers de roadmap :
+- **Artisan Backend (`san-coder-back`) :** Migrations, modèles, services métier, FormRequests, tests Pest/PHPUnit, requêtes Bruno.
+- **Artisan Frontend (`san-coder-front`) :** Composants React/React Native, gestion des 5 états UI, animations 60 fps, intégration des contrats d'API.
+- **Auditeur d'Intégration E2E (`san-qa-auditor`, lecture seule) :** Vérification croisée des contrats, simulation de coupures réseau 3G, idempotence des requêtes, audit DOM géométrique.
 
 #### 2. Mobilisation par [`san_planner`](../skills/san_planner.md)
-- **`psychologist_market_expert` (`inherit`) :** Analyse cognitive de l'UX, réduction des frictions de parcours, modèles économiques adaptés aux contextes locaux.
-- **`technical_market_expert` (`inherit`) :** Cartographie des dépendances, analyse de robustesse SOLID/DRY, dimensionnement des goulets d'étranglement.
+- **`san-researcher` (`swarm` / `subagent`, lecture) :** Cartographie Map-First, benchmarks concurrentiels et état réel des tests.
+- **`san-architect` (`swarm` / `subagent`, lecture) :** Mini-ADR 2 approches, contrat OpenAPI/Zod gelé, Pre-Mortem et Fitness Functions.
 
 #### 3. Mobilisation par [`san_qa_security_expert`](../skills/san_qa_security_expert.md)
-- **Auditeur Pentest OWASP (`inherit`) :** Détection des vulnérabilités BOLA/IDOR, injections SQL/NoSQL, sécurité du stockage local, fuites de tokens d'authentification.
+- **Auditeur Pentest OWASP (`san-qa-auditor`, lecture seule) :** Détection des vulnérabilités BOLA/IDOR, injections SQL/NoSQL, stockage sécurisé et conformité Fitness.
 
 ---
 
@@ -111,9 +113,9 @@ Lors du déploiement au sein d'une codebase sous Antigravity CLI, le sous-skill 
 │   ├── prompt_engineering_standards.md      # Directives de rédaction hermétique et techniques anti-hallucination
 │   └── least_privilege_matrix.md            # Matrice d'attribution des outils Antigravity selon la mission
 ├── templates/
-│   ├── UNIVERSAL_SYSTEM_PROMPT_TEMPLATE.md  # Gabarit universel fermé (Role, Mission, Inputs, Outputs, Constraints)
-│   ├── ATOMIC_CODER_PROMPT.md               # Gabarit d'instruction pour sous-agent de code (flash)
-│   └── AUDITOR_PROMPT.md                    # Gabarit d'instruction pour sous-agent d'audit (inherit)
+│   ├── SUBAGENT_PROMPT_TEMPLATE.md          # Gabarit universel fermé (Role, Mission, Inputs, Outputs, Constraints)
+│   ├── ATOMIC_CODER_PROMPT.md               # Gabarit d'instruction pour worker de code (Dual-Harness)
+│   └── AUDITOR_PROMPT.md                    # Gabarit d'instruction pour auditeur sceptique (lecture seule)
 └── scripts/
     └── validate_subagent_spec.sh            # Script de contrôle statique vérifiant la complétude du prompt avant invocation
 ```
@@ -147,8 +149,8 @@ Ton conversationId parent est : [PARENT_CONVERSATION_ID].
 ### 5. CONSTRAINTS (Garde-fous stricts & Anti-Hallucination)
 - Interdiction formelle de créer ou modifier un fichier en dehors de la liste OUTPUTS.
 - Interdiction d'inventer des packages tiers non déclarés dans les manifestes locaux.
-- Interdiction formelle d'appeler des outils récursifs (invoke_subagent, define_subagent).
-- Ne jamais polluer la console avec du texte verbeux : ton unique canal de communication final est l'outil `send_message`.
+- Interdiction formelle d'appeler `invoke_subagent(Model: 'inherit')` ou de relancer des sous-agents récursifs non autorisés.
+- Ne jamais polluer la console avec du texte verbeux : canal final via `post_message` / `send_message`.
 
 ### 6. VALIDATION_COMMAND (Preuve déterministe)
 Avant de conclure, exécute la commande de test suivante via `run_command` :
@@ -179,198 +181,95 @@ Le message de restitution transmis à l'orchestrateur doit obligatoirement adopt
 
 ---
 
-## 6. PROCÉDURE D'EXÉCUTION DÉTAILLÉE (PIPELINE EN 6 ÉTAPES)
+## 6. PROCÉDURE D'EXÉCUTION DÉTAILLÉE (PIPELINE DUAL-HARNESS EN 6 ÉTAPES)
 
 ```mermaid
 sequenceDiagram
     autonumber
     participant Parent as Skill Parent (ex: san_executer)
     participant Manager as san_subagent_manager
-    participant Harness as Antigravity CLI (Harness)
-    participant Sub as Sous-Agent Éphémère
+    participant Harness as Dual-Harness (swarm / subagent)
+    participant Sub as Worker Spécialisé
 
-    Parent->>Manager: Demande de sous-agent (Objectif, Contexte, Cible)
-    Manager->>Manager: 1. Qualification & Triage de Complexité
-    Manager->>Manager: 2. Attribution du Modèle (flash vs inherit)
+    Parent->>Manager: Demande de worker (Objectif, Contexte, Cible)
+    Manager->>Manager: 1. Qualification & Triage de Complexité (SRP)
+    Manager->>Manager: 2. Lecture routage .agents/models.json
     Manager->>Manager: 3. Restriction d'Outils (Least Privilege)
     Manager->>Manager: 4. Assemblage du Prompt Fermé Hermétique
-    Manager->>Harness: invoke_subagent(Role, Model, TypeName, Prompt)
-    Harness-->>Sub: Démarrage de l'instance isolée
-    Manager-->>Parent: Confirmation d'invocation (ConversationId)
+    Manager->>Harness: swarm(add, gemini-4-hydrogen-xhigh) | subagent(opencode)
+    Harness-->>Sub: Démarrage du worker isolé
     Note over Sub: Exécution chirurgicale sans dérive
     Sub->>Sub: Exécution VALIDATION_COMMAND via run_command
-    Sub->>Harness: send_message(Recipient: ParentId, Rapport structuré)
-    Harness-->>Parent: Réveil Réactif (Incoming Message - Zéro Polling)
+    Sub->>Harness: post_message / send_message (Rapport structuré)
+    Harness-->>Parent: Réveil Réactif (swarm_wait - Zéro Polling)
     Parent->>Manager: Clôture & Libération des Ressources
-    Manager->>Harness: manage_subagents(action: 'kill', ConversationIds)
+    Manager->>Harness: swarm(action: 'kill', name)
 ```
 
 ### Étape 1 : Qualification du Besoin et Triage de Granularité
-1. **Validation du Principe de Responsabilité Unique (SRP) :** S'assurer que la mission confiée correspond à une action délimitée. Si la demande combine backend, UI et configuration réseau, `san_subagent_manager` la découpe en 3 missions distinctes exécutées séquentiellement.
-2. **Identification des Dépendances :** Référencer exhaustivement les chemins absolus des fichiers d'entrée (`INPUTS`) et de sortie (`OUTPUTS`).
+1. **Validation du Principe de Responsabilité Unique (SRP) :** S'assurer que la mission confiée correspond à une action délimitée. Si la demande combine backend, UI et configuration réseau, `san_subagent_manager` la découpe en missions distinctes exécutées en parallèle sur périmètres disjoints (`workspace: "share"` si éditions simultanées).
+2. **Identification des Dépendances :** Consulter `.agents/cache/REPO_MAP.md` et référencer exhaustivement les chemins exacts des fichiers d'entrée (`INPUTS`) et de sortie (`OUTPUTS`).
 
-### Étape 2 : Routage Strict du Modèle de Calcul
-Appliquer sans exception la règle d'attribution des ressources :
-- **`Model: 'flash'` :**
-  - Implémentation de classes de service, contrôleurs, composants d'UI, hooks.
-  - Écriture de migrations de base de données, seeders et fixtures.
-  - Rédaction de suites de tests unitaires ou de collections de requêtes d'API (Bruno).
-  - Formatage de documentation, correction syntaxique de linters.
-- **`Model: 'inherit'` :**
-  - Analyse d'architecture amont, arbitrage de structures de données critiques.
-  - Audit de sécurité OWASP, analyse de vulnérabilités et pentesting.
-  - Évaluation de performance globale et intégration croisée Frontend/Backend.
-  - Audits cognitifs UX et psychologie produit.
+### Étape 2 : Routage Dual-Harness (`.agents/models.json` & `san-framework models`)
+Appliquer la doctrine v2.2 Dual-Harness sans jamais appeler `invoke_subagent(Model: 'inherit')` :
+- **Antigravity (`swarm`) :**
+  - Workers d'exécution (`san-coder-back`, `san-coder-front`, `san-designer-worker`, `san-researcher`) et d'audit (`san-qa-auditor`, `san-architect`) lancés via `swarm(action: "add", model: "gemini-4-hydrogen-xhigh", ...)` (ou modèle configuré dans `.agents/models.json`), avec `model: "pro"` maintenu dans le frontmatter `src/agents/*.md` uniquement pour compatibilité ascendante du parser CLI.
+- **OpenCode V2 (`subagent`) :**
+  - Délégation native via la primitive `subagent` vers les profils `opencode.json` / `.agents/models.json` configurés via `san-framework models` (`opencode-go/*` ou provider choisi).
 
 ### Étape 3 : Application du Principe de Moindre Privilège (*Tool Sandboxing*)
-Restreindre la surface d'attaque et les risques de digression en n'ouvrant que les capacités strictement indispensables :
+Restreindre la surface d'action selon le rôle :
 ```yaml
-# Profil d'Exécution Code (flash)
-EnabledTools:
-  - read_file
-  - write_file
-  - edit_file
-  - run_command
-DisabledTools:
-  - search_web         # Pas de navigation sauvage pour coder du métier local
-  - invoke_subagent    # Zéro sous-agent récursif
-  - define_subagent
+# Profil Bâtisseur (san-coder-back / san-coder-front)
+EnabledTools: [read_file, write_file, edit_file, run_command]
+DisabledTools: [invoke_subagent]  # Pas de récursion sauvage ; Dialectique 2 Approches obligatoire
 
-# Profil d'Audit de Sécurité / Architecture (inherit)
-EnabledTools:
-  - read_file
-  - run_command        # Uniquement pour lancer des suites de tests et linters
-DisabledTools:
-  - write_file         # Un auditeur ne modifie pas le code en direct
-  - edit_file
-  - search_web
+# Profil Auditeur Sceptique (san-qa-auditor / san-architect)
+EnabledTools: [read_file, run_command]  # Tests & linters uniquement
+DisabledTools: [write_file, edit_file, invoke_subagent]  # Lecture seule, Présomption de Défaut
 ```
 
 ### Étape 4 : Assemblage du Prompt Système Hermétique
-Construire le prompt selon le gabarit universel fermé (Role, Mission, Inputs, Outputs, Constraints, Validation Command, Reddition). Vérifier sa conformité statique via `scripts/validate_subagent_spec.sh`.
+Construire le prompt selon le gabarit fermé (`SUBAGENT_PROMPT_TEMPLATE.md`, `ATOMIC_CODER_PROMPT.md` ou `AUDITOR_PROMPT.md`). Vérifier sa conformité statique via `scripts/validate_subagent_spec.sh`.
 
-### Étape 5 : Invocation Non-Bloquante et Attente Réactive
-1. Lancer l'instance via l'outil natif :
-   ```json
-   {
-     "Role": "Backend Service Implementer",
-     "Model": "flash",
-     "TypeName": "self",
-     "Prompt": "[PROMPT_HERMETIQUE_COMPILE]"
-   }
-   ```
-2. **Principe de Réveil Événementiel :** L'agent appelant ne fait AUCUN appel en boucle (`sleep`, boucle de consultation de statut). Dès que l'appel d'outil est émis, l'exécution s'interrompt proprement ; le système Antigravity CLI réveillera automatiquement l'orchestrateur dès que le message de fin de mission sera réceptionné.
+### Étape 5 : Instanciation Non-Bloquante et Attente Réactive (`swarm_wait`)
+1. **Sous Antigravity :** Spawner via `swarm({ "action": "add", "name": "...", "model": "gemini-4-hydrogen-xhigh", "workspace": "share", "brief": "..." })`, puis appeler `swarm_wait` (zéro polling).
+2. **Sous OpenCode V2 :** Déléguer via l'outil natif `subagent` avec le profil `.agents/models.json`.
 
 ### Étape 6 : Réception du Rapport, Contrôle Qualité et Nettoyage
-1. À la reprise d'exécution, lire le contenu du rapport transmis par `send_message`.
-2. Vérifier la présence des preuves d'exécution (tests au vert, typage 100% valide).
-3. Si la tâche est déclarée réussie, appeler `manage_subagents` avec l'action `'kill'` sur le `conversationId` du sous-agent pour libérer l'espace mémoire et clore la session de travail.
-4. Si la tâche a échoué, réinjecter l'erreur spécifique dans un nouveau sous-agent de correction ou transmettre un diagnostic net au développeur (après 5 échecs consécutifs maximum).
+1. À la reprise d'exécution, vérifier le contenu du rapport et les preuves d'exécution réelles (tests au vert, typage valide, `.agents/cache/last-gate-status.json` si code applicatif).
+2. Si la tâche est intégrée, libérer le worker `swarm({"action": "kill", "name": "<name>"})`.
+3. En cas de `RETOUR_ATELIER`, relancer une passe corrective ciblée avec les coordonnées exactes (`fichier:ligne`).
 
 ---
 
-## 7. SCRIPTS ET OUTILS DÉTERMINISTES EMBARQUÉS
+## 7. SCRIPT DE VALIDATION STATIQUE (`scripts/validate_subagent_spec.sh` v2.2)
 
-### Script de Validation Statique de Spécification de Sous-Agent (`scripts/validate_subagent_spec.sh`)
-
-Ce script analyse le texte d'un prompt système avant son injection dans `invoke_subagent` afin de certifier qu'aucune règle du framework n'est transgressée.
+Le script déterministe [validate_subagent_spec.sh](../src/skills/san_subagent_manager/scripts/validate_subagent_spec.sh) contrôle les agents natifs (`src/agents/*.md`) et les prompts fermés avant exécution :
 
 ```bash
-#!/usr/bin/env bash
-# scripts/validate_subagent_spec.sh
-# Validation déterministe de la structure d'un prompt système de sous-agent Antigravity.
-# Usage: bash scripts/validate_subagent_spec.sh path/to/prompt.md [flash|inherit]
+# Validation défaut Antigravity swarm (gemini-4-hydrogen-xhigh)
+bash .agents/skills/san_subagent_manager/scripts/validate_subagent_spec.sh src/agents/san-architect.md
 
-set -euo pipefail
-
-PROMPT_FILE="${1:-}"
-MODEL_TARGET="${2:-flash}"
-
-if [[ -z "${PROMPT_FILE}" || ! -f "${PROMPT_FILE}" ]]; then
-  echo "❌ Erreur : Fichier de prompt introuvable ou non spécifié."
-  echo "Usage: $0 path/to/prompt.md [flash|inherit]"
-  exit 1
-fi
-
-echo "🔍 [san_subagent_manager] Audit cartésien du prompt : ${PROMPT_FILE} (Modèle visé: ${MODEL_TARGET})"
-ERRORS=0
-
-# 1. Vérification des sections obligatoires
-REQUIRED_SECTIONS=(
-  "### 1. ROLE"
-  "### 2. MISSION"
-  "### 3. INPUTS"
-  "### 4. OUTPUTS"
-  "### 5. CONSTRAINTS"
-  "### 6. VALIDATION_COMMAND"
-  "### 7. PROTOCOLE DE REDDITION"
-)
-
-for section in "${REQUIRED_SECTIONS[@]}"; do
-  if ! grep -qF "${section}" "${PROMPT_FILE}"; then
-    echo "❌ Section obligatoire manquante : '${section}'"
-    ERRORS=$((ERRORS + 1))
-  fi
-done
-
-# 2. Vérification des chemins absolus (Interdiction des chemins vagues relatifs)
-if grep -qE "(INPUTS|OUTPUTS)" "${PROMPT_FILE}"; then
-  if grep -E '`\./|\.\./' "${PROMPT_FILE}" | grep -qv "file://"; then
-    echo "⚠️ Avertissement : Détection de chemins relatifs suspects. Privilégiez des chemins absolus ou file:///."
-  fi
-fi
-
-# 3. Interdiction formelle des outils récursifs dans les contraintes
-if ! grep -q "invoke_subagent" "${PROMPT_FILE}"; then
-  echo "❌ Garde-fou manquant : L'interdiction formelle de 'invoke_subagent' doit figurer dans les contraintes."
-  ERRORS=$((ERRORS + 1))
-fi
-
-# 4. Vérification de l'attribution du modèle
-if [[ "${MODEL_TARGET}" == "inherit" ]]; then
-  # Si inherit, vérifier que la mission est bien de l'audit/sécurité/architecture
-  if grep -qiE "(code|implémente|écris le composant|crée la migration)" "${PROMPT_FILE}"; then
-    echo "❌ Violation de routing : Un sous-agent de code pur NE DOIT JAMAIS tourner sous 'Model: inherit'."
-    ERRORS=$((ERRORS + 1))
-  fi
-elif [[ "${MODEL_TARGET}" == "flash" ]]; then
-  # Si flash, vérifier qu'on ne lui demande pas un audit d'architecture critique E2E
-  if grep -qiE "(audit de sécurité owasp|pentest complet|arbitrage architectural majeur)" "${PROMPT_FILE}"; then
-    echo "⚠️ Avertissement de routing : Une mission d'audit critique devrait être assignée à 'Model: inherit'."
-  fi
-else
-  echo "❌ Modèle cible non reconnu : '${MODEL_TARGET}'. Choisissez 'flash' ou 'inherit'."
-  ERRORS=$((ERRORS + 1))
-fi
-
-# 5. Vérification du protocole de reddition (send_message obligatoire)
-if ! grep -q "send_message" "${PROMPT_FILE}"; then
-  echo "❌ Protocole de reddition incomplet : L'instruction explicite d'utiliser 'send_message' est absente."
-  ERRORS=$((ERRORS + 1))
-fi
-
-# Résultat final
-if [[ ${ERRORS} -gt 0 ]]; then
-  echo "🚨 [san_subagent_manager] Validation ÉCHOUÉE : ${ERRORS} violation(s) détectée(s)."
-  exit 1
-else
-  echo "✅ [san_subagent_manager] Spécification 100% conforme. Prêt pour invoke_subagent."
-  exit 0
-fi
+# Validation profil OpenCode V2 (<provider>/<model>)
+bash .agents/skills/san_subagent_manager/scripts/validate_subagent_spec.sh src/agents/san-coder-back.md opencode-go/deepseek-v4-pro
 ```
+
+**Contrôles exécutés (`fail-closed`) :**
+- Rejet immédiat des cibles obsolètes `inherit`, `flash`, `gemini-3.1-pro-high`, `gemini-3.8-flash-high`.
+- Acceptation Dual-Harness : `gemini-4-hydrogen-xhigh`, `pro` (compat YAML `src/agents/*.md`), `unified-executor` et `<provider>/<model>` OpenCode V2.
+- Vérification des champs YAML obligatoires (`name`, `description`, `mainAgent`, `subagent`, `model`, `commandExecutionPolicy`, `tools`, `skills`), des sections `RÔLE/MISSION`, `GARDE-FOUS/PÉRIMÈTRE`, `PROTOCOLE DE REDDITION DÉTERMINISTE`, et de la règle anti-`invoke_subagent`.
 
 ---
 
 ## 8. PRINCIPES DIRECTEURS ET INVARIANTS
 
 ### 1. Invariant de Moindre Privilège d'Outils (*Least Privilege*)
-Aucun sous-agent ne doit recevoir un outil qui n'est pas strictement nécessaire à la réalisation immédiate de sa mission. Moins un agent a d'outils ouverts, plus son exécution est déterministe, rapide et exempte de digressions.
+Aucun worker ne doit recevoir un outil qui n'est pas strictement nécessaire à la réalisation immédiate de sa mission.
 
-### 2. Invariant de Routage Cartésien des Modèles (*Model Routing Rigor*)
-L'intelligence de haut vol et l'écriture de code sont deux fonctions distinctes :
-- Le raisonnement critique, la planification et la sécurité exigent un modèle hautement capacitaire (`Model: 'inherit'`).
-- L'application mécanique des patrons de conception, l'écriture de boilerplate et les tests unitaires exigent un modèle rapide, économique et rigoureux (`Model: 'flash'`).
-Tout manquement à cette règle constitue une régression d'efficacité.
+### 2. Invariant de Routage Dual-Harness (`swarm` | `subagent`)
+- Le thread principal (`Argon`/`Carbon` | OpenCode orchestrateur) reste souverain et délègue sans jamais exposer `/model` à l'utilisateur.
+- Les workers tournent sur l'exécuteur configuré dans `.agents/models.json` (`gemini-4-hydrogen-xhigh` en `swarm` sous Antigravity ; profil `<provider>/<model>` en `subagent` sous OpenCode V2). L'appel à `invoke_subagent(Model: 'inherit')` est banni.
 
 ### 3. Invariant d'Étanchéité du Contexte (*Context Hygiene*)
 Un sous-agent est un travailleur jetable dans une bulle isolée. Les lectures verbeuses de dizaines de fichiers, les stacktraces de compilation et les itérations intermédiaires doivent rester confinées dans son contexte éphémère. Seule la synthèse finale structurée est transmise à l'orchestrateur.

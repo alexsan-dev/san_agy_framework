@@ -3,19 +3,19 @@ name: san_subagent_manager
 description: Déclenché quand l'utilisateur souhaite concevoir, calibrer ou superviser des sous-agents chirurgicaux au moindre privilège, avec dialectique 2-approches et présomption de défaut.
 ---
 
-# `san_subagent_manager` — Runbook de Calibrage et Supervision de Workers `Swarm`
+# `san_subagent_manager` — Calibrage et Supervision de Workers Dual-Harness (`swarm` | `subagent`)
 
-Protocole déterministe v2.1 pour armer, calibrer et superviser les workers spécialisés du framework Antigravity (`san_*`), selon la doctrine **Orchestrateur Souverain (`Argon` / `Carbon`)**, le moindre privilège, la dialectique technique préalable et le réveil événementiel sans polling.
+Protocole déterministe v2.2 pour armer, calibrer et superviser les workers spécialisés **Antigravity / OpenCode (`san_*`)**, selon la doctrine **Orchestrateur Souverain (`Argon` / `Carbon` / `OpenCode V2`)**, le routage dynamique `.agents/models.json` (`san-framework models`), le moindre privilège et la dialectique technique préalable.
 
 ---
 
-## 1. DOCTRINE ORCHESTRATEUR SOUVERAIN & RÈGLES D'OR v2.1
+## 1. DOCTRINE DUAL-HARNESS & RÈGLES D'OR v2.2
 
-1. **Autonomie Mécanique (`Argon` / `Carbon`) :** L'Orchestrateur du thread principal prend l'initiative mécanique de déléguer en parallèle sans jamais demander à l'utilisateur de taper `/model` ni le nom d'un sous-agent.
-2. **Vérité Technique Antigravity CLI v1.5.8 :**
-   - **Interdiction formelle** d'appeler `invoke_subagent(Model: "inherit")` quand le thread principal tourne sur `Argon` ou `Carbon` (sanctuarisation du quota hebdomadaire).
-   - `invoke_subagent` bascule silencieusement sur `gemini-3.8-flash-tiered` : router toute délégation vers l'outil natif **`swarm(action: "add", model: "gemini-4-hydrogen-xhigh", ...)`** (ou **`agy -p --model gemini-4-hydrogen-xhigh`**) afin d'exécuter réellement sur **Gemini 4 Hydrogen (XHigh)**.
-   - Les définitions `src/agents/*.md` conservent `model: "pro"` dans le frontmatter YAML uniquement pour compatibilité ascendante du parser CLI.
+1. **Autonomie Mécanique :** L'Orchestrateur du thread principal prend l'initiative mécanique de déléguer en parallèle sans jamais demander à l'utilisateur de taper `/model` ni le nom d'un sous-agent (utiliser `ask_question` / `question` uniquement pour lever une ambiguïté produit ou architecturale).
+2. **Vérité Technique Dual-Harness (`Antigravity` + `OpenCode V2`) :**
+   - **Antigravity (`swarm`) :** Déléguez vers `swarm(action: "add", model: "<executor_model>", ...)` (défaut `gemini-4-hydrogen-xhigh` ou le modèle configuré dans `.agents/models.json`). **Interdiction formelle** d'appeler `invoke_subagent(Model: "inherit")` sur `Argon`/`Carbon` (sanctuarise le quota et évite le fallback silencieux vers `gemini-3.8-flash-tiered`).
+   - **OpenCode V2 (`subagent` / `opencode.json`) :** Les agents natifs exposent `mode: subagent` via la primitive native `subagent`, alimentée par `.agents/models.json` et la commande `san-framework models` (ex: `opencode-go/*` ou profil sélectionné).
+   - **Compatibilité Frontmatter CLI :** Les définitions `src/agents/*.md` conservent `model: "pro"` dans le frontmatter YAML pour compatibilité ascendante du parser Antigravity CLI.
 3. **Moindre Privilège (*Least Privilege*) :** Zéro outil superflu. Interdiction absolue des outils de récursion agentique (`invoke_subagent`, `define_subagent`) pour les workers.
 4. **Dialectique Avant Frappe :** Tout agent de création confronte au moins 2 approches techniques viables avant d'éditer le moindre fichier.
 5. **Présomption de Défaut :** Tout agent d'audit opère sous présomption d'insuffisance et rend un verdict binaire `LIVRABLE | RETOUR_ATELIER`.
@@ -31,11 +31,11 @@ Protocole déterministe v2.1 pour armer, calibrer et superviser les workers spé
 
 ### Étape 2 : Sélection des Privilèges & Validation
 - Consulter la [Matrice de Moindre Privilège](references/least_privilege_matrix.md) et les [Archétypes de Sous-Agents](references/subagent_archetypes.md).
-- Valider toute spécification d'agent ou prompt via [validate_subagent_spec.sh](scripts/validate_subagent_spec.sh) (`gemini-4-hydrogen-xhigh`).
+- Valider toute spécification d'agent ou prompt via [validate_subagent_spec.sh](scripts/validate_subagent_spec.sh) (`gemini-4-hydrogen-xhigh` ou `<provider>/<model>` OpenCode V2).
 
-### Étape 3 : Instanciation via `swarm` (`gemini-4-hydrogen-xhigh`)
+### Étape 3 : Instanciation Dual-Harness (`swarm` | `subagent`)
 - Utiliser les gabarits normés : [SUBAGENT_PROMPT_TEMPLATE.md](templates/SUBAGENT_PROMPT_TEMPLATE.md), [ATOMIC_CODER_PROMPT.md](templates/ATOMIC_CODER_PROMPT.md) ou [AUDITOR_PROMPT.md](templates/AUDITOR_PROMPT.md).
-- Spawner le worker épinglé explicitement sur `gemini-4-hydrogen-xhigh` :
+- **Sous Antigravity (`swarm`) :** Spawner le worker épinglé sur le modèle exécuteur de `.agents/models.json` (défaut `gemini-4-hydrogen-xhigh`) :
   ```json
   swarm({
     "action": "add",
@@ -44,7 +44,8 @@ Protocole déterministe v2.1 pour armer, calibrer et superviser les workers spé
     "brief": "<mission atomique, périmètre exclusif INPUTS/OUTPUTS, commande de validation>"
   })
   ```
-- Utiliser `workspace: "share"` si plusieurs workers éditent en parallèle sur des fichiers distincts ou nécessitent un worktree isolé, puis appeler `swarm_wait`.
+- **Sous OpenCode V2 (`subagent`) :** Déléguer via l'outil natif `subagent` vers l'agent configuré dans `opencode.json` / `.agents/models.json` (configurable par `san-framework models`).
+- Utiliser `workspace: "share"` sous `swarm` si plusieurs workers éditent en parallèle sur des fichiers distincts, puis appeler `swarm_wait`.
 
 ### Étape 4 : Reddition et Clôture Déterministe
 1. Réception du rapport (`post_message` / `send_message`) avec statut `SUCCÈS_TOTAL`, `BLOCAGE` ou verdict `LIVRABLE` / `RETOUR_ATELIER`.

@@ -177,12 +177,12 @@ node "${CLI_BIN}" init --local --all --dir="${CLIENT_DIR}" > "${TMP_BASE}/test1_
 }
 pass "Installation locale exécutée avec succès via le CLI (node src/cli/index.js init --local --all --dir=...)."
 
-# 1.4 Vérification des 18 compétences déployées dans .agents/skills/
+# 1.4 Vérification des 19 compétences déployées dans .agents/skills/
 SKILL_COUNT=$(find "${CLIENT_DIR}/.agents/skills" -mindepth 1 -maxdepth 1 -type d -name "san_*" | wc -l)
-if [[ "${SKILL_COUNT}" -ne 18 ]]; then
-  fail "Nombre de compétences installées incorrect : ${SKILL_COUNT}/18 !"
+if [[ "${SKILL_COUNT}" -ne 19 ]]; then
+  fail "Nombre de compétences installées incorrect : ${SKILL_COUNT}/19 !"
 fi
-pass "Exactement 18 compétences Antigravity déployées dans .agents/skills/."
+pass "Exactement 19 compétences Antigravity déployées dans .agents/skills/."
 
 # 1.5 Vérification des règles normatives dans .agents/rules/
 EXPECTED_RULES=("BRAND.md" "PRODUCT.md" "PROJECT.md" "API.md" "LOGO.md")
@@ -200,10 +200,10 @@ fi
 if [[ ! -x "${CLIENT_DIR}/.agents/hooks/scripts/stop_guard.mjs" ]]; then
   fail "Hook .agents/hooks/scripts/stop_guard.mjs manquant ou non exécutable !"
 fi
-if ! node "${CLI_BIN}" whats-new | grep -q "What's New on san-agy v2.1.0"; then
+if ! node "${CLI_BIN}" whats-new | grep -q "What's New on san-agy v2.2.0"; then
   fail "Commande whats-new défaillante !"
 fi
-pass "Index maître .agents/GEMINI.md, stop_guard.mjs et whats-new v2.1 vérifiés."
+pass "Index maître .agents/GEMINI.md, stop_guard.mjs et whats-new v2.2 vérifiés."
 
 # 1.7 Vérification des permissions d'exécution sur tous les scripts déployés
 SCRIPTS_FOUND=0
@@ -368,15 +368,15 @@ else
   GLOBAL_SKILL_COUNT=$(find "${GLOBAL_TARGET_DIR}" -mindepth 1 -maxdepth 1 -type d -name "san_*" | wc -l)
 fi
 
-if [[ "${GLOBAL_SKILL_COUNT}" -ne 18 ]]; then
-  fail "Nombre de compétences déployées globalement incorrect : ${GLOBAL_SKILL_COUNT}/18 !"
+if [[ "${GLOBAL_SKILL_COUNT}" -ne 19 ]]; then
+  fail "Nombre de compétences déployées globalement incorrect : ${GLOBAL_SKILL_COUNT}/19 !"
 fi
-pass "18 compétences Antigravity déployées dans le répertoire global (${GLOBAL_TARGET_DIR})."
+pass "19 compétences Antigravity déployées dans le répertoire global (${GLOBAL_TARGET_DIR})."
 
 if [[ ! -f "${GLOBAL_TARGET_DIR}/plugin.json" ]]; then
   fail "Manifeste plugin.json absent dans le répertoire global !"
 fi
-pass "Manifeste plugin.json présent dans le déploiement global v2.1."
+pass "Manifeste plugin.json présent dans le déploiement global v2.2."
 
 if command -v agy >/dev/null 2>&1; then
   set +e
@@ -507,16 +507,16 @@ fi
 pass "Non-régression validée : my_custom_skill tiers préservé dans .agents/skills/."
 
 TOTAL_SKILLS_LOCAL=$(find "${CLIENT_DIR}/.agents/skills" -mindepth 1 -maxdepth 1 -type d | wc -l)
-if [[ "${TOTAL_SKILLS_LOCAL}" -ne 19 ]]; then
-  fail "Nombre total de compétences inattendu dans .agents/skills/ : ${TOTAL_SKILLS_LOCAL} (attendu: 19) !"
+if [[ "${TOTAL_SKILLS_LOCAL}" -ne 20 ]]; then
+  fail "Nombre total de compétences inattendu dans .agents/skills/ : ${TOTAL_SKILLS_LOCAL} (attendu: 20) !"
 fi
-pass "Intégrité globale du répertoire de compétences confirmée (18 san_* + 1 custom = 19)."
+pass "Intégrité globale du répertoire de compétences confirmée (19 san_* + 1 custom = 20)."
 
 # ==============================================================================
-# TEST 6 : CONFORMITÉ CARTÉSIENNE ANTIGRAVITY DES 18 MODULES DU FRAMEWORK
+# TEST 6 : CONFORMITÉ CARTÉSIENNE ANTIGRAVITY DES 19 MODULES DU FRAMEWORK
 # ==============================================================================
 echo ""
-echo -e "${BOLD}${MAGENTA}--- [TEST 6/6] Conformité cartésienne Antigravity des 18 modules ---${NC}"
+echo -e "${BOLD}${MAGENTA}--- [TEST 6/6] Conformité cartésienne Antigravity des 19 modules ---${NC}"
 
 AUDITED_MODULES=0
 FORBIDDEN_FOUND=0
@@ -563,20 +563,20 @@ for module_dir in "${FRAMEWORK_ROOT}/src/skills"/san_*; do
   fi
 done
 
-if [[ "${AUDITED_MODULES}" -ne 18 ]]; then
-  fail "Nombre de modules audités incorrect dans src/skills/ : ${AUDITED_MODULES}/18 !"
+if [[ "${AUDITED_MODULES}" -ne 19 ]]; then
+  fail "Nombre de modules audités incorrect dans src/skills/ : ${AUDITED_MODULES}/19 !"
 fi
-pass "18 modules sources audités avec succès dans src/skills/."
+pass "19 modules sources audités avec succès dans src/skills/."
 
 if [[ "${INVALID_FRONTMATTER}" -gt 0 ]]; then
   fail "${INVALID_FRONTMATTER} module(s) ont un frontmatter YAML invalide ou incomplet !"
 fi
-pass "Conformité cartésienne du frontmatter YAML (name, description non vide, délimiteurs) validée sur tous les 18 modules."
+pass "Conformité cartésienne du frontmatter YAML (name, description non vide, délimiteurs) validée sur tous les 19 modules."
 
 if [[ "${FORBIDDEN_FOUND}" -gt 0 ]]; then
   fail "${FORBIDDEN_FOUND} module(s) contiennent des mentions privées interdites ('koteka', 'vunette') !"
 fi
-pass "Zéro mention privée interdite ('koteka', 'vunette') dans l'ensemble des 18 modules (universalité souveraine)."
+pass "Zéro mention privée interdite ('koteka', 'vunette') dans l'ensemble des 19 modules (universalité souveraine)."
 
 # ==============================================================================
 # BILAN FINAL & RAPPORT D'EXÉCUTION

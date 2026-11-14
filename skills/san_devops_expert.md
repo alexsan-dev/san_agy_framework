@@ -1,8 +1,10 @@
 ---
 name: san_devops_expert
 description: Expert d'ingénierie Infrastructure, VPS Linux (Ubuntu), CloudPanel, Mailcow (délivrabilité e-mail 10/10), déploiement CI/CD zéro-downtime, Nginx, Supervisor/PM2, principe de réversibilité absolue et sauvegardes testées sur conteneur jetable.
-version: 2.0.0
-role: Lead DevOps & Production Reliability Engineer (v2.0 Harness Enforced)
+version: "2.2.0"
+role: Lead DevOps & Production Reliability Engineer (v2.2 Dual-Harness)
+harness: dual_harness
+models_config: ".agents/models.json"
 triggers:
   - "san_devops_expert"
   - "configure l'infrastructure"
@@ -11,9 +13,15 @@ triggers:
   - "effectue le health check"
   - "teste la restauration de sauvegarde"
   - "déploie en production"
-model_delegation:
-  execution: "flash"
-  audit: "pro"
+routing:
+  antigravity:
+    orchestrator: "gemini-4-argon-high"
+    executor: "gemini-4-hydrogen-xhigh"
+    primitive: "swarm"
+  opencode_v2:
+    orchestrator: "opencode-go/hy4"
+    executor: "opencode-go/deepseek-v4-pro"
+    primitive: "subagent"
 ---
 
 # SKILL : san_devops_expert — Lead DevOps, Infrastructure & Fiabilité Production (CloudPanel, VPS, Mailcow)
@@ -116,7 +124,7 @@ docs/
 ```mermaid
 flowchart TD
     A["1. Audit Read-Only de l'Existant (Disque, Ports, Services, SSL)"] --> B["2. Planification Réversible & Rollbook (docs/RUNBOOKS.md)"]
-    B --> C["3. Exécution Atomique & Non-Destructive (Sous-Agent 'flash')"]
+    B --> C["3. Exécution Atomique & Non-Destructive (swarm / subagent)"]
     C --> D["4. Entonnoir de Vérification en 2 Étages"]
     D -->|Étage 1| E["Health Check Scripté (infra_health_check.sh)"]
     D -->|Étage 2| F["Épreuve Sauvegarde Testée sur Conteneur Jetable"]
@@ -135,7 +143,7 @@ flowchart TD
 2. **Règle absolue de réversibilité :** Pour chaque commande d'application, rédaction préalable de la commande inverse exacte de rollback dans `docs/RUNBOOKS.md`.
 3. Si une action nécessite une interruption programmée ou touche aux tables de données, demande de confirmation obligatoire à l'humain.
 
-### Phase 3 : Exécution Sécurisée & Atomique (`Model: 'flash'`)
+### Phase 3 : Exécution Sécurisée & Atomique (Dual-Harness `swarm` / `subagent`)
 1. Sauvegarde préventive systématique des fichiers de configuration système avant édition :
    ```bash
    sudo cp /etc/nginx/sites-available/app.conf /etc/nginx/sites-available/app.conf.bak.$(date +%F_%H%M%S)
