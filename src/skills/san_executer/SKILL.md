@@ -1,43 +1,45 @@
 ---
 name: san_executer
-description: Déclenché quand l'utilisateur souhaite exécuter une roadmap active, implémenter une fonctionnalité full-stack, backend ou frontend de bout en bout avec orchestration swarm, run_workflow et quality gates.
+description: Déclenché quand l'utilisateur souhaite exécuter une roadmap active, implémenter une fonctionnalité full-stack, backend ou frontend de bout en bout avec orchestration adaptative et quality gates.
 ---
 
-# `san_executer` — Chef d'Orchestre d'Implémentation & Dual-Harness v2.2
+# `san_executer` — Chef d'Orchestre d'Implémentation & Dual-Harness v3.0
 
-`san_executer` est le moteur d'exécution autonome du framework **Antigravity / OpenCode (`san_*` v2.2)**. Il orchestre les roadmaps sous les lois du **Map-First**, du **Contract-First**, de la **Dialectique à 2 Approches**, du routage **Dual-Harness (`swarm` | `subagent` / `run_workflow`)** et du **Double Quality Gate Fail-Closed**.
+`san_executer` pilote l'implémentation dans **SAN AI Harness (`san_*` v3.0)**. L'orchestrateur utilise le `/model` choisi par l'utilisateur (`inherit-user-model`) : le cycle natif **`Plan → Execute`** est autorisé sur les tâches simples ou mono-couche, et **`swarm` / `san_swarm` (`run_workflow`)** orchestre les chantiers multi-couches, Duels UI et audits `san-qa-auditor` via `.agents/models.json`.
 
 ---
 
-## 1. DÉCLENCHEURS & DOCTRINE DUAL-HARNESS v2.2
+## 1. DÉCLENCHEURS & DOCTRINE ADAPTATIVE v3.0
 
 - *« Exécute la roadmap active /roadmaps/... »* | *« Implémente la fonctionnalité [X] de bout en bout »* | *« Reprends à la Phase [N] »*
-- **Orchestrateur Souverain (`Argon`/`Carbon` | OpenCode V2) :** Déléguer sans jamais demander à l'utilisateur `/model` ni le nom d'un agent.
-- **Dual-Harness (`.agents/models.json` / `san-framework models`) :** Sous Antigravity, spawner via `swarm(action: "add", model: "gemini-4-hydrogen-xhigh", ...)` (ou `run_workflow` avec `scripts/autonomous_slice_workflow.py`) ; sous OpenCode V2, utiliser la primitive native **`subagent`** mappée sur les profils `.agents/models.json`.
-- **Interdiction de `inherit` :** `invoke_subagent(Model: "inherit")` est **INTERDIT** sur `Argon`/`Carbon` (brûle le quota hebdomadaire et risque un fallback caché sur `gemini-3.8-flash-tiered`).
-- **Relais Sceptique (`san_transcriber`) :** Si un transcript actif existe dans `roadmaps/transcripts/` ou avant compaction longue, consigner les décisions dans `roadmaps/transcripts/TRANSCRIPT_*.md` et valider chaque artefact sur disque avant de cocher `- [x]`.
+- **Orchestrateur Libre (`/model`) :** Aucun modèle imposé en orchestration.
+- **Dual-Harness (`.agents/models.json` / `san-harness models`) :**
+  - **Tâche simple / mono-couche :** `Plan → Execute` natif autorisé en direct selon `.agents/rules/*.md`.
+  - **Chantier multi-couches / parallèle :** **Antigravity** `swarm(action: "add", model: "<agy.executor>")` (ou `run_workflow` via `scripts/autonomous_slice_workflow.py`) | **OpenCode V2.3** `san_swarm(action: "dispatch")` (vue tableau Swarm Board) ou `subagent` via `.agents/models.json`.
+- **Quota & Hygiène :** Éviter `invoke_subagent(Model: "inherit")` sur les workers AGY ; compacter vers `120k` tokens (`/compact`) si la session grossit.
 
 ---
 
-## 2. PIPELINE DÉTERMINISTE (`run_workflow` + `swarm`)
+## 2. PIPELINE DÉTERMINISTE (`run_workflow` + `swarm` / `san_swarm`)
 
 ```mermaid
 flowchart TD
-    S1["1. Map-First (.agents/cache/REPO_MAP.md)\n+ Triage (BACK_ONLY | FRONT_ONLY | FULL_STACK)"] --> S2["2. contract_lock (san-architect)\nCONTRACT_SCHEMA + Fitness Functions"]
-    S2 --> S3["3. parallel_slice_execution (swarm gemini-4-hydrogen-xhigh)\nsan-coder-back & san-coder-front (CODE_SLICE_SCHEMA)"]
+    S1["1. Règles .agents/rules/*.md\n+ Triage (SIMPLE | BACK_ONLY | FRONT_ONLY | FULL_STACK)"] -->|"Multi-couches"| S2["2. contract_lock (san-architect)\nCONTRACT_SCHEMA + Fitness Functions"]
+    S1 -->|"Simple / Mono-couche"| S3B["Plan → Execute natif\n+ Tests réels exit 0"]
+    S2 --> S3["3. parallel_slice_execution (swarm / san_swarm)\nsan-coder-back & san-coder-front"]
     S3 --> S4["4. Étage 1 Fail-Closed (Scripts Statiques)\nquality_gate_runner.sh / e2e_verification_gate.sh"]
     S4 --> S5["5. Étage 2 adversarial_qa_loop (san-qa-auditor, max 3 tours)\nQA_VERDICT_SCHEMA: LIVRABLE | RETOUR_ATELIER"]
     S5 -->|"RETOUR_ATELIER"| S3
-    S5 -->|"LIVRABLE"| S6["6. Preuve .agents/cache/last-gate-status.json\nDéverrouille Stop Hook (stop_guard.mjs)"]
+    S5 -->|"LIVRABLE"| S6["6. Preuve réelle (exit 0) & - [x]"]
 ```
 
-### Étape 1 : Map-First, Cadrage & Contract Lock (`contract_lock`)
-- Consulter `.agents/cache/REPO_MAP.md` (`read_file(StartLine, EndLine)`) et charger la roadmap active sous `roadmaps/*.md` (ou appeler `san_planner`).
+### Étape 1 : Cadrage, Règles & Contract Lock (`contract_lock`)
+- Lire les règles `.agents/rules/*.md` et charger la roadmap active sous `roadmaps/*.md` (ou appeler `san_planner`).
 - Classifier selon [orchestration_matrix.md](references/orchestration_matrix.md) (`BACK_ONLY`, `FRONT_ONLY`, `FULL_STACK`).
 - En `FULL_STACK`, geler via `san-architect` les contrats OpenAPI 3.1 / Zod / TypeBox, les assertions Bruno et les **Architectural Fitness Functions** avant tout codage parallèle.
 
-### Étape 2 : Délégation Parallèle (`parallel_slice_execution`)
-- Spawner en parallèle `san-coder-back` et `san-coder-front` via `swarm(action: "add", model: "gemini-4-hydrogen-xhigh", workspace: "share")` / `run_workflow` (Antigravity) ou **`subagent`** configuré dans `.agents/models.json` (OpenCode V2) :
+### Étape 2 : Exécution & Délégation Parallèle (`parallel_slice_execution`)
+- Sur chantier multi-couches, spawner en parallèle `san-coder-back` et `san-coder-front` via `swarm` (`agy.executor`) / `run_workflow` (Antigravity) ou **`san_swarm` / `subagent`** (`opencode.executor` dans `.agents/models.json`) :
 ```python
 import sys
 sys.path.insert(0, ".agents/skills/san_executer/scripts")
@@ -46,17 +48,16 @@ result = await run_autonomous_slice(args, WORKSPACES)
 ```
 - **Clause Obligatoire :** Chaque codeur (`san-coder-back`, `san-coder-front`) énonce une **Dialectique 2 Approches** avant édition ; `san-coder-front` respecte les **5 états UI** et le **Motion System**.
 
-### Étape 3 : Étage 1 — Quality Gates Fail-Closed & Preuve `stop_guard.mjs`
+### Étape 3 : Étage 1 — Quality Gates Fail-Closed
 Exécuter les scripts déterministes (zéro `--passWithNoTests`, zéro `|| true`) :
 - **Backend :** `bash src/skills/san_backend_expert/scripts/backend_quality_gate.sh`
 - **Frontend :** `bash src/skills/san_ux_ui_expert/scripts/front_quality_gate.sh`
-- **Intégration E2E / Runner :** `bash src/skills/san_executer/scripts/e2e_verification_gate.sh` (ou runner `quality_gate_runner.sh`)
-- Après validation `exit 0`, mettre à jour `.agents/cache/last-gate-status.json` (`{ "passed": true, "timestamp": "<ISO-8601>" }`) afin de déverrouiller le hook `Stop` (`stop_guard.mjs`).
+- **Intégration E2E / Runner :** `bash src/skills/san_executer/scripts/e2e_verification_gate.sh` (ou `quality_gate_runner.sh`)
 
 ### Étape 4 : Étage 2 — Boucle Adversariale (`adversarial_qa_loop`, max 3 tours)
-- `san-qa-auditor` (`gemini-4-hydrogen-xhigh` en `swarm`, lecture seule) audite sécurité OWASP, substance des tests, Fitness Functions et géométrie DOM (`QA_VERDICT_SCHEMA`).
-- **`RETOUR_ATELIER` :** Boucle automatique de remédiation vers `san-coder-back` / `san-coder-front` (max 3 tours).
-- **`LIVRABLE` :** Écrire `.agents/cache/last-gate-status.json`, cocher `- [x]` dans la roadmap et produire le rapport.
+- `san-qa-auditor` (lecture seule, `.agents/models.json`) audite sécurité OWASP, substance des tests, Fitness Functions et géométrie DOM (`QA_VERDICT_SCHEMA`).
+- **`RETOUR_ATELIER` :** Boucle corrective vers `san-coder-back` / `san-coder-front` (max 3 tours).
+- **`LIVRABLE` :** Cocher `- [x]` dans la roadmap après preuve `exit 0` et produire le rapport (avec Swarm Board sous OpenCode).
 
 ---
 

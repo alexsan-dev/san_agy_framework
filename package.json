@@ -1,18 +1,20 @@
 {
-  "name": "@alexsan/agy-framework",
-  "version": "2.2.0",
-  "description": "Universal Google Antigravity Framework & Cartesian Skills Engine for Developers",
+  "name": "@alexsan/san-ai-harness",
+  "version": "3.0.0",
+  "description": "Dual-Harness AI Orchestration Engine (Google Antigravity + OpenCode V2) — Adaptive Swarm, 8 Workers, 17 Skills & 120k Context Hygiene",
   "type": "module",
   "main": "src/cli/index.js",
   "bin": {
-    "agy-framework": "./src/cli/index.js",
-    "san-framework": "./src/cli/index.js"
+    "san-harness": "./src/cli/index.js",
+    "san-framework": "./src/cli/index.js",
+    "agy-framework": "./src/cli/index.js"
   },
   "files": [
     "src",
-    "logos/LOGO_ASCII.txt",
+    "logos",
     "LICENSE",
-    "README.md"
+    "README.md",
+    "README.en.md"
   ],
   "scripts": {
     "start": "node src/cli/index.js",
@@ -33,17 +35,18 @@
     "test": "npm run test:phase3 && npm run test:phase4 && npm run test:phase5 && npm run test:phase6 && npm run test:phase7 && npm run test:phase8 && npm run test:phase9 && npm run test:v2:phase1 && npm run test:v2:phase2 && npm run test:v2:phase3 && npm run test:v2:phase4a && npm run test:v2:phase5 && npm run test:v2:phase6 && npm run test:v2:e2e"
   },
   "keywords": [
+    "ai-harness",
     "antigravity",
-    "ai",
+    "opencode",
+    "swarm",
     "skills",
-    "framework",
+    "orchestration",
     "alexsan",
-    "llm",
-    "cartesian"
+    "llm"
   ],
   "author": "Alexsan.pro",
   "license": "MIT",
-  "repository": "https://github.com/alexsan-dev/san_agy_framework.git",
+  "repository": "https://github.com/alexsan-dev/san_ai_harness.git",
   "engines": {
     "node": ">=18.0.0"
   }

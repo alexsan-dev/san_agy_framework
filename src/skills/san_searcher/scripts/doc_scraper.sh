@@ -110,7 +110,7 @@ TEMP_HTML=$(mktemp)
 trap 'rm -f "${TEMP_HTML:-}"' EXIT
 
 # Téléchargement via curl avec User-Agent identifié et gestion des redirections
-USER_AGENT="${SAN_SCRAPER_USER_AGENT:-Mozilla/5.0 (compatible; SanSearcherBot/1.0; +https://github.com/alexsan-dev/san_agy_framework; AntigravityFramework)}"
+USER_AGENT="${SAN_SCRAPER_USER_AGENT:-Mozilla/5.0 (compatible; SanSearcherBot/1.0; +https://github.com/alexsan-dev/san_ai_harness; SanAiHarness)}"
 if ! curl -sSL --compressed -A "${USER_AGENT}" \
      --connect-timeout 10 --max-time 30 "${TARGET_URL}" -o "${TEMP_HTML}"; then
   echo -e "${RED}❌ Échec du téléchargement curl pour l'URL : ${TARGET_URL}${NC}"

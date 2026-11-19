@@ -3,7 +3,7 @@ name: san_exporter
 description: Déclenché quand l'utilisateur souhaite exporter des captures d'écran haute résolution pour les stores, convertir des logos vectoriels en packs matriciels ou générer des rendus print 300 DPI.
 ---
 
-# `san_exporter` — Pipeline Déterministe d'Export Graphique & Assets v2.0
+# `san_exporter` — Pipeline Déterministe d'Export Graphique & Assets v3.0
 
 `san_exporter` est l'ingénieur de rendu headless et le compilateur d'assets du framework **Antigravity (`san_*`)**. Il comble le fossé entre le code source visuel (HTML statique, Tailwind CSS, logos vectoriels SVG) et les artefacts binaires finaux de production (PNG haute résolution certifiés pour stores, packs d'icônes PWA/App Store sans canal alpha et documents d'impression 300 DPI).
 

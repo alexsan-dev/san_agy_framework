@@ -1,6 +1,6 @@
 # GRILLE QUANTITATIVE D'ÉVALUATION SUR 40 POINTS — `san_brainstorming`
 
-> **Module :** `san_brainstorming` (Framework Antigravity `san_*`)  
+> **Module :** `san_brainstorming` (SAN AI Harness `san_*`)  
 > **Fichier de Référence :** `references/ideation_scoring_matrix.md`  
 > **Auteur :** Alexsan.pro  
 > **Objectif :** Fournir une méthode mathématique impitoyable et déterministe d'arbitrage d'idées produit et d'options architecturales avant tout investissement en ingénierie.
@@ -54,7 +54,7 @@ Mesure la capacité du concept à résoudre un problème douloureux réel, à g�
 ---
 
 ### Critère 3 : Réalité Terrain & Résilience Opérationnelle (Base 10 — Poids 1.2 — Max 12 pts)
-*Le cœur de l'arbitrage Antigravity.* Évalue l'adéquation au contexte réel d'usage selon le `PROJECT_PROFILE` sélectionné :
+*Le cœur de l'arbitrage SAN AI Harness.* Évalue l'adéquation au contexte réel d'usage selon le `PROJECT_PROFILE` sélectionné :
 - **Profil `emerging_market` :** Connectivité 3G/EDGE instable, terminaux Android d'entrée de gamme (1-2 Go RAM), culture WhatsApp et monétisation par Mobile Money (MTN MoMo, Airtel).
 - **Profils `global_saas` / `mobile_consumer` / `cli_devtools` / `api_platform` :** Friction d'adoption, résistance au changement des utilisateurs, compatibilité environnementale (OS, runtimes, quotas API) et robustesse aux coupures réseau ou timeouts.
 

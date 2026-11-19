@@ -266,7 +266,9 @@ async function loadSharp() {
     // Ignore si realpath indisponible
   }
 
+  addBase(path.join(homeDir, '.gemini', 'antigravity-cli', 'plugins', 'san-ai-harness', 'node_modules'));
   addBase(path.join(homeDir, '.gemini', 'antigravity-cli', 'plugins', 'san-framework', 'node_modules'));
+  addBase('/home/alexsan-dev/PROJECTS/san_ai_harness/node_modules');
   addBase('/home/alexsan-dev/PROJECTS/san_agy_framework/node_modules');
 
   const npxCacheDir = path.join(homeDir, '.npm', '_npx');

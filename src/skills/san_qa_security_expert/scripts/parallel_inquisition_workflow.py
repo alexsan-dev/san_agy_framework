@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-parallel_inquisition_workflow.py — Fan-out `run_workflow` audit for `san_qa_security_expert` (v2.1.0).
+parallel_inquisition_workflow.py — Fan-out `run_workflow` audit for `san_qa_security_expert` (v3.0.0).
 
 Executes a 3-track parallel inquisition under Presumption of Defect:
   1. `owasp_secrets`: OWASP Top 10 / API Security 2023 / BOLA-IDOR & hardcoded secrets scan.
@@ -8,7 +8,7 @@ Executes a 3-track parallel inquisition under Presumption of Defect:
   3. `dom_geometry_ui`: DOM geometry linter (`export_png.mjs --audit-dom`) & 5 non-destructive UI states.
 
 Aggregates all tracks deterministically into `INQUISITION_REPORT_SCHEMA` and emits binary
-verdict (`LIVRABLE` | `RETOUR_ATELIER`), optionally persisting `.agents/cache/last-gate-status.json`.
+verdict (`LIVRABLE` | `RETOUR_ATELIER`).
 
 Supports:
   - Native Antigravity `run_workflow` runtime (`antigravity_workflow` module or injected workflow globals)
@@ -243,7 +243,7 @@ class StandaloneAgentHandle:
 
     async def _execute(self) -> Dict[str, Any]:
         if self.model == "inherit":
-            raise ValueError("Model 'inherit' is forbidden on Argon/Carbon; use explicit tier or gemini-4-hydrogen-xhigh.")
+            raise ValueError("Model 'inherit' is forbidden for worker sub-executions; configure executor in .agents/models.json.")
         if not isinstance(self.schema, dict):
             raise ValueError(f"Agent '{self.role}' requires a JSON schema dict.")
         return self.runtime.simulate_track(self.prompt)
@@ -472,11 +472,8 @@ def aggregate_inquisition_report(track_results: Sequence[Dict[str, Any]]) -> Dic
     return report
 
 
-def write_last_gate_status(workspace_root: Path, report: Dict[str, Any], target: str) -> Path:
-    cache_dir = workspace_root / ".agents" / "cache"
-    cache_dir.mkdir(parents=True, exist_ok=True)
-    gate_file = cache_dir / "last-gate-status.json"
-    payload = {
+def format_gate_summary(report: Dict[str, Any], target: str) -> Dict[str, Any]:
+    return {
         "passed": bool(report["passed"]),
         "timestamp": report["timestamp"],
         "source": "parallel_inquisition_workflow",
@@ -485,10 +482,6 @@ def write_last_gate_status(workspace_root: Path, report: Dict[str, Any], target:
         "security_score": report["security_score"],
         "blocking_count": report["blocking_count"],
     }
-    tmp_file = cache_dir / f".last-gate-status.{os.getpid()}.tmp"
-    tmp_file.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-    os.replace(tmp_file, gate_file)
-    return gate_file
 
 
 # ---------------------------------------------------------------------------
@@ -516,14 +509,13 @@ async def run_parallel_inquisition(
     wf_parallel = rt["parallel"]
     wf_phase = rt["phase"]
     wf_log = rt.get("log", print)
-    effective_workspaces = workspaces or tuple(rt.get("WORKSPACES") or ())
 
     target = str(effective_args.get("target", ".")).strip() or "."
     html_target = str(effective_args.get("html_target", "")).strip()
     auditor_type = str(effective_args.get("auditor_agent", "san-qa-auditor"))
     worker_model = str(effective_args.get("model", "pro"))
     if worker_model == "inherit":
-        raise ValueError("Forbidden model 'inherit': Argon/Carbon quota protection requires explicit tier.")
+        raise ValueError("Forbidden model 'inherit': worker executions require an explicit tier or .agents/models.json.")
 
     wf_phase("parallel_inquisition_fanout")
     wf_log(f"Launching 3-track parallel inquisition on target='{target}'")
@@ -533,7 +525,7 @@ async def run_parallel_inquisition(
         dom_hint = f" HTML/Design target: {html_target}." if html_target and tid == "dom_geometry_ui" else ""
         prompt = (
             f"Audit Track '{tid}' on target '{target}'.{dom_hint}\n"
-            "1. Consult .agents/cache/REPO_MAP.md first (Map-First).\n"
+            "1. Inspect the relevant project files and .agents/rules/*.md directly.\n"
             f"2. Focus: {track['focus']}\n"
             "3. Operate strictly read-only under Presumption of Defect (zero code edits).\n"
             "Return strict JSON matching TRACK_FINDING_SCHEMA."
@@ -555,17 +547,6 @@ async def run_parallel_inquisition(
         f"Inquisition verdict: {report['verdict']} "
         f"(score={report['security_score']}, blocking={report['blocking_count']})"
     )
-
-    if report["passed"] and write_gate_status:
-        ws_arg = effective_args.get("workspace")
-        ws_root = (
-            Path(ws_arg).resolve()
-            if isinstance(ws_arg, str) and ws_arg.strip()
-            else (Path(effective_workspaces[0]).resolve() if effective_workspaces else Path.cwd().resolve())
-        )
-        gate_path = write_last_gate_status(ws_root, report, target)
-        wf_log(f"Updated gate proof: {gate_path}")
-
     return report
 
 
@@ -604,7 +585,7 @@ async def run_self_test() -> Dict[str, Any]:
         assert report_pass["substance_clean"] is True
         assert report_pass["fitness_clean"] is True
         assert report_pass["dom_geometry_clean"] is True
-        assert (tmp_path / ".agents" / "cache" / "last-gate-status.json").is_file()
+        assert not (tmp_path / ".agents" / "cache").exists()
 
         # 2. Fail-closed RETOUR_ATELIER when DOM geometry track fails
         fail_dir = tmp_path / "fail_dom"
@@ -628,7 +609,7 @@ async def run_self_test() -> Dict[str, Any]:
         assert report_fail["passed"] is False
         assert report_fail["dom_geometry_clean"] is False
         assert report_fail["blocking_count"] == 1
-        assert not (fail_dir / ".agents" / "cache" / "last-gate-status.json").exists()
+        assert not (fail_dir / ".agents" / "cache").exists()
 
     return {
         "self_test": "PASSED",
@@ -648,7 +629,7 @@ def parse_cli_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
     parser.add_argument("--html-target", default="", help="Optional HTML/UI path for DOM geometry audit")
     parser.add_argument("--report", default="", help="Optional path to write JSON report")
     parser.add_argument("--workspace", default="", help="Workspace directory path")
-    parser.add_argument("--write-gate-status", action="store_true", help="Persist .agents/cache/last-gate-status.json on pass")
+    parser.add_argument("--write-gate-status", action="store_true", help="Deprecated no-op flag (zero .agents/cache)")
     parser.add_argument("--json", action="store_true", help="Emit JSON output")
     return parser.parse_args(argv)
 

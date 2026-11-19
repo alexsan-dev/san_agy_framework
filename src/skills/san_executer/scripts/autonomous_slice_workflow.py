@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
 """
-autonomous_slice_workflow.py — Deterministic `run_workflow` orchestration for `san_executer` (v2.1.0).
+autonomous_slice_workflow.py — Deterministic `run_workflow` orchestration for `san_executer` (v3.0.0).
 
 Implements the 3-phase Contract-First & Adversarial QA workflow:
   Phase 1 (`contract_lock`): Lock OpenAPI/Zod/TypeBox contract & Architectural Fitness invariants.
   Phase 2 (`parallel_slice_execution`): Execute Backend & Frontend slices in parallel (`workspace="share"`).
   Phase 3 (`adversarial_qa_loop`): Multi-turn loop (max 3 rounds) between coders and `san-qa-auditor`.
-  On passing verdict, writes `.agents/cache/last-gate-status.json` to unlock `stop_guard.mjs`.
 
 Supports:
   - Native Antigravity `run_workflow` runtime (`antigravity_workflow` module or injected workflow globals)
@@ -237,7 +236,7 @@ class StandaloneAgentHandle:
 
     async def _run_turn(self, prompt: str, schema: Optional[Dict[str, Any]]) -> Dict[str, Any]:
         if self.model == "inherit":
-            raise ValueError("Model 'inherit' is forbidden on Argon/Carbon; use explicit tier or gemini-4-hydrogen-xhigh.")
+            raise ValueError("Model 'inherit' is forbidden for worker sub-executions; configure executor in .agents/models.json.")
         if not isinstance(schema, dict):
             raise ValueError(f"Agent '{self.role}' requires a JSON schema dict.")
         self.turns += 1
@@ -440,7 +439,7 @@ def resolve_workflow_runtime(runtime_override: Optional[Dict[str, Any]] = None) 
 
 
 # ---------------------------------------------------------------------------
-# Gate Status Persistence (`.agents/cache/last-gate-status.json` for stop_guard)
+# Gate Status Summary (zéro création .agents/cache)
 # ---------------------------------------------------------------------------
 
 def resolve_workspace_root(workflow_args: Dict[str, Any], workspaces: Tuple[str, ...]) -> Path:
@@ -452,17 +451,13 @@ def resolve_workspace_root(workflow_args: Dict[str, Any], workspaces: Tuple[str,
     return Path.cwd().resolve()
 
 
-def write_last_gate_status(
-    workspace_root: Path,
+def build_gate_status_summary(
     passed: bool,
     feature: str,
     rounds: int,
     verdict: Dict[str, Any],
-) -> Path:
-    cache_dir = workspace_root / ".agents" / "cache"
-    cache_dir.mkdir(parents=True, exist_ok=True)
-    gate_file = cache_dir / "last-gate-status.json"
-    payload = {
+) -> Dict[str, Any]:
+    return {
         "passed": bool(passed),
         "timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "source": "autonomous_slice_workflow",
@@ -472,10 +467,6 @@ def write_last_gate_status(
         "substance_clean": bool(verdict.get("substance_clean", False)),
         "dom_geometry_clean": bool(verdict.get("dom_geometry_clean", False)),
     }
-    tmp_file = cache_dir / f".last-gate-status.{os.getpid()}.tmp"
-    tmp_file.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-    os.replace(tmp_file, gate_file)
-    return gate_file
 
 
 def is_verdict_green(verdict: Dict[str, Any]) -> bool:
@@ -527,10 +518,10 @@ async def run_autonomous_slice(
     if max_rounds < 1:
         max_rounds = 1
 
-    # Never use `model="inherit"` inside workflow sub-executions (protects Argon/Carbon quota)
+    # Never use `model="inherit"` inside workflow worker sub-executions (uses .agents/models.json)
     worker_model = str(effective_args.get("model", "pro"))
     if worker_model == "inherit":
-        raise ValueError("Forbidden model 'inherit': Argon/Carbon quota protection requires explicit tier.")
+        raise ValueError("Forbidden model 'inherit': worker executions require an explicit tier or .agents/models.json.")
 
     architect_type = str(effective_args.get("architect_agent", "san-architect"))
     back_type = str(effective_args.get("backend_agent", "san-coder-back"))
@@ -545,7 +536,7 @@ async def run_autonomous_slice(
 
     contract_prompt = (
         f"Phase 1 (contract_lock) for feature: {feature} (profile: {profile}).\n"
-        "1. Read .agents/cache/REPO_MAP.md first (Map-First).\n"
+        "1. Respect project rules in .agents/rules/*.md.\n"
         "2. Lock shared OpenAPI 3.1 / Zod / TypeBox schemas and Bruno assertions before parallel coding.\n"
         "3. Define Architectural Fitness Functions (module boundaries, zero cycles, component/class budgets).\n"
         "Return strict JSON via `finish` matching CONTRACT_SCHEMA."
@@ -595,7 +586,7 @@ async def run_autonomous_slice(
         slice_prompt = (
             f"Phase 2 (parallel_slice_execution) [{role}] for '{feature}'.\n"
             f"Locked Contract: {json.dumps(contract, ensure_ascii=False)}\n"
-            "1. Consult .agents/cache/REPO_MAP.md first.\n"
+            "1. Inspect the relevant target files directly.\n"
             "2. State 2-Approach Dialectic before editing files.\n"
             f"3. {ui_clause}"
             "4. Run unit/integration tests & quality gates; return strict JSON matching CODE_SLICE_SCHEMA."
@@ -681,12 +672,9 @@ async def run_autonomous_slice(
             latest_slices = list(remediated)
 
     passed_final = is_verdict_green(latest_verdict)
-    gate_file_path: Optional[str] = None
-    if passed_final and write_gate_status:
-        ws_root = resolve_workspace_root(effective_args, effective_workspaces)
-        gate_file = write_last_gate_status(ws_root, True, feature, rounds_run, latest_verdict)
-        gate_file_path = str(gate_file)
-        wf_log(f"Updated gate proof: {gate_file_path}")
+    gate_summary: Optional[Dict[str, Any]] = None
+    if passed_final:
+        gate_summary = build_gate_status_summary(True, feature, rounds_run, latest_verdict)
 
     return {
         "feature": feature,
@@ -697,7 +685,7 @@ async def run_autonomous_slice(
         "contract": contract,
         "slices": latest_slices,
         "qa_verdict": latest_verdict,
-        "gate_status_file": gate_file_path,
+        "gate_summary": gate_summary,
     }
 
 
@@ -706,8 +694,7 @@ async def run_autonomous_slice(
 # ---------------------------------------------------------------------------
 
 async def run_self_test() -> Dict[str, Any]:
-    """Run deterministic self-tests covering schemas, 3 phases, retry loop (max 3), and gate file."""
-    # 1. Verify schema constants are strict
+    """Run deterministic self-tests covering schemas, 3 phases, and retry loop (max 3)."""
     for name, schema in (
         ("CONTRACT_SCHEMA", CONTRACT_SCHEMA),
         ("CODE_SLICE_SCHEMA", CODE_SLICE_SCHEMA),
@@ -738,14 +725,10 @@ async def run_self_test() -> Dict[str, Any]:
         assert res_pass["passed"] is True, "Expected retry workflow to pass on round 2"
         assert res_pass["rounds"] == 2, f"Expected 2 rounds, got {res_pass['rounds']}"
         assert rt_retry.phases == ["contract_lock", "parallel_slice_execution", "adversarial_qa_loop"]
+        assert isinstance(res_pass.get("gate_summary"), dict) and res_pass["gate_summary"]["passed"] is True
+        assert not (tmp_path / ".agents" / "cache").exists(), "Zero .agents/cache directory expected"
 
-        gate_file = tmp_path / ".agents" / "cache" / "last-gate-status.json"
-        assert gate_file.is_file(), "Expected .agents/cache/last-gate-status.json to be written"
-        gate_data = json.loads(gate_file.read_text(encoding="utf-8"))
-        assert gate_data["passed"] is True
-        assert isinstance(gate_data["timestamp"], str) and gate_data["timestamp"].endswith("Z")
-
-        # 3. Test fail-closed behavior after 3 failed rounds (no gate file written in fresh dir)
+        # 3. Test fail-closed behavior after 3 failed rounds
         fail_dir = tmp_path / "fail_case"
         fail_dir.mkdir()
         rt_fail = StandaloneWorkflowRuntime(feature="broken-slice", force_qa_fail=True)
@@ -762,9 +745,9 @@ async def run_self_test() -> Dict[str, Any]:
         assert res_fail["passed"] is False, "Expected persistent failure to fail-closed"
         assert res_fail["rounds"] == 3, f"Expected cap at 3 rounds, got {res_fail['rounds']}"
         assert res_fail["verdict"] == "RETOUR_ATELIER"
-        assert not (fail_dir / ".agents" / "cache" / "last-gate-status.json").exists()
+        assert res_fail.get("gate_summary") is None
 
-        # 4. Test Argon quota guard: model="inherit" must raise ValueError
+        # 4. Test worker model guard: model="inherit" must raise ValueError
         try:
             rt_bad = StandaloneWorkflowRuntime(feature="bad-model")
             await run_autonomous_slice(
@@ -789,7 +772,7 @@ async def run_self_test() -> Dict[str, Any]:
         "schemas_verified": ["CONTRACT_SCHEMA", "CODE_SLICE_SCHEMA", "QA_VERDICT_SCHEMA"],
         "phases_verified": ["contract_lock", "parallel_slice_execution", "adversarial_qa_loop"],
         "max_qa_rounds": MAX_QA_ROUNDS,
-        "gate_status_verified": True,
+        "gate_summary_verified": True,
     }
 
 
@@ -798,7 +781,7 @@ def parse_cli_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
         description="san_executer run_workflow orchestrator (Contract-First + Parallel Slices + Adversarial QA Loop)"
     )
     parser.add_argument("--dry-run", action="store_true", help="Simulate the 3-phase workflow without LLM calls")
-    parser.add_argument("--self-test", action="store_true", help="Run internal schema, loop, and gate-status self-tests")
+    parser.add_argument("--self-test", action="store_true", help="Run internal schema and loop self-tests")
     parser.add_argument("--feature", default="sample-feature", help="Target feature name for dry-run")
     parser.add_argument(
         "--profile",
@@ -807,7 +790,7 @@ def parse_cli_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
         help="Execution profile",
     )
     parser.add_argument("--workspace", default="", help="Workspace directory path")
-    parser.add_argument("--write-gate-status", action="store_true", help="Persist .agents/cache/last-gate-status.json on pass")
+    parser.add_argument("--write-gate-status", action="store_true", help="Deprecated no-op flag (zero .agents/cache)")
     parser.add_argument("--json", action="store_true", help="Emit JSON output")
     return parser.parse_args(argv)
 

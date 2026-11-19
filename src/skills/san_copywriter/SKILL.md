@@ -9,7 +9,7 @@ Protocole de micro-copie et de conception éditoriale pour interfaces Web et Mob
 
 ---
 
-## 1. RÈGLES D'OR DE LA PLUME UX v2.0
+## 1. RÈGLES D'OR DE LA PLUME UX v3.0
 
 1. **Le Texte est l'Interface :** Pas de bouche-trou cosmétique. Chaque mot dissipe l'anxiété transactionnelle et catalyse l'action.
 2. **Éradication Totale du Lorem Ipsum :** Zéro faux texte, zéro placeholder générique. Données réalistes et prix authentiques dans la devise cible (`2 500 FCFA` avec espace insécable `\u00A0`).

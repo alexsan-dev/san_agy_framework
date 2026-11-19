@@ -393,7 +393,7 @@ function collectAncestorDirs(startDir) {
 
 /**
  * Résout Playwright depuis le projet client, NODE_PATH, le script (ou realpath),
- * le plugin Antigravity, san_agy_framework/node_modules ou le cache ~/.npm/_npx.
+ * le plugin san-ai-harness/san-framework, san_ai_harness/node_modules ou le cache ~/.npm/_npx.
  */
 async function loadPlaywright() {
   const normalize = (mod) => (mod?.chromium ? mod : (mod?.default?.chromium ? mod.default : mod));
@@ -430,7 +430,9 @@ async function loadPlaywright() {
       // Ignore si realpath indisponible
     }
 
+    addBase(path.join(homeDir, '.gemini', 'antigravity-cli', 'plugins', 'san-ai-harness', 'node_modules'));
     addBase(path.join(homeDir, '.gemini', 'antigravity-cli', 'plugins', 'san-framework', 'node_modules'));
+    addBase('/home/alexsan-dev/PROJECTS/san_ai_harness/node_modules');
     addBase('/home/alexsan-dev/PROJECTS/san_agy_framework/node_modules');
     addBase(path.join(homeDir, '.npm-global', 'lib'));
     addBase('/usr/local/lib');

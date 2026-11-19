@@ -1,0 +1,9 @@
+{
+  "name": "san-ai-harness-opencode-plugin",
+  "version": "3.0.0",
+  "type": "module",
+  "main": "./san-harness-plugin.mjs",
+  "exports": {
+    ".": "./san-harness-plugin.mjs"
+  }
+}

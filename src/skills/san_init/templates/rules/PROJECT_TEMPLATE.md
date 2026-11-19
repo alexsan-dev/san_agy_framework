@@ -3,7 +3,7 @@ trigger: always_on
 ---
 # CONSTITUTION TECHNIQUE & RÈGLES D'INGÉNIERIE (`PROJECT.md`)
 
-> **Loi technique suprême :** Ce document fixe l'architecture d'ingénierie, le profil opérationnel, la doctrine **Dual-Harness** (`Antigravity` + `OpenCode V2`), la souveraineté cognitive préalable et l'entonnoir de validation.
+> **Loi technique suprême :** Ce document fixe l'architecture d'ingénierie, le profil opérationnel, la doctrine **Dual-Harness** (`Antigravity` + `OpenCode V2.3`) pilotée par `.agents/models.json`, et les critères de validation.
 
 ---
 
@@ -15,10 +15,10 @@ Chaque projet adopte un profil contextuel qui conditionne les contraintes produi
 
 ### Spécificités par Profil :
 * **`global_saas` :** Multi-tenant, conformité SOC2/RGPD, billing Stripe/LemonSqueezy, SSO SAML, observabilité OpenTelemetry.
-* **`emerging_market_3g` :** Offline-first strict, payload session < 1.5 Mo, passerelles Mobile Money (USSD asynchrone), SMS OTP, adresses sans codes postaux.
-* **`mobile_consumer` :** Touch 44x44px minimum, gestures 60 fps, batterie/CPU préservés, deep links WhatsApp/stores.
-* **`cli_devtools` :** Démarrage instantané (< 100ms), zéro dépendance runtime lourde, flags POSIX conformes, stdout structuré JSON optionnel.
-* **`api_platform` :** OpenAPI 3.1 contract-first, rate limiting granulaire, idempotence distribuée Redis, latence p99 < 50ms.
+* **`emerging_market_3g` :** Offline-first strict, payload session réduit, passerelles Mobile Money (USSD asynchrone), SMS OTP, adresses sans codes postaux.
+* **`mobile_consumer` :** Touch 44x44px minimum, gestures fluides, batterie/CPU préservés, deep links WhatsApp/stores.
+* **`cli_devtools` :** Démarrage rapide, zéro dépendance runtime lourde, flags POSIX conformes, stdout structuré JSON optionnel.
+* **`api_platform` :** OpenAPI 3.1 contract-first, rate limiting granulaire, idempotence distribuée Redis, temps de réponse optimisés.
 
 ---
 
@@ -34,30 +34,29 @@ Chaque projet adopte un profil contextuel qui conditionne les contraintes produi
 
 ## 3. DOCTRINE DUAL-HARNESS & PROFIL EXÉCUTEUR UNIFIÉ (`.agents/models.json`)
 
-> **Autonomie & Alignement Préalable :** L'Orchestrateur prend l'initiative mécanique de déléguer sans jamais demander `/model` ni un nom de sous-agent, mais il aligne d'abord le cadrage produit/UI avec l'utilisateur (`ask_question` / `question`) et capture les références visuelles (`export_png.mjs --url`) avant de déléguer aux workers.  
-> **Routage Dual-Harness (piloté par `.agents/models.json` & `san-framework models`) :**
-> - **Antigravity (`agy`) :** `swarm(action: "add", model: "gemini-4-hydrogen-xhigh", ...)` (ou `agy.executor` dans `.agents/models.json`). `invoke_subagent(Model: "inherit")` est **INTERDIT** sur `Argon`/`Carbon` (quota hebdo + fallback `3.8-flash`).
-> - **OpenCode V2 (`opencode`) :** `subagent({ agent: "san-...", prompt: "..." })` adossé à `opencode.json` `"agents"` (ex: `opencode-go/deepseek-v4-pro`, `opencode-go/qwen3.8-flash`). *(Les 8 `src/agents/*.md` gardent `model: "pro"` en frontmatter YAML pour compatibilité CLI.)*
+> **Orchestration Libre (`/model`) & Délégation Adaptative :** L'orchestrateur principal hérite du `/model` choisi par l'utilisateur (`inherit-user-model`). Il aligne d'abord le cadrage produit/UI (`ask_question` / `question` + `export_png.mjs --url`) avant toute roadmap ou refonte UI.
+> - **Tâches simples / mono-couche :** le cycle natif `Plan → Execute` est autorisé en direct dans le respect des règles `.agents/rules/*.md`.
+> - **Features multi-couches, Studio Duel UI & Audit `san-qa-auditor` :** délégation parallèle pilotée par `.agents/models.json` (`san-harness models`) via `swarm(action: "add", model: "<agy.executor>")` sous Antigravity ou `san_swarm` / `subagent` (`<opencode.executor>`) sous OpenCode V2.3. *(Les 8 `src/agents/*.md` gardent `model: "pro"` en YAML pour compatibilité CLI AGY.)*
 
 | Rôle / Worker (`san-*`) | Exécuteur Unifié (`.agents/models.json`) | Frontmatter | Périmètre & Responsabilité |
 | :--- | :--- | :--- | :--- |
-| **Orchestrateur** | Thread `Argon`/`Carbon` \| `hy4` | `mainAgent: true` | Alignement socratique/visuel, découpage, arbitrage, zéro solo-coding. |
-| **`san-architect`** | `swarm` \| `subagent` (`executor`) | `model: "pro"` | Contract-First (OpenAPI/Zod/TypeBox), Fitness Functions, Pre-Mortem. |
-| **`san-qa-auditor`** | `swarm` \| `subagent` (`executor`) | `model: "pro"` | Présomption de défaut, OWASP, Anti-Mock Theater, audit DOM/PNG. |
-| **`san-coder-back`** | `swarm` \| `subagent` (`executor`) | `model: "pro"` | Code atomique cadré sur contrat gelé, ACID, tests réels. |
-| **`san-coder-front`** | `swarm` \| `subagent` (`executor`) | `model: "pro"` | Composants `< 220` lignes, 5 états, Motion System, A11y. |
-| **`san-designer-worker`** | `swarm` \| `subagent` (`executor`) | `model: "pro"` | Studio Duel UI (`option-a`/`option-b`), `export_png.mjs` v2. |
-| **`san-researcher`** | `swarm` \| `subagent` (`executor`) | `model: "pro"` | Cartographie Map-First (`REPO_MAP.md`), matrice 2 approches. |
-| **`san-ops-devops`** | `swarm` \| `subagent` (`executor`) | `model: "pro"` | Docker multi-stage, CI/CD, rollback < 30s, backup testé. |
-| **`san-growth-legal`** | `swarm` \| `subagent` (`executor`) | `model: "pro"` | Conformité stores Apple/Play, RGPD code réel, SEO/ASO. |
+| **Orchestrateur** | `/model` utilisateur (`inherit-user-model`) | `mainAgent: true` | Alignement préalable, Plan→Execute simple ou pilotage parallèle `swarm` / `san_swarm`. |
+| **`san-architect`** | `agy.executor` \| `opencode.executor` | `model: "pro"` | Contract-First (OpenAPI/Zod/TypeBox), Fitness Functions, Pre-Mortem. |
+| **`san-qa-auditor`** | `agy.executor` \| `opencode.executor` | `model: "pro"` | Présomption de défaut, OWASP, Anti-Mock Theater, audit DOM/PNG. |
+| **`san-coder-back`** | `agy.executor` \| `opencode.executor` | `model: "pro"` | Code atomique cadré sur contrat gelé, ACID, tests réels. |
+| **`san-coder-front`** | `agy.executor` \| `opencode.executor` | `model: "pro"` | Composants `< 220` lignes, 5 états, Motion System, A11y. |
+| **`san-designer-worker`** | `agy.executor` \| `opencode.executor` | `model: "pro"` | Studio Duel UI (`option-a`/`option-b`), `export_png.mjs` Multi-Viewports. |
+| **`san-researcher`** | `agy.executor` \| `opencode.executor` | `model: "pro"` | Exploration factuelle directe, matrice 2 approches. |
+| **`san-ops-devops`** | `agy.executor` \| `opencode.executor` | `model: "pro"` | Docker multi-stage, CI/CD, rollback < 30s, backup testé. |
+| **`san-growth-legal`** | `agy.executor` \| `opencode.executor` | `model: "pro"` | Conformité stores Apple/Play, RGPD code réel, SEO/ASO. |
 
 ---
 
-## 4. INVARIANTS D'ORCHESTRATION, RELAIS SCEPTIQUE & FAST-TRACK
+## 4. INVARIANTS, COMPACTION 120K & FAST-TRACK
 
-* **Alignement Socratique & Visuel Préalable :** L'Orchestrateur ne délègue jamais le cadrage produit/UI à un worker aveugle ; il valide les choix via `ask_question` / `question` et capture les URLs d'inspiration (`export_png.mjs --url`).
-* **Discipline Map-First & Relais Sceptique (`san_transcriber`) :** Consulter `.agents/cache/REPO_MAP.md` avant lecture. En fin de quota ou changement de modèle/harnais, exécuter `/san_transcriber` (`roadmaps/transcripts/`) et appliquer le **Doubt & Verify** à la reprise.
-* **Fast-Track d'Hygiène Autorisé :** L'orchestrateur peut intervenir en direct uniquement pour : (1) cocher `- [x]` dans `roadmaps/*.md` après test réel `exit 0`, (2) archiver une roadmap 100% cochée vers `roadmaps/archives/`, (3) mettre à jour `CHANGELOG.md`, (4) enrichir `.agents/rules/*.md`.
+* **Alignement Socratique & Visuel Préalable :** L'Orchestrateur valide les choix structurants via `ask_question` / `question` et capture les URLs d'inspiration (`export_png.mjs --url`) avant de déléguer roadmap ou UI.
+* **Compaction Automatique 120k :** Zéro `.agents/cache` redondant ; compacter le fil de conversation à `120 000` tokens (`/compact`) pour maintenir la précision au moindre coût.
+* **Fast-Track d'Hygiène Autorisé :** L'orchestrateur peut intervenir directement pour cocher `- [x]` après test réel `exit 0`, archiver une roadmap vers `roadmaps/archives/`, mettre à jour `CHANGELOG.md` ou enrichir `.agents/rules/*.md`.
 
 ---
 
@@ -73,10 +72,10 @@ Chaque projet adopte un profil contextuel qui conditionne les contraintes produi
 
 ```mermaid
 flowchart TD
-    CodeWritten["Code Rédigé par Worker Dual-Harness (swarm / subagent)"] --> Funnel1{"Étage 1 : Linters, Fitness & Tests\n(Scripts Déterministes - 0 Token LLM)"}
-    Funnel1 -->|Échec / Exit != 0| FixCode["Correction par Worker Coder"]
+    CodeWritten["Code Rédigé (Plan→Execute ou Worker Dual-Harness)"] --> Funnel1{"Étage 1 : Linters, Fitness & Tests\n(Scripts Déterministes - Exit 0)"}
+    Funnel1 -->|Échec / Exit != 0| FixCode["Correction ciblée"]
     FixCode --> CodeWritten
-    Funnel1 -->|100% Vert - Exit 0| Funnel2{"Étage 2 : Audit Sceptique\n(san-qa-auditor)"}
+    Funnel1 -->|100% Vert - Exit 0| Funnel2{"Étage 2 : Audit Sceptique\n(san-qa-auditor sur features/UI)"}
     Funnel2 -->|Anomalie Détectée / Rejet| FixCode
-    Funnel2 -->|Validation Conforme| Done(["Gate Vert (.agents/cache/last-gate-status.json) & - [x]"])
+    Funnel2 -->|Validation Conforme| Done(["Validation prouvée & - [x]"])
 ```

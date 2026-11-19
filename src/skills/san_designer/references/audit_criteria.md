@@ -1,6 +1,6 @@
 # Grilles d'Évaluation & Critères d'Audit `/ux-scan`
 
-Ce document constitue la référence méthodologique absolue pour l'exécution du workflow d'audit **`/ux-scan`** (Étage 2) opéré par les 3 auditeurs cognitifs parallèles (`Model: 'inherit'`) :
+Ce document constitue la référence méthodologique absolue pour l'exécution du workflow d'audit **`/ux-scan`** (Étage 2) opéré par les auditeurs cognitifs parallèles (`san-qa-auditor`, config `.agents/models.json`) :
 1. `ux_psychology_auditor` (Psychologie Cognitive & Lois Ergonomiques)
 2. `ux_context_auditor` (Réalité Terrain & Ancrage Local)
 3. `ui_design_system_auditor` (Design System, Fidélité BRAND.md & Anti-AI Taste)

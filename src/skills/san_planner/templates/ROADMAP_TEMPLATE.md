@@ -88,7 +88,7 @@
 ## PHASE 3 : INTERFACE CLIENT, STUDIO DUEL UI & EXPÉRIENCE UTILISATEUR
 > *Règle d'étanchéité : Standard UI 5 États, Motion System, cibles tactiles >= 44x44px et audit géométrique DOM doivent être validés avant la Phase 4.*
 
-- [ ] **3.1 Studio Duel UI (Écrans Clés) :** Produire 2 directions artistiques parallèles (`option-a` vs `option-b` via `swarm` `gemini-4-hydrogen-xhigh`), exporter en multi-viewports (`export_png.mjs --viewports=mobile,tablet,desktop --audit-dom`) et arbitrer visuellement via `san-qa-auditor`.
+- [ ] **3.1 Studio Duel UI (Écrans Clés) :** Produire 2 directions artistiques parallèles (`option-a` vs `option-b` via `swarm` ou `san_swarm` selon `.agents/models.json`), exporter en multi-viewports (`export_png.mjs --viewports=mobile,tablet,desktop --audit-dom`) et arbitrer visuellement via `san-qa-auditor`.
 - [ ] **3.2 Standard UI 5 États Non-Destructifs :** Implémenter chaque vue avec les 5 états invariants :
   - *`Empty` :* Illustration ou micro-copie empathique guidant immédiatement vers l'action première.
   - *`Skeleton Cold-Start` :* Squelette géométrique (`CLS < 0.05`) réservé exclusivement au chargement initial à froid.
@@ -115,7 +115,7 @@
 ## PHASE 5 : ENTONNOIR D'ASSURANCE QUALITÉ, FITNESS FUNCTIONS & SÉCURITÉ
 > *Règle d'étanchéité : Score de sécurité >= 90/100, Fitness Functions 100% vertes, 0 défaut géométrique DOM, p95 < 100ms.*
 
-- [ ] **5.1 Étage 1 (Quality Gate & Fitness Functions) :** Lancer le script global d'assurance qualité + tests d'étanchéité inter-modules, d'absence de cycles et de budgets techniques, mettant à jour `.agents/cache/last-gate-status.json` (`passed: true`).
+- [ ] **5.1 Étage 1 (Quality Gate & Fitness Functions) :** Lancer le script global d'assurance qualité + tests d'étanchéité inter-modules, d'absence de cycles et de budgets techniques (`exit 0`).
   - *Commande validante :* `[COMMANDE_E2E, ex: pnpm exec playwright test ou bash scripts/e2e_verification_gate.sh]`
 - [ ] **5.2 Étage 2 (Audit OWASP, Substance & Géométrie DOM) :** Vérifier l'étanchéité des autorisations (BOLA/IDOR, XSS, CSRF, CSP/HSTS), l'absence de *Mocking Theater*, et la propreté multi-viewports (`export_png.mjs --viewports=mobile,tablet,desktop --audit-dom`).
 - [ ] **5.3 Métriques de Performance :** Valider un temps de réponse API p95 inférieur à 100 ms sur les routes critiques et vérifier les métriques Core Web Vitals (LCP < 2.5s, CLS < 0.05).

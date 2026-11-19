@@ -3,7 +3,7 @@ name: san_design_tokens
 description: Déclenché quand l'utilisateur souhaite compiler les tokens de design (CSS, Tailwind, TypeScript), vérifier les contrastes WCAG AAA ou auditer les valeurs magiques dans le code.
 ---
 
-# `san_design_tokens` — Gardien des Design Tokens & Vérité de Marque v2.0
+# `san_design_tokens` — Gardien des Design Tokens & Vérité de Marque v3.0
 
 `san_design_tokens` est le compilateur et le vérificateur déterministe des attributs perceptibles du framework **Antigravity (`san_*`)**. Il érige `.agents/rules/BRAND.md` en source unique de vérité absolue, compile les variables multi-cibles (CSS Variables, Tailwind v3/v4, TypeScript) et traque impitoyablement les valeurs magiques (*Zero Magic Values*).
 

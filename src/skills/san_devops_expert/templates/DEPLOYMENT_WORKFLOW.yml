@@ -94,8 +94,8 @@ jobs:
           if [ -f "tests/security_gate.sh" ]; then
             bash tests/security_gate.sh
           fi
-          # Support optionnel du runner framework Antigravity en CI :
-          # npx -y github:alexsan-dev/san_agy_framework check --ci
+          # Support optionnel du runner SAN AI Harness en CI :
+          # npx -y github:alexsan-dev/san_ai_harness check --ci
 
   zero_downtime_deploy:
     name: "Deploy to Production via Atomic Symlink Switch"

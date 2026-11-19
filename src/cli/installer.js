@@ -12,6 +12,7 @@ export const FRAMEWORK_ROOT = path.resolve(__dirname, '../..');
 export const SKILLS_SRC_DIR = path.resolve(FRAMEWORK_ROOT, 'src', 'skills');
 export const AGENTS_SRC_DIR = path.resolve(FRAMEWORK_ROOT, 'src', 'agents');
 export const HOOKS_SRC_DIR = path.resolve(FRAMEWORK_ROOT, 'src', 'hooks');
+export const OPENCODE_SRC_DIR = path.resolve(FRAMEWORK_ROOT, 'src', 'opencode');
 export const PLUGIN_SRC_DIR = path.resolve(FRAMEWORK_ROOT, 'src', 'plugin');
 export const TEMPLATES_DIR = path.resolve(FRAMEWORK_ROOT, 'src', 'skills', 'san_init', 'templates');
 export const RULES_TEMPLATES_DIR = path.resolve(TEMPLATES_DIR, 'rules');
@@ -38,20 +39,21 @@ export const CANONICAL_AGENTS = [
 export const CANONICAL_HOOK_SCRIPTS = [
   'session_start.mjs',
   'pre_invocation.mjs',
-  'pre_tool_guard.mjs',
-  'post_tool_indexer.mjs',
-  'stop_guard.mjs'
+  'pre_tool_guard.mjs'
 ];
 
 export const DEFAULT_MODELS_CONFIG = {
-  version: '2.2.0',
+  version: '3.0.0',
   profile: 'unified-executor',
+  compaction: {
+    targetTokens: 120000
+  },
   agy: {
-    orchestrator: 'gemini-4-argon-high',
+    orchestrator: 'inherit-user-model',
     executor: 'gemini-4-hydrogen-xhigh'
   },
   opencode: {
-    orchestrator: 'opencode-go/hy4',
+    orchestrator: 'inherit-user-model',
     executor: 'opencode-go/deepseek-v4-pro'
   }
 };
@@ -70,7 +72,7 @@ export function getFrameworkVersion() {
       if (pkg.version) return pkg.version;
     }
   } catch {}
-  return '2.2.0';
+  return '3.0.0';
 }
 
 function normalizeTargetOptions(targetDirOrOptions, maybeOptions = {}) {
@@ -100,6 +102,7 @@ export function isSanInstallationDir(dir) {
     fs.existsSync(path.join(agentsDir, 'skills.json')) ||
     fs.existsSync(path.join(agentsDir, 'hooks.json')) ||
     fs.existsSync(path.join(agentsDir, 'models.json')) ||
+    fs.existsSync(path.join(agentsDir, 'opencode')) ||
     fs.existsSync(path.join(agentsDir, 'rules')) ||
     fs.existsSync(path.join(agentsDir, 'agents')) ||
     hasSanSkill(path.join(agentsDir, 'skills'))
@@ -511,7 +514,6 @@ export function generateAgentsContext(projectRoot, { skills = [], dryRun = false
   const SHORT_DESCRIPTIONS = {
     san_backend_expert: 'API, transactions DB et idempotence.',
     san_brainstorming: 'Idéation produit et scoring matriciel.',
-    san_cartographer: 'Carte hybride du repo et cache AST/IA.',
     san_copywriter: 'Rédaction UX et micro-copies 5 états.',
     san_design_tokens: 'Tokens BRAND vers CSS, Tailwind et TS.',
     san_designer: 'Design UI 100% code et canvas stores.',
@@ -526,12 +528,11 @@ export function generateAgentsContext(projectRoot, { skills = [], dryRun = false
     san_searcher: 'Documentation officielle et Context Shielding.',
     san_store_legal_expert: 'Conformité stores App/Play et RGPD.',
     san_subagent_manager: 'Calibrage des sous-agents hermétiques.',
-    san_transcriber: 'Relais fin de quota et doute sceptique.',
     san_ux_ui_expert: 'Composants front/mobile, 5 états et 60 fps.'
   };
 
   const skillLines = (skills.length ? skills : getAvailableSkills())
-    .map((s) => `* **${s}** — ${SHORT_DESCRIPTIONS[s] || getSkillDescription(s) || 'Compétence du framework san_*.'}`)
+    .map((s) => `* **${s}** — ${SHORT_DESCRIPTIONS[s] || getSkillDescription(s) || 'Compétence du harnais san_*.'}`)
     .join('\n');
   content = content.replace('{{SKILLS_LIST}}', skillLines || '* (aucune compétence)');
 
@@ -546,11 +547,21 @@ function normalizeModelsConfig(raw = {}) {
   const src = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {};
   const agySrc = src.agy && typeof src.agy === 'object' && !Array.isArray(src.agy) ? src.agy : {};
   const ocSrc = src.opencode && typeof src.opencode === 'object' && !Array.isArray(src.opencode) ? src.opencode : {};
+  const compSrc = src.compaction && typeof src.compaction === 'object' && !Array.isArray(src.compaction) ? src.compaction : {};
+  const parsedTarget = Number(compSrc.targetTokens);
+  const targetTokens =
+    Number.isFinite(parsedTarget) && parsedTarget >= 10000
+      ? Math.floor(parsedTarget)
+      : DEFAULT_MODELS_CONFIG.compaction.targetTokens;
 
   return {
     ...src,
     version: typeof src.version === 'string' && src.version.trim() ? src.version.trim() : DEFAULT_MODELS_CONFIG.version,
     profile: typeof src.profile === 'string' && src.profile.trim() ? src.profile.trim() : DEFAULT_MODELS_CONFIG.profile,
+    compaction: {
+      ...compSrc,
+      targetTokens
+    },
     agy: {
       ...agySrc,
       orchestrator:
@@ -686,7 +697,23 @@ function parseAgentSpecForOpencode(agentFile, projectRoot) {
 }
 
 /**
- * Fusionne la configuration opencode.json V2 native (instructions + 8 sous-agents san-*) sans écraser les champs utilisateur.
+ * Déploie le plugin natif OpenCode v2.3 dans .agents/opencode/ (sans dépendance Bun).
+ */
+export function deployOpencodePlugin(agentsDir, { dryRun = false } = {}) {
+  const destDir = path.join(agentsDir, 'opencode');
+  if (!dryRun) {
+    fs.mkdirSync(destDir, { recursive: true });
+    for (const file of ['san-harness-plugin.mjs', 'package.json']) {
+      const src = path.join(OPENCODE_SRC_DIR, file);
+      const dest = path.join(destDir, file);
+      if (fs.existsSync(src)) fs.copyFileSync(src, dest);
+    }
+  }
+  return { dir: '.agents/opencode', status: dryRun ? 'dry-run' : 'installed' };
+}
+
+/**
+ * Fusionne la configuration opencode.json V2.3 native (san-orchestrator, plugin san_swarm, compaction 120k, 8 sous-agents san-*).
  */
 export function mergeOpencodeConfig(projectRoot, optionsOrDryRun = {}) {
   const options =
@@ -698,6 +725,8 @@ export function mergeOpencodeConfig(projectRoot, optionsOrDryRun = {}) {
   const modelsConfig = options.modelsConfig
     ? normalizeModelsConfig(options.modelsConfig)
     : readModelsConfig(resolvedRoot).config;
+
+  deployOpencodePlugin(path.join(resolvedRoot, '.agents'), { dryRun });
 
   const configPath = path.join(resolvedRoot, 'opencode.json');
   let config = { $schema: 'https://opencode.ai/config.json' };
@@ -714,6 +743,14 @@ export function mergeOpencodeConfig(projectRoot, optionsOrDryRun = {}) {
   }
 
   if (!config.$schema) config.$schema = 'https://opencode.ai/config.json';
+  config.default_agent = 'san-orchestrator';
+  config.compaction = {
+    ...(config.compaction && typeof config.compaction === 'object' ? config.compaction : {}),
+    auto: true,
+    background: true,
+    keep: { tokens: 12000 },
+    buffer: 20000
+  };
 
   const desiredSkillPath = '.agents/skills';
   const existingPaths = Array.isArray(config.skills?.paths) ? [...config.skills.paths] : [];
@@ -726,7 +763,48 @@ export function mergeOpencodeConfig(projectRoot, optionsOrDryRun = {}) {
   }
   config.instructions = instructions;
 
-  const generatedAgents = {};
+  const existingPlugins = Array.isArray(config.plugins) ? [...config.plugins] : [];
+  const pluginEntry = './.agents/opencode';
+  const hasPlugin = existingPlugins.some((p) =>
+    typeof p === 'string' ? p === pluginEntry : p?.package === pluginEntry
+  );
+  if (!hasPlugin) existingPlugins.push(pluginEntry);
+  config.plugins = existingPlugins;
+
+  const existingCommands =
+    config.commands && typeof config.commands === 'object' && !Array.isArray(config.commands)
+      ? config.commands
+      : {};
+  config.commands = {
+    ...existingCommands,
+    'san-board': {
+      description: 'Afficher le tableau de bord SAN Swarm et le résumé du workflow',
+      template: 'Appelle l\'outil san_swarm(action: "board") et affiche le tableau de bord complet du workflow à l\'utilisateur.'
+    },
+    'san-swarm': {
+      description: 'Orchestrer une vague parallèle de workers san-* avec vue tableau',
+      template: 'Orchestre cette demande avec san_swarm(action: "dispatch", ...) en respectant .agents/rules/ et affiche le Swarm Board final : $ARGUMENTS'
+    }
+  };
+
+  const orchestratorPrompt = [
+    '# `san-orchestrator` — Orchestrateur Principal SAN AI Harness v3.0',
+    '',
+    'Tu utilises le modèle choisi par l’utilisateur via `/model` (ne jamais demander ou forcer un autre modèle d’orchestration).',
+    '- **Tâches simples / mono-couche :** le cycle natif `Plan → Execute` est autorisé directement après respect des règles `.agents/rules/*.md`.',
+    '- **Features multi-couches, Studio Duel UI, ou audit contradictoire (`san-qa-auditor`) :** délègue en parallèle via `san_swarm(action: "dispatch", waveTitle: "...", tasks: [...])` (ou `subagent`).',
+    '- **Vue Tableau Obligatoire :** Dès que `san_swarm` est invoqué, affiche intégralement le tableau Markdown Swarm Board et le Workflow Summary retournés dans ta réponse finale à l’utilisateur.',
+    '- **Alignement Socratique :** Pose tes questions structurantes (`question`) et inspecte les URLs d’inspiration avant de déléguer une roadmap ou une refonte UI.'
+  ].join('\n');
+
+  const generatedAgents = {
+    'san-orchestrator': {
+      description: 'Orchestrateur principal SAN AI Harness (Plan->Execute simple, Swarm parallèle multi-couches avec vue tableau)',
+      mode: 'primary',
+      system: orchestratorPrompt
+    }
+  };
+
   for (const agentFile of CANONICAL_AGENTS) {
     const spec = parseAgentSpecForOpencode(agentFile, resolvedRoot);
     if (!spec) continue;
@@ -766,7 +844,7 @@ export function mergeOpencodeConfig(projectRoot, optionsOrDryRun = {}) {
 }
 
 /**
- * Configure .agents/models.json (Profil Exécuteur Unifié) et resynchronise opencode.json V2.
+ * Configure .agents/models.json (Profil Exécuteur Unifié & Compaction 120k) et resynchronise opencode.json V2.3.
  */
 export function configureModels(targetDirOrOptions = {}, maybeOptions = {}) {
   const options = normalizeTargetOptions(targetDirOrOptions, maybeOptions);
@@ -786,6 +864,8 @@ export function configureModels(targetDirOrOptions = {}, maybeOptions = {}) {
   const orchestrator = cleanOpt(options.orchestrator);
   const opencodeOrchestrator = cleanOpt(options.opencodeOrchestrator);
   const agyOrchestrator = cleanOpt(options.agyOrchestrator);
+  const rawCompaction = options.compactionTargetTokens !== undefined ? Number(options.compactionTargetTokens) : NaN;
+  const hasCompactionMutation = Number.isFinite(rawCompaction) && rawCompaction >= 10000;
 
   const hasMutations = Boolean(
     setModel ||
@@ -793,7 +873,8 @@ export function configureModels(targetDirOrOptions = {}, maybeOptions = {}) {
     agyExecutor ||
     orchestrator ||
     opencodeOrchestrator ||
-    agyOrchestrator
+    agyOrchestrator ||
+    hasCompactionMutation
   );
 
   if (setModel) {
@@ -814,6 +895,9 @@ export function configureModels(targetDirOrOptions = {}, maybeOptions = {}) {
   }
   if (opencodeOrchestrator) config.opencode.orchestrator = opencodeOrchestrator;
   if (agyOrchestrator) config.agy.orchestrator = agyOrchestrator;
+  if (hasCompactionMutation) {
+    config.compaction = { ...config.compaction, targetTokens: Math.floor(rawCompaction) };
+  }
 
   let modelsStatus = state.exists ? 'active' : 'default';
   let opencodeMerge = null;
@@ -834,20 +918,21 @@ export function configureModels(targetDirOrOptions = {}, maybeOptions = {}) {
     const ocExists = fs.existsSync(ocPath);
     console.log('');
     console.log(`${colors.cyan}============================================================${colors.reset}`);
-    console.log(`${colors.bold}${colors.brightCyan}  GOUVERNANCE MODÈLES DUAL-HARNESS (v${getFrameworkVersion()})${colors.reset}`);
+    console.log(`${colors.bold}${colors.brightCyan}  GOUVERNANCE MODÈLES DUAL-HARNESS — SAN AI HARNESS v${getFrameworkVersion()}${colors.reset}`);
     console.log(`${colors.cyan}============================================================${colors.reset}`);
     console.log(`  ${colors.bold}Projet${colors.reset}        : ${projectRoot}`);
     console.log(`  ${colors.bold}Profil${colors.reset}        : ${colors.cyan}${config.profile}${colors.reset}`);
+    console.log(`  ${colors.bold}Compaction${colors.reset}    : ${colors.cyan}${config.compaction.targetTokens} tokens${colors.reset}`);
     console.log(`  ${colors.bold}models.json${colors.reset}   : ${state.path} ${colors.gray}(${modelsStatus})${colors.reset}`);
     if (dryRun) {
       console.log(`  ${colors.yellow}${colors.bold}[DRY-RUN]${colors.reset} Mode simulation actif — aucun fichier écrit.`);
     }
     console.log('');
     console.log(`  ${colors.bold}Google Antigravity (agy / swarm) :${colors.reset}`);
-    console.log(`    • orchestrator : ${colors.cyan}${config.agy.orchestrator}${colors.reset}`);
+    console.log(`    • orchestrator : ${colors.cyan}${config.agy.orchestrator}${colors.reset} ${colors.gray}(géré via /model)${colors.reset}`);
     console.log(`    • executor     : ${colors.brightGreen}${config.agy.executor}${colors.reset}`);
-    console.log(`  ${colors.bold}OpenCode V2 (opencode.json / subagent) :${colors.reset}`);
-    console.log(`    • orchestrator : ${colors.cyan}${config.opencode.orchestrator}${colors.reset}`);
+    console.log(`  ${colors.bold}OpenCode V2.3 (opencode.json / san_swarm) :${colors.reset}`);
+    console.log(`    • orchestrator : ${colors.cyan}${config.opencode.orchestrator}${colors.reset} ${colors.gray}(géré via /model)${colors.reset}`);
     console.log(`    • executor     : ${colors.brightGreen}${config.opencode.executor}${colors.reset}`);
 
     if (opencodeMerge) {
@@ -855,7 +940,7 @@ export function configureModels(targetDirOrOptions = {}, maybeOptions = {}) {
       if (opencodeMerge.status === 'skipped-invalid') {
         console.log(`  ${colors.yellow}[!] opencode.json ignoré (JSON existant invalide).${colors.reset}`);
       } else {
-        console.log(`  ${colors.green}✔${colors.reset} ${colors.bold}opencode.json${colors.reset} resynchronisé (${opencodeMerge.status}, ${opencodeMerge.agentsCount} sous-agents -> ${colors.brightGreen}${opencodeMerge.model}${colors.reset})`);
+        console.log(`  ${colors.green}✔${colors.reset} ${colors.bold}opencode.json${colors.reset} resynchronisé (${opencodeMerge.status}, ${opencodeMerge.agentsCount} agents -> ${colors.brightGreen}${opencodeMerge.model}${colors.reset})`);
       }
     } else if (ocExists) {
       console.log('');
@@ -932,28 +1017,29 @@ export function deploySkillsLight(agentsDir, { dryRun = false } = {}) {
 }
 
 /**
- * Écrit le marqueur .agents/cache/whats_new_pending.json pour notification unique au 1er SessionStart.
+ * Purge active des artefacts obsolètes v2.x (.agents/cache, anciens hooks, skills retirés, doublon AGENTS.md).
  */
-export function writeWhatsNewPendingCache(agentsDir, { dryRun = false, version = getFrameworkVersion() } = {}) {
-  const entry = WHATS_NEW[version] || WHATS_NEW[LATEST_WHATS_NEW_VERSION] || WHATS_NEW['2.2.0'];
-  const pendingPayload = {
-    version: entry ? entry.version : version,
-    updatedAt: new Date().toISOString(),
-    seen: false,
-    highlights: entry ? entry.highlights : []
-  };
+export function purgeObsoleteArtifacts(agentsDir, { dryRun = false } = {}) {
+  const purged = [];
+  const targets = [
+    { path: path.join(agentsDir, 'cache'), label: '.agents/cache' },
+    { path: path.join(agentsDir, 'hooks', 'scripts', 'post_tool_indexer.mjs'), label: '.agents/hooks/scripts/post_tool_indexer.mjs' },
+    { path: path.join(agentsDir, 'hooks', 'scripts', 'stop_guard.mjs'), label: '.agents/hooks/scripts/stop_guard.mjs' },
+    { path: path.join(agentsDir, 'skills', 'san_cartographer'), label: '.agents/skills/san_cartographer' },
+    { path: path.join(agentsDir, 'skills', 'san_transcriber'), label: '.agents/skills/san_transcriber' },
+    { path: path.join(agentsDir, 'AGENTS.md'), label: '.agents/AGENTS.md' },
+    { path: path.join(agentsDir, 'rules.json'), label: '.agents/rules.json' }
+  ];
 
-  if (!dryRun) {
-    const cacheDir = path.join(agentsDir, 'cache');
-    fs.mkdirSync(cacheDir, { recursive: true });
-    fs.writeFileSync(
-      path.join(cacheDir, 'whats_new_pending.json'),
-      JSON.stringify(pendingPayload, null, 2) + '\n',
-      'utf8'
-    );
+  for (const t of targets) {
+    if (fs.existsSync(t.path)) {
+      if (!dryRun) {
+        try { fs.rmSync(t.path, { recursive: true, force: true }); } catch {}
+      }
+      purged.push(t.label);
+    }
   }
-
-  return pendingPayload;
+  return purged;
 }
 
 /**
@@ -984,41 +1070,55 @@ export function deployAgents(agentsDestDir, { dryRun = false, force = false } = 
 }
 
 /**
- * Migre chirurgicalement la section de routage des modèles v2.0 (invoke_subagent / 3.8 Flash / 3.1 Pro)
- * dans un fichier PROJECT.md personnalisé tout en préservant 100% de la stack métier du projet.
+ * Migre chirurgicalement les sections et mentions legacy (v2.0/v2.1/v2.2 : modèles hardcodés, REPO_MAP, cache, transcriber)
+ * dans PROJECT.md vers la doctrine v3.0 abstraite (.agents/models.json) tout en préservant 100% du contenu métier.
  */
 export function migrateLegacyModelRoutingInProjectRule(content) {
   if (!content || typeof content !== 'string') return { content, migrated: false };
-  const hasLegacySection =
-    /ROUTAGE STRICT DES MOD[ÈE]LES ANTIGRAVITY\s*\(`?invoke_subagent`?\)/i.test(content) ||
-    /Gemini 3\.8 Flash|gemini-3\.8-flash-high|gemini-3\.1-pro-high/i.test(content);
+  const hasLegacyContent =
+    /ROUTAGE STRICT DES MOD[ÈE]LES ANTIGRAVITY|DOCTRINE D'ORCHESTRATION SOUVERAINE/i.test(content) ||
+    /gemini-3\.8-flash-high|gemini-3\.1-pro-high|Gemini 3\.8 Flash|gemini-4-hydrogen-xhigh|gemini-4-argon/i.test(content) ||
+    /\bArgon(?!2id)\b|\bCarbon\b|\bREPO_MAP\.md\b|\.agents\/cache|san_cartographer|san_transcriber|last-gate-status\.json|roadmaps\/transcripts/i.test(content);
 
-  if (!hasLegacySection) {
+  if (!hasLegacyContent) {
     return { content, migrated: false };
   }
 
-  const v21RoutingSection = `## 2. DOCTRINE D'ORCHESTRATION SOUVERAINE (\`Argon\` -> \`Swarm Hydrogen XHigh\`)
+  const buildV3Section = (headingNum = '3') => `## ${headingNum}. DOCTRINE DUAL-HARNESS & PROFIL EXÉCUTEUR UNIFIÉ (\`.agents/models.json\`)
 
-Pour maximiser la puissance d'ingénierie tout en sanctuarisant le quota hebdomadaire de l'Orchestrateur, la délégation suit la vérité technique Antigravity CLI v1.5.8+ :
+> **Orchestration Libre (\`/model\`) & Délégation Adaptative :** L'orchestrateur principal hérite du \`/model\` choisi par l'utilisateur (\`inherit-user-model\`).
+> - **Tâches simples / mono-couche :** le cycle natif \`Plan → Execute\` est autorisé en direct dans le respect des règles \`.agents/rules/*.md\`.
+> - **Features multi-couches, Studio Duel UI & Audit \`san-qa-auditor\` :** délégation parallèle pilotée par \`.agents/models.json\` (\`san-harness models\`) via \`swarm(action: "add", model: "<agy.executor>")\` sous Antigravity ou \`san_swarm\` / \`subagent\` (\`<opencode.executor>\`) sous OpenCode V2.3.
 
-- **Interdiction absolue de \`invoke_subagent\` :** \`invoke_subagent(Model: "inherit")\` brûle le quota hebdomadaire \`Argon\`/\`Carbon\`, et \`invoke_subagent(Model: "pro" | "flash")\` subit un fallback serveur vers \`gemini-3.8-flash-tiered\`.
-- **Délégation exclusive via \`swarm\` :** Toute tâche de recherche, d'architecture, de code, d'UI ou d'audit est déléguée via **\`swarm(action: "add", model: "gemini-4-hydrogen-xhigh", ...)\`** (ou \`agy -p --model gemini-4-hydrogen-xhigh\`).
-
-| Rôle dans le Projet | Outil & Paramètre \`model\` | Modèle Réel Actif | Périmètre & Responsabilité |
-| :--- | :--- | :--- | :--- |
-| **Session Principale (Orchestrateur)** | Thread principal (\`coordinator\`) | \`Gemini 4 Argon (High)\` | Architecture, arbitrage, découpage sans conflit de fichiers et pilotage du board \`swarm\`. |
-| **Workers d'Architecture & Code (\`san-architect\`, \`san-coder-*\`, \`san-designer-worker\`, \`san-ops-devops\`)** | \`swarm(action: "add", model: "gemini-4-hydrogen-xhigh")\` | \`Gemini 4 Hydrogen (XHigh)\` | Pre-Mortem, contrats OpenAPI/Zod, code Backend/Frontend atomique, Studio Duel UI, scripts & infra. |
-| **Workers de Recherche & Audit QA (\`san-researcher\`, \`san-qa-auditor\`)** | \`swarm(action: "add", model: "gemini-4-hydrogen-xhigh")\` | \`Gemini 4 Hydrogen (XHigh)\` | Exploration Map-First (\`REPO_MAP.md\`), audit contradictoire OWASP/Substance/DOM, validation des tests. |`;
+| Rôle / Worker (\`san-*\`) | Exécuteur Unifié (\`.agents/models.json\`) | Périmètre & Responsabilité |
+| :--- | :--- | :--- |
+| **Orchestrateur** | \`/model\` utilisateur (\`inherit-user-model\`) | Alignement préalable, Plan→Execute simple ou pilotage parallèle \`swarm\` / \`san_swarm\`. |
+| **\`san-architect\` / \`san-researcher\`** | \`agy.executor\` \| \`opencode.executor\` | Investigation, Contract-First (OpenAPI/Zod), Fitness Functions, Pre-Mortem. |
+| **\`san-qa-auditor\`** | \`agy.executor\` \| \`opencode.executor\` | Inquisiteur lecture seule, substance des tests, OWASP, audit DOM/PNG. |
+| **\`san-coder-back\` / \`san-coder-front\`** | \`agy.executor\` \| \`opencode.executor\` | Backend ACID & Frontend 5 états UI (< 220 lignes/fichier), tests réels. |
+| **\`san-designer-worker\` / \`san-ops-devops\` / \`san-growth-legal\`** | \`agy.executor\` \| \`opencode.executor\` | Studio Duel UI (\`export_png.mjs\`), CI/CD rollback < 30s, conformité stores/RGPD. |`;
 
   let next = content;
-  const sectionRegex = /##\s*2\.\s*ROUTAGE STRICT DES MOD[ÈE]LES ANTIGRAVITY[\s\S]*?(?=\r?\n---\r?\n|\r?\n##\s*3\.|$)/i;
-  if (sectionRegex.test(next)) {
-    next = next.replace(sectionRegex, v21RoutingSection + '\n');
-  } else {
-    next = next
-      .replace(/gemini-3\.1-pro-high|gemini-3\.8-flash-high|Gemini 3\.8 Flash/g, 'gemini-4-hydrogen-xhigh')
-      .replace(/invoke_subagent/g, 'swarm(action: "add", model: "gemini-4-hydrogen-xhigh")');
+  const secMatch = next.match(/##\s*([23])\.\s*(?:ROUTAGE STRICT DES MOD[ÈE]LES ANTIGRAVITY|DOCTRINE D'ORCHESTRATION SOUVERAINE|DOCTRINE DUAL-HARNESS[^\r\n]*)[\s\S]*?(?=\r?\n---\r?\n|\r?\n##\s*[34]\.|$)/i);
+  if (secMatch) {
+    next = next.replace(secMatch[0], buildV3Section(secMatch[1]));
   }
+
+  next = next
+    .replace(/\(`?Argon(?!2id)`?\s*(?:\/|&)?\s*`?Carbon`?\s*[-→>]+\s*`?swarm`?\s*`?gemini-4-hydrogen-xhigh`?\)/gi, '(Dual-Harness `.agents/models.json`)')
+    .replace(/v2\.(?:0|1|2)\s*\(`?Argon(?!2id)`?[^)]*\)/gi, 'v3.0 (`.agents/models.json`)')
+    .replace(/gemini-4-hydrogen-xhigh|gemini-4-argon-high|gemini-3\.1-pro-high|gemini-3\.8-flash-high|Gemini 3\.8 Flash/gi, '`<executor>` (`.agents/models.json`)')
+    .replace(/`?invoke_subagent\([^)]*\)`?/g, '`swarm` / `san_swarm`')
+    .replace(/\bArgon(?!2id)\b(?:\s*\/\s*\bCarbon\b)?/g, 'Orchestrateur')
+    .replace(/\bCarbon\b/g, 'Orchestrateur')
+    .replace(/\.agents\/cache\/REPO_MAP\.md/g, '`.agents/rules/*.md`')
+    .replace(/\bREPO_MAP\.md\b/g, 'la codebase')
+    .replace(/\.agents\/cache\/last-gate-status\.json/g, 'tests réels (`exit 0`)')
+    .replace(/\.agents\/cache\/semantic-summaries\.json/g, '`.agents/rules/*.md`')
+    .replace(/\.agents\/cache\/?/g, 'compaction 120k')
+    .replace(/\bsan_cartographer\b/g, 'exploration directe')
+    .replace(/\bsan_transcriber\b/g, 'compaction automatique 120k')
+    .replace(/roadmaps\/transcripts\/?/g, 'compaction automatique 120k');
 
   return { content: next, migrated: next !== content };
 }
@@ -1168,7 +1268,7 @@ export function packageGlobalPlugin(targetDir, { dryRun = false, force = false }
 
     // 2. assets/logo.svg
     const logoSrc = path.join(PLUGIN_SRC_DIR, 'assets', 'logo.svg');
-    const fallbackLogo = path.join(FRAMEWORK_ROOT, 'logos', 'san_framework_icon.svg');
+    const fallbackLogo = path.join(FRAMEWORK_ROOT, 'logos', 'san_harness_icon.svg');
     const logoDest = path.join(targetDir, 'assets', 'logo.svg');
     if (fs.existsSync(logoSrc)) {
       fs.copyFileSync(logoSrc, logoDest);
@@ -1230,7 +1330,7 @@ export function packageGlobalPlugin(targetDir, { dryRun = false, force = false }
 }
 
 /**
- * Diagnostic de santé officiel (doctor) : contrôle les 6 piliers v2.2
+ * Diagnostic de santé officiel (doctor) : contrôle les 6 piliers v3.0
  */
 export function runDoctor(targetDirOrOptions = {}, maybeOptions = {}) {
   const options = normalizeTargetOptions(targetDirOrOptions, maybeOptions);
@@ -1245,7 +1345,7 @@ export function runDoctor(targetDirOrOptions = {}, maybeOptions = {}) {
       governance: { title: '1. Gouvernance souveraine (<root>/AGENTS.md)', passed: false, checks: [] },
       rules: { title: '2. Règles normatives (.agents/rules/*.md)', passed: false, checks: [] },
       agents: { title: '3. Sous-agents natifs (.agents/agents/*.md)', passed: false, checks: [] },
-      hooks: { title: '4. Garde-fous mécaniques (.agents/hooks.json & scripts)', passed: false, checks: [] },
+      hooks: { title: '4. Garde-fous mécaniques & Compaction 120k (3 hooks, zéro cache)', passed: false, checks: [] },
       skills: { title: `5. Catalogue des ${expectedSkills.length} skills (.agents/skills/ | skills.json <= 130 lignes)`, passed: false, checks: [] },
       gitHygiene: { title: '6. Étanchéité Git (.gitignore ou .git/info/exclude)', passed: false, checks: [] }
     }
@@ -1300,12 +1400,13 @@ export function runDoctor(targetDirOrOptions = {}, maybeOptions = {}) {
             report.pillars.rules.checks.push({ ok: false, msg: `Règle ${r} sans frontmatter YAML valide (trigger:)` });
           } else if (
             r === 'PROJECT.md' &&
-            (/ROUTAGE STRICT DES MOD[ÈE]LES ANTIGRAVITY\s*\(`?invoke_subagent`?\)/i.test(content) ||
-              /Gemini 3\.8 Flash|gemini-3\.8-flash-high|gemini-3\.1-pro-high/i.test(content))
+            (/ROUTAGE STRICT DES MOD[ÈE]LES ANTIGRAVITY|DOCTRINE D'ORCHESTRATION SOUVERAINE/i.test(content) ||
+              /gemini-3\.8-flash-high|gemini-3\.1-pro-high|gemini-4-hydrogen-xhigh|gemini-4-argon/i.test(content) ||
+              /\bArgon(?!2id)\b|\bCarbon\b|\bREPO_MAP\.md\b|\.agents\/cache|san_cartographer|san_transcriber/i.test(content))
           ) {
             report.pillars.rules.checks.push({
               ok: false,
-              msg: 'Règle PROJECT.md contient encore le routage legacy v2.0 (3.8-flash / invoke_subagent) — exécutez "san-framework update"'
+              msg: 'Règle PROJECT.md contient encore un routage/cache legacy (v2.x) — exécutez "san-harness update"'
             });
           } else {
             report.pillars.rules.checks.push({ ok: true, msg: `Règle ${r} avec frontmatter YAML valide (trigger:)` });
@@ -1334,19 +1435,15 @@ export function runDoctor(targetDirOrOptions = {}, maybeOptions = {}) {
           if (!content.trimStart().startsWith('---') || !content.includes('name:')) {
             report.pillars.agents.checks.push({ ok: false, msg: `Sous-agent ${a} invalide (frontmatter YAML manquant)` });
           } else if (
-            /gemini-3\.8-flash-high|gemini-3\.1-pro-high/i.test(content) ||
-            (
-              !content.includes('gemini-4-hydrogen-xhigh') &&
-              !content.includes('models.json') &&
-              !content.includes('san-framework models')
-            )
+            /gemini-3\.8-flash-high|gemini-3\.1-pro-high|gemini-4-hydrogen-xhigh|\bREPO_MAP\.md\b|\.agents\/cache/i.test(content) ||
+            (!content.includes('models.json') && !content.includes('san-harness models') && !content.includes('san-framework models'))
           ) {
             report.pillars.agents.checks.push({
               ok: false,
-              msg: `Sous-agent ${a} en version v2.0 obsolète (manque gemini-4-hydrogen-xhigh / models.json) — exécutez "san-framework update"`
+              msg: `Sous-agent ${a} contient un modèle hardcodé ou du cache obsolète — exécutez "san-harness update"`
             });
           } else {
-            report.pillars.agents.checks.push({ ok: true, msg: `Sous-agent ${a} présent et valide (v2.2 Dual-Harness)` });
+            report.pillars.agents.checks.push({ ok: true, msg: `Sous-agent ${a} présent et valide (v3.0 Dual-Harness)` });
           }
         } catch (e) {
           report.pillars.agents.checks.push({ ok: false, msg: `Erreur lecture ${a} : ${e.message}` });
@@ -1356,7 +1453,7 @@ export function runDoctor(targetDirOrOptions = {}, maybeOptions = {}) {
   }
   report.pillars.agents.passed = report.pillars.agents.checks.length >= expectedAgents.length && report.pillars.agents.checks.every(c => c.ok);
 
-  // Pilier 4 : Garde-fous mécaniques (.agents/hooks.json & scripts)
+  // Pilier 4 : Garde-fous mécaniques (.agents/hooks.json & scripts) + Purge .agents/cache
   const hooksJsonPath = path.join(agentsDir, 'hooks.json');
   const hooksScriptsDir = path.join(agentsDir, 'hooks', 'scripts');
   if (!fs.existsSync(hooksJsonPath)) {
@@ -1388,7 +1485,17 @@ export function runDoctor(targetDirOrOptions = {}, maybeOptions = {}) {
       }
     }
   }
-  report.pillars.hooks.passed = report.pillars.hooks.checks.length >= (1 + expectedScripts.length) && report.pillars.hooks.checks.every(c => c.ok);
+
+  const legacyCacheDir = path.join(agentsDir, 'cache');
+  if (fs.existsSync(legacyCacheDir)) {
+    report.pillars.hooks.checks.push({
+      ok: false,
+      msg: 'Dossier obsolète .agents/cache/ encore présent — exécutez "san-harness update" pour le purger'
+    });
+  } else {
+    report.pillars.hooks.checks.push({ ok: true, msg: 'Zéro .agents/cache/ (compaction 120k active)' });
+  }
+  report.pillars.hooks.passed = report.pillars.hooks.checks.length >= (2 + expectedScripts.length) && report.pillars.hooks.checks.every(c => c.ok);
 
   // Pilier 5 : Catalogue des skills (.agents/skills/ ou .agents/skills.json <= 130 lignes)
   const skillsSubDir = path.join(agentsDir, 'skills');
@@ -1523,7 +1630,7 @@ export function printDoctorReport(report) {
   const version = getFrameworkVersion();
   console.log('');
   console.log(`${colors.cyan}============================================================${colors.reset}`);
-  console.log(`${colors.bold}${colors.brightCyan}  DIAGNOSTIC DE SANTÉ DU FRAMEWORK ANTIGRAVITY v${version} (DOCTOR)${colors.reset}`);
+  console.log(`${colors.bold}${colors.brightCyan}  DIAGNOSTIC DE SANTÉ SAN AI HARNESS v${version} (DOCTOR)${colors.reset}`);
   console.log(`${colors.cyan}============================================================${colors.reset}`);
   console.log(`  ${colors.bold}Cible${colors.reset}   : ${report.projectRoot}`);
   console.log(`  ${colors.bold}Verdict${colors.reset} : ${report.allPassed ? `${colors.green}${colors.bold}CONFORME (6/6 PILIERS AU VERT)${colors.reset}` : `${colors.red}${colors.bold}NON CONFORME (DÉFAUTS DÉTECTÉS)${colors.reset}`}`);
@@ -1542,15 +1649,15 @@ export function printDoctorReport(report) {
 
   console.log('');
   if (report.allPassed) {
-    console.log(`${colors.brightGreen}${colors.bold}✔ Félicitations ! Votre environnement respecte à 100% l'architecture souveraine v${version}.${colors.reset}`);
+    console.log(`${colors.brightGreen}${colors.bold}✔ Félicitations ! Votre environnement respecte à 100% l'architecture san_ai_harness v${version}.${colors.reset}`);
   } else {
-    console.log(`${colors.brightYellow}ℹ Conseil : Exécutez "san-framework update" ou "san-framework init --local --all" pour réparer automatiquement les piliers défaillants.${colors.reset}`);
+    console.log(`${colors.brightYellow}ℹ Conseil : Exécutez "san-harness update" ou "san-harness init --local --all" pour réparer automatiquement les piliers défaillants.${colors.reset}`);
   }
   console.log(`${colors.cyan}============================================================${colors.reset}\n`);
 }
 
 /**
- * Moteur de la commande `update` : migration & mise à jour non destructive vers v2.2
+ * Moteur de la commande `update` : migration & mise à jour non destructive vers v3.0
  */
 export async function updateFramework(targetDirOrOptions = {}, maybeOptions = {}) {
   const options = normalizeTargetOptions(targetDirOrOptions, maybeOptions);
@@ -1569,6 +1676,9 @@ export async function updateFramework(targetDirOrOptions = {}, maybeOptions = {}
   const availableSkills = getAvailableSkills();
   const selectedSkills = resolveSkillList(options.skills, availableSkills);
 
+  // 0. Purge des artefacts obsolètes (.agents/cache, anciens hooks, skills retirés, doublon AGENTS.md)
+  const purgedArtifacts = purgeObsoleteArtifacts(agentsDir, { dryRun });
+
   // 1. Déploiement / Resynchronisation des skills (Couche 1 : standard ou --light)
   let skillsInstalled = [];
   let lightSkillsConfig = null;
@@ -1582,7 +1692,7 @@ export async function updateFramework(targetDirOrOptions = {}, maybeOptions = {}
   // 2. Déploiement des 8 sous-agents natifs (Couche 2 : toujours resynchronisés lors d'un update)
   const agentsStatus = deployAgents(agentsDestDir, { dryRun, force: true });
 
-  // 3. Déploiement des règles avec Smart Merge Frontmatter & migration routage v2.1 (Couche 3)
+  // 3. Déploiement des règles avec Smart Merge Frontmatter & migration routage v3.0 (Couche 3)
   const rulesStatus = deployRulesWithSmartMerge(rulesDestDir, { dryRun, force });
 
   // 4. Déploiement des hooks mécaniques (Couche 4)
@@ -1596,15 +1706,14 @@ export async function updateFramework(targetDirOrOptions = {}, maybeOptions = {}
       fs.copyFileSync(geminiTemplate, geminiMdDest);
     }
     geminiStatus = fs.existsSync(geminiMdDest) ? 'updated' : 'created';
-  } else if (!dryRun && fs.existsSync(geminiMdDest)) {
+  } else if (fs.existsSync(geminiMdDest)) {
     try {
       const existingGemini = fs.readFileSync(geminiMdDest, 'utf8');
-      const migratedGemini = existingGemini
-        .replace(/routage des mod[èe]les LLM\s*\(`?flash`?\s*vs\s*`?inherit`?\)/gi, 'routage Swarm autonome (`Argon` -> `gemini-4-hydrogen-xhigh`)')
-        .replace(/via\s+`?\.agents\/rules\.json`?/gi, 'via `.agents/cache/REPO_MAP.md` (Map-First)');
-      if (migratedGemini !== existingGemini) {
-        fs.writeFileSync(geminiMdDest, migratedGemini, 'utf8');
-        geminiStatus = 'migrated-v2.1';
+      if (/Argon|Carbon|gemini-4-hydrogen-xhigh|REPO_MAP|\.agents\/cache|san_cartographer|san_transcriber/i.test(existingGemini)) {
+        if (!dryRun && fs.existsSync(geminiTemplate)) {
+          fs.copyFileSync(geminiTemplate, geminiMdDest);
+        }
+        geminiStatus = 'migrated-v3.0';
       }
     } catch {}
   }
@@ -1619,7 +1728,7 @@ export async function updateFramework(targetDirOrOptions = {}, maybeOptions = {}
   // 6B. Configuration Dual-Harness .agents/models.json (préserve les choix utilisateur)
   const modelsStatus = ensureModelsConfig(projectRoot, { dryRun });
 
-  // 7. opencode.json si existant ou si flag --opencode (génération/mise à jour V2 native des 8 agents)
+  // 7. opencode.json & plugin .agents/opencode si existant ou si flag --opencode
   const hasOpencodeConfig = fs.existsSync(path.join(projectRoot, 'opencode.json'));
   let opencodeMerge = null;
   if (hasOpencodeConfig || options.opencode) {
@@ -1632,37 +1741,10 @@ export async function updateFramework(targetDirOrOptions = {}, maybeOptions = {}
     preserveOpencode: Boolean(options.opencode || hasOpencodeConfig)
   });
 
-  // 9. Initialisation / Resynchronisation du cache cartographique & What's New (.agents/cache/)
-  let whatsNewPending = null;
-  if (!dryRun) {
-    const cacheDir = path.join(agentsDir, 'cache');
-    try { fs.mkdirSync(cacheDir, { recursive: true }); } catch {}
-
-    const localMapperScript = path.join(skillsDestDir, 'san_cartographer', 'scripts', 'repo_mapper.mjs');
-    const srcMapperScript = path.join(SKILLS_SRC_DIR, 'san_cartographer', 'scripts', 'repo_mapper.mjs');
-    const mapperScript = fs.existsSync(localMapperScript)
-      ? localMapperScript
-      : (fs.existsSync(srcMapperScript) ? srcMapperScript : null);
-
-    if (mapperScript) {
-      try {
-        execSync(`node "${mapperScript}" --root "${projectRoot}"`, {
-          cwd: projectRoot,
-          stdio: ['ignore', 'ignore', 'ignore'],
-          timeout: 15000
-        });
-      } catch {}
-    }
-
-    whatsNewPending = writeWhatsNewPendingCache(agentsDir, { dryRun: false, version: currentVersion });
-  } else {
-    whatsNewPending = writeWhatsNewPendingCache(agentsDir, { dryRun: true, version: currentVersion });
-  }
-
   // Bilan récapitulatif
   console.log('');
   console.log(`${colors.cyan}============================================================${colors.reset}`);
-  console.log(`${colors.bold}${colors.brightCyan}  MIGRATION & MISE À JOUR v${currentVersion} — FRAMEWORK ANTIGRAVITY${colors.reset}`);
+  console.log(`${colors.bold}${colors.brightCyan}  MIGRATION & MISE À JOUR v${currentVersion} — SAN AI HARNESS${colors.reset}`);
   console.log(`${colors.cyan}============================================================${colors.reset}`);
   console.log(`  ${colors.bold}Projet${colors.reset}        : ${projectRoot}`);
   const hasAgents = fs.existsSync(agentsDir);
@@ -1674,6 +1756,9 @@ export async function updateFramework(targetDirOrOptions = {}, maybeOptions = {}
   }
   console.log(`  ${colors.bold}Sous-agents${colors.reset}   : ${agentsStatus.length} installés (.agents/agents/)`);
   console.log(`  ${colors.bold}Hooks natifs${colors.reset}  : ${hooksStatus.length} fichiers (.agents/hooks.json & scripts/)`);
+  if (purgedArtifacts.length > 0) {
+    console.log(`  ${colors.bold}Purge v2→v3${colors.reset}   : ${colors.green}${purgedArtifacts.join(', ')}${colors.reset}`);
+  }
   if (dryRun) {
     console.log(`  ${colors.yellow}${colors.bold}[DRY-RUN]${colors.reset} Mode simulation actif — aucun octet écrit.`);
   }
@@ -1693,9 +1778,9 @@ export async function updateFramework(targetDirOrOptions = {}, maybeOptions = {}
   console.log(`${colors.bold}📜 Gouvernance & Constitution racine :${colors.reset}`);
   console.log(`  • ${'AGENTS.md'.padEnd(14)} : ${agentsContext.status === 'preserved' ? `${colors.yellow}[PRÉSERVÉ]${colors.reset}` : `${colors.green}[SYNCHRONISÉ]${colors.reset}`}`);
   console.log(`  • ${'GEMINI.md'.padEnd(14)} : ${geminiStatus === 'preserved' ? `${colors.yellow}[PRÉSERVÉ]${colors.reset}` : `${colors.green}[SYNCHRONISÉ]${colors.reset}`}`);
-  console.log(`  • ${'models.json'.padEnd(14)} : ${colors.green}[${modelsStatus.status.toUpperCase()}]${colors.reset} (agy: ${modelsStatus.config.agy.executor} | opencode: ${modelsStatus.config.opencode.executor})`);
+  console.log(`  • ${'models.json'.padEnd(14)} : ${colors.green}[${modelsStatus.status.toUpperCase()}]${colors.reset} (compaction: ${modelsStatus.config.compaction.targetTokens} | agy: ${modelsStatus.config.agy.executor} | opencode: ${modelsStatus.config.opencode.executor})`);
   if (opencodeMerge) {
-    console.log(`  • ${'opencode.json'.padEnd(14)} : ${colors.green}[${opencodeMerge.status.toUpperCase()}]${colors.reset} (${opencodeMerge.agentsCount ?? 8} sous-agents -> ${opencodeMerge.model})`);
+    console.log(`  • ${'opencode.json'.padEnd(14)} : ${colors.green}[${opencodeMerge.status.toUpperCase()}]${colors.reset} (${opencodeMerge.agentsCount ?? 9} agents + plugin san_swarm -> ${opencodeMerge.model})`);
   }
 
   if (hygiene.backupDir) {
@@ -1708,7 +1793,7 @@ export async function updateFramework(targetDirOrOptions = {}, maybeOptions = {}
   console.log(formatWhatsNewTerminal(currentVersion));
 
   console.log('');
-  console.log(`${colors.brightCyan}✔ Codebase migrée en v${currentVersion}. Tapez "san-framework doctor" pour valider l'intégrité.${colors.reset}`);
+  console.log(`${colors.brightCyan}✔ Codebase migrée en v${currentVersion}. Tapez "san-harness doctor" pour valider l'intégrité.${colors.reset}`);
   console.log(`${colors.cyan}============================================================${colors.reset}\n`);
 
   return {
@@ -1716,7 +1801,7 @@ export async function updateFramework(targetDirOrOptions = {}, maybeOptions = {}
     version: currentVersion,
     light,
     lightSkillsConfig,
-    whatsNewPending,
+    purgedArtifacts,
     projectRoot,
     skillsInstalled,
     agentsStatus,
@@ -1730,7 +1815,7 @@ export async function updateFramework(targetDirOrOptions = {}, maybeOptions = {}
 }
 
 /**
- * Moteur principal d'installation du framework Antigravity (init)
+ * Moteur principal d'installation de san_ai_harness (init)
  */
 export async function installFramework(options = {}) {
   const targetMode = options.targetMode || 'local';
@@ -1748,12 +1833,12 @@ export async function installFramework(options = {}) {
     if (options.targetDir) {
       targetDirs.push(path.resolve(options.targetDir));
     } else {
-      const defaultCliPlugin = path.join(os.homedir(), '.gemini', 'antigravity-cli', 'plugins', 'san-framework');
+      const defaultCliPlugin = path.join(os.homedir(), '.gemini', 'antigravity-cli', 'plugins', 'san-ai-harness');
       targetDirs.push(defaultCliPlugin);
 
       const geminiConfigDir = path.join(os.homedir(), '.gemini', 'config');
       if (fs.existsSync(geminiConfigDir)) {
-        targetDirs.push(path.join(geminiConfigDir, 'plugins', 'san-framework'));
+        targetDirs.push(path.join(geminiConfigDir, 'plugins', 'san-ai-harness'));
       }
     }
 
@@ -1765,7 +1850,7 @@ export async function installFramework(options = {}) {
 
     console.log('');
     console.log(`${colors.cyan}============================================================${colors.reset}`);
-    console.log(`${colors.bold}${colors.brightCyan}  PACKAGING PLUGIN GLOBAL DU FRAMEWORK ANTIGRAVITY (v${currentVersion})${colors.reset}`);
+    console.log(`${colors.bold}${colors.brightCyan}  PACKAGING PLUGIN GLOBAL — SAN AI HARNESS (v${currentVersion})${colors.reset}`);
     console.log(`${colors.cyan}============================================================${colors.reset}`);
     for (const r of pluginReports) {
       console.log(`  ${colors.green}✔${colors.reset} Plugin assemblé dans : ${r.targetDir}`);
@@ -1795,6 +1880,9 @@ export async function installFramework(options = {}) {
   const rulesDestDir = path.join(agentsDir, 'rules');
   const geminiMdDest = path.join(agentsDir, 'GEMINI.md');
 
+  // 0. Purge éventuels résidus v2.x (.agents/cache, anciens hooks/skills)
+  const purgedArtifacts = purgeObsoleteArtifacts(agentsDir, { dryRun });
+
   // 1. Couche 1 : Skills (standard ou mode léger --light via .agents/skills.json)
   let installedSkills = [];
   let lightSkillsConfig = null;
@@ -1811,7 +1899,7 @@ export async function installFramework(options = {}) {
   // 3. Couche 3 : Règles normatives avec Smart Merge Frontmatter (5 règles)
   const rulesStatus = deployRulesWithSmartMerge(rulesDestDir, { dryRun, force });
 
-  // 4. Couche 4 : Garde-fous mécaniques (hooks.json + scripts)
+  // 4. Couche 4 : Garde-fous mécaniques (hooks.json + 3 scripts)
   const hooksStatus = deployHooks(agentsDir, { dryRun, force });
 
   // 5. Index maître GEMINI.md
@@ -1839,7 +1927,7 @@ export async function installFramework(options = {}) {
   // 7. Hygiène Git réversible
   const hygiene = executeGitHygiene(projectRoot, { dryRun, preserveOpencode: opencode });
 
-  // 8. Couche opencode V2 optionnelle
+  // 8. Couche opencode V2.3 optionnelle (avec plugin san_swarm + vue tableau)
   const opencodeMerge = opencode
     ? mergeOpencodeConfig(projectRoot, { dryRun, modelsConfig: modelsStatus.config })
     : null;
@@ -1847,39 +1935,20 @@ export async function installFramework(options = {}) {
     ? [agentsContext, opencodeMerge].filter(Boolean)
     : [];
 
-  // 9. Initialisation du cache cartographique (.agents/cache/)
-  if (!dryRun) {
-    const cacheDir = path.join(agentsDir, 'cache');
-    try { fs.mkdirSync(cacheDir, { recursive: true }); } catch {}
-
-    const localMapperScript = path.join(skillsDestDir, 'san_cartographer', 'scripts', 'repo_mapper.mjs');
-    const srcMapperScript = path.join(SKILLS_SRC_DIR, 'san_cartographer', 'scripts', 'repo_mapper.mjs');
-    const mapperScript = fs.existsSync(localMapperScript)
-      ? localMapperScript
-      : (fs.existsSync(srcMapperScript) ? srcMapperScript : null);
-
-    if (mapperScript) {
-      try {
-        execSync(`node "${mapperScript}" --root "${projectRoot}"`, {
-          cwd: projectRoot,
-          stdio: ['ignore', 'ignore', 'ignore'],
-          timeout: 15000
-        });
-      } catch {}
-    }
-  }
-
   // Bilan récapitulatif
   console.log('');
   console.log(`${colors.cyan}============================================================${colors.reset}`);
-  console.log(`${colors.bold}${colors.brightCyan}  INSTALLATION DU FRAMEWORK ANTIGRAVITY (san_*) RÉUSSIE !${colors.reset}`);
+  console.log(`${colors.bold}${colors.brightCyan}  INSTALLATION DE SAN AI HARNESS (san_*) RÉUSSIE !${colors.reset}`);
   console.log(`${colors.cyan}============================================================${colors.reset}`);
   console.log(`  ${colors.bold}Mode${colors.reset}        : ${light ? 'Local léger (.agents/ + skills.json inherits)' : 'Local (.agents/)'}`);
   console.log(`  ${colors.bold}Destination${colors.reset} : ${agentsDir}`);
   console.log(`  ${colors.bold}Couche 1${colors.reset}    : ${light ? `${installedSkills.length}/${availableSkills.length} skills hérités (.agents/skills.json)` : `${installedSkills.length}/${availableSkills.length} skills configurés (.agents/skills/)`}`);
   console.log(`  ${colors.bold}Couche 2${colors.reset}    : ${agentsStatus.length} sous-agents déployés (.agents/agents/)`);
   console.log(`  ${colors.bold}Couche 3${colors.reset}    : ${rulesStatus.length} règles normatives YAML (.agents/rules/)`);
-  console.log(`  ${colors.bold}Couche 4${colors.reset}    : ${hooksStatus.length} fichiers de cycle de vie (.agents/hooks.json & scripts/)`);
+  console.log(`  ${colors.bold}Couche 4${colors.reset}    : ${hooksStatus.length} fichiers de cycle de vie (.agents/hooks.json & 3 scripts/)`);
+  if (purgedArtifacts.length > 0) {
+    console.log(`  ${colors.bold}Purge v2→v3${colors.reset} : ${colors.green}${purgedArtifacts.join(', ')}${colors.reset}`);
+  }
   if (dryRun) {
     console.log(`  ${colors.yellow}${colors.bold}[DRY-RUN]${colors.reset} Mode simulation actif — aucun octet écrit sur le disque.`);
   }
@@ -1916,9 +1985,9 @@ export async function installFramework(options = {}) {
       : `${colors.green}[CRÉÉ]${colors.reset} (Index souverain AGENTS.md déployé à la racine)`;
     console.log(`  • ${'AGENTS.md'.padEnd(14)} : ${agentsBadge}`);
   }
-  console.log(`  • ${'models.json'.padEnd(14)} : ${colors.green}[${modelsStatus.status.toUpperCase()}]${colors.reset} (agy: ${modelsStatus.config.agy.executor} | opencode: ${modelsStatus.config.opencode.executor})`);
+  console.log(`  • ${'models.json'.padEnd(14)} : ${colors.green}[${modelsStatus.status.toUpperCase()}]${colors.reset} (compaction: ${modelsStatus.config.compaction.targetTokens} | agy: ${modelsStatus.config.agy.executor} | opencode: ${modelsStatus.config.opencode.executor})`);
   if (opencodeMerge) {
-    console.log(`  • ${'opencode.json'.padEnd(14)} : ${colors.green}[${opencodeMerge.status.toUpperCase()}]${colors.reset} (${opencodeMerge.agentsCount ?? 8} sous-agents -> ${opencodeMerge.model})`);
+    console.log(`  • ${'opencode.json'.padEnd(14)} : ${colors.green}[${opencodeMerge.status.toUpperCase()}]${colors.reset} (${opencodeMerge.agentsCount ?? 9} agents + plugin san_swarm -> ${opencodeMerge.model})`);
   }
 
   console.log('');
@@ -1946,7 +2015,7 @@ export async function installFramework(options = {}) {
 
   console.log('');
   console.log(`${colors.bold}🚀 Prochaines étapes recommandées :${colors.reset}`);
-  console.log(`  ${colors.brightCyan}1.${colors.reset} ${colors.bold}san-framework doctor${colors.reset}   : Contrôler les 6 piliers de santé v${currentVersion}`);
+  console.log(`  ${colors.brightCyan}1.${colors.reset} ${colors.bold}san-harness doctor${colors.reset}     : Contrôler les 6 piliers de santé v${currentVersion}`);
   console.log(`  ${colors.brightCyan}2.${colors.reset} ${colors.bold}san_init${colors.reset}               : Initialiser et cadrer chirurgicalement le projet`);
   console.log(`  ${colors.brightCyan}3.${colors.reset} ${colors.bold}san_brainstorming${colors.reset}      : Cadrer les idées produit et valider la proposition de valeur`);
   console.log(`  ${colors.brightCyan}4.${colors.reset} ${colors.bold}san_planner${colors.reset}            : Planifier les phases d'ingénierie et roadmaps d'exécution`);
@@ -1957,6 +2026,7 @@ export async function installFramework(options = {}) {
     version: currentVersion,
     light,
     lightSkillsConfig,
+    purgedArtifacts,
     targetMode,
     targetDir: agentsDir,
     installedSkills,
