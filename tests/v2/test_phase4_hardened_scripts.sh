@@ -345,12 +345,11 @@ TMP_WORKSPACES+=("$TMP_BRAND_BAD")
 cat << 'EOF' > "${TMP_BRAND_BAD}/BRAND.md"
 # Brand Guidelines
 ### 1.1 Palette Chromatique & Tokens Fonctionnels
-| Rôle Sémantique | Token Figma | Mode Sombre (Défaut) | Mode Clair |
+| Jeton (Token) | Mode Sombre (Dark) | Mode Clair (Light) | Usage |
 | :--- | :--- | :--- | :--- |
-| **Fond Principal** | `bg-primary` | `#ffffff` | `#ffffff` |
-| **Texte Principal** | `text-primary` | `#cccccc` | `#cccccc` |
-| **Bouton Primaire (Fond)** | `btn-primary-bg` | `#ffffff` | `#ffffff` |
-| **Bouton Primaire (Texte)** | `btn-primary-fg` | `#cccccc` | `#cccccc` |
+| `color-surface` | `#FFFFFF` | `#FFFFFF` | Fond principal (mauvais contraste) |
+| `color-on-surface` | `#CCCCCC` | `#CCCCCC` | Texte courant (~1.6:1 < 4.5:1) |
+| `color-background` | `#FFFFFF` | `#FFFFFF` | Toile de fond |
 EOF
 
 assert_true "build_tokens.mjs --strict échoue (exit 1) sur un mauvais contraste (< 4.5:1)" \

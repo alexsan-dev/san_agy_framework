@@ -1,4 +1,4 @@
-# CHANGELOG — `san_agy_framework`
+# CHANGELOG — `san_ai_harness`
 
 > **Langue :** Français | [English version](CHANGELOG.en.md)
 
@@ -13,7 +13,44 @@ et ce projet adhère à [Semantic Versioning](https://semver.org/lang/fr/).
 
 ### Planned
 - Publication officielle sur le registre npm (`npm publish --access public`).
-- Déploiements pilotes sur des codebases de production.
+- Déploiements étendus sur les dépôts de production.
+
+---
+
+## [3.0.0] - 2026-11-19
+
+### Added
+- **Identité `san_ai_harness` (`@alexsan/san-ai-harness`) & Binaire `san-harness` :**
+  - Renommage du package npm, du dépôt GitHub (`alexsan-dev/san_ai_harness`) et de l'identité visuelle, avec ajout du binaire principal `san-harness` (conservant les alias `san-framework` et `agy-framework`).
+  - Nouveaux logos vectoriels adaptatifs pour thèmes GitHub Sombre et Clair (`logos/san_harness_logo_dark.svg`, `logos/san_harness_logo_light.svg`, `logos/san_harness_icon.svg`) intégrés via `<picture>` dans les READMEs.
+- **Plugin Natif OpenCode v2.3.0 (`src/opencode/san-harness-plugin.mjs`) & Swarm Board :**
+  - Plugin ESM pur Node (zéro dépendance Bun) déployé automatiquement dans `.agents/opencode/` lors de `init --opencode` / `update --opencode`.
+  - Enregistre l'outil **`san_swarm`** (`dispatch`, `board`, `status`), le panneau Markdown **Swarm Board** + Workflow Summary, et la commande `/san-board` dans `opencode.json`.
+  - Gère l'orchestrateur principal **`san-orchestrator`** sans champ `model` codé en dur (hérite du `/model` utilisateur actif).
+- **Compaction Automatique 120k Tokens (`--compaction=<tokens>`) :**
+  - Ajout de `compaction: { targetTokens: 120000, auto: true }` dans `.agents/models.json` et de l'option `san-harness models --compaction=<tokens>`.
+  - Réécriture de `src/hooks/scripts/pre_invocation.mjs` en garde de compaction automatique `120 000` tokens (silencieux sous le seuil) et configuration native `compaction` (`auto: true`, `background: true`, `keep.tokens: 12000`, `buffer: 20000`) dans `opencode.json` + hooks plugin.
+
+### Changed
+- **Découplage Complet des Modèles & Doctrine Adaptative (`inherit-user-model`) :**
+  - Suppression de tous les noms de modèles orchestrateurs codés en dur (`Argon`, `Carbon`, `hy4`, `gemini-4-argon-high`, `gemini-4-hydrogen-xhigh`) dans les 8 agents, 17 skills, 17 wrappers et templates (`AGENTS_INDEX_TEMPLATE.md`, `GEMINI_INDEX_TEMPLATE.md`, `PROJECT_TEMPLATE.md`, `ROADMAP_TEMPLATE.md`).
+  - L'orchestrateur hérite librement du `/model` choisi par l'utilisateur ; seul l'exécuteur worker reste configuré dans `.agents/models.json` (`san-harness models`).
+  - Allègement de la doctrine d'exécution : autorisation explicite du cycle natif **`Plan → Execute`** pour les tâches simples/mono-couche, réservant `swarm` (Antigravity) et `san_swarm` / `subagent` (OpenCode) au parallélisme multi-couches, aux Duels UI et à l'inquisition QA (`san-qa-auditor`).
+  - Migration automatique des mentions legacy v2.x dans `.agents/rules/*.md` lors de `san-harness update` tout en préservant le contenu métier utilisateur et les références cryptographiques légitimes (`Argon2id`).
+
+### Removed
+- **Suppression Complète de `.agents/cache/`, de la Cartographie AST & des Transcripts :**
+  - Éradication des modules consommateurs de tokens : `src/skills/san_cartographer/`, `src/skills/san_transcriber/`, `src/hooks/scripts/post_tool_indexer.mjs`, `src/hooks/scripts/stop_guard.mjs`, `REPO_MAP.md`, `.agents/cache/` et `roadmaps/transcripts/` (catalogue passé de 19 à **17 skills** et de 5 à **3 hooks sobres**).
+  - Purge active et automatique lors de `san-harness init` / `san-harness update` (`purgeObsoleteArtifacts()` supprimant `.agents/cache/`, anciens hooks, anciens skills et `.agents/AGENTS.md`) avec contrôle de santé intégré dans `san-harness doctor`.
+
+---
+
+## [2.2.1] - 2026-11-18
+
+### Fixed
+- Correction de `ReferenceError: resolveProjectRoot is not defined` dans `san-framework update` (`src/cli/installer.js`).
+- Reconnaissance native des installations existantes (`.agents/` ou `.agents/skills.json`) et résolution ascendante en contexte monorepo sans réinstallation parasite.
+- Durcissement anti-OOM de l'ancien indexeur en mode *Git-First* (`git ls-files`) sur les dépôts volumineux (module ensuite remplacé par la compaction 120k en v3.0.0).
 
 ---
 

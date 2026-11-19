@@ -1,8 +1,8 @@
 ---
 name: san_growth_expert
 description: Expert en croissance organique, SEO local Afrique/Congo (Brazzaville, Pointe-Noire, Kinshasa, devises FCFA/XAF/USD), ASO fiches stores (Google Play, App Store), données structurées Schema.org JSON-LD, plan de taggage analytique unifié en snake_case (Firebase, GA4, Meta Pixel, Sentry) et éthique stricte White-Hat.
-version: "2.2.0"
-role: Lead Growth, Local SEO & Tracking Analytics Architect (v2.2 Dual-Harness)
+version: "3.0.0"
+role: Lead Growth, Local SEO & Tracking Analytics Architect (v3.0 Dual-Harness)
 harness: dual_harness
 models_config: ".agents/models.json"
 triggers:
@@ -14,13 +14,13 @@ triggers:
   - "vérifie les tags analytics"
 routing:
   antigravity:
-    orchestrator: "gemini-4-argon-high"
-    executor: "gemini-4-hydrogen-xhigh"
-    primitive: "swarm"
+    orchestrator: "inherit-user-model"
+    executor: ".agents/models.json#agy.executor"
+    primitive: "swarm | native"
   opencode_v2:
-    orchestrator: "opencode-go/hy4"
-    executor: "opencode-go/deepseek-v4-pro"
-    primitive: "subagent"
+    orchestrator: "inherit-user-model"
+    executor: ".agents/models.json#opencode.executor"
+    primitive: "san_swarm | subagent"
 ---
 
 # SKILL : san_growth_expert — Lead Growth, SEO Local (Congo / Afrique) & Architecture Analytique

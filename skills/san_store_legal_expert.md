@@ -1,8 +1,8 @@
 ---
 name: san_store_legal_expert
 description: Expert en conformité de distribution sur les stores (Google Play Store, Apple App Store), prévention absolue des rejets, audit statique des permissions et SDKs réels, et rédaction technique de documents juridiques (Politique de Confidentialité, CGU, Data Map, Checklist Store) dérivés exclusivement de la réalité du code source.
-version: "2.2.0"
-role: Lead Store Compliance & Legal Engineering Auditor (v2.2 Dual-Harness)
+version: "3.0.0"
+role: Lead Store Compliance & Legal Engineering Auditor (v3.0 Dual-Harness)
 harness: dual_harness
 models_config: ".agents/models.json"
 triggers:
@@ -14,13 +14,13 @@ triggers:
   - "valide la suppression de compte Apple 5.1.1"
 routing:
   antigravity:
-    orchestrator: "gemini-4-argon-high"
-    executor: "gemini-4-hydrogen-xhigh"
-    primitive: "swarm"
+    orchestrator: "inherit-user-model"
+    executor: ".agents/models.json#agy.executor"
+    primitive: "swarm | native"
   opencode_v2:
-    orchestrator: "opencode-go/hy4"
-    executor: "opencode-go/deepseek-v4-pro"
-    primitive: "subagent"
+    orchestrator: "inherit-user-model"
+    executor: ".agents/models.json#opencode.executor"
+    primitive: "san_swarm | subagent"
 ---
 
 # SKILL : san_store_legal_expert — Conformité Stores (Apple / Google) & Ingénierie Légale Technique

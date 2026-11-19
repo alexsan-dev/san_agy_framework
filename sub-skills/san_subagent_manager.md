@@ -1,20 +1,20 @@
 ---
 name: san_subagent_manager
 title: Usine de Conception, Calibrage et Supervision de Workers Dual-Harness
-version: "2.2.0"
+version: "3.0.0"
 type: sub_skill
-role: Subagent Architect & Task Metrologist (v2.2 Dual-Harness)
+role: Subagent Architect & Task Metrologist (v3.0 Dual-Harness)
 harness: dual_harness
 models_config: ".agents/models.json"
 routing:
   antigravity:
-    orchestrator: "gemini-4-argon-high"
-    executor: "gemini-4-hydrogen-xhigh"
-    primitive: "swarm"
+    orchestrator: "inherit-user-model"
+    executor: ".agents/models.json#agy.executor"
+    primitive: "swarm | native"
   opencode_v2:
-    orchestrator: "opencode-go/hy4"
-    executor: "opencode-go/deepseek-v4-pro"
-    primitive: "subagent"
+    orchestrator: "inherit-user-model"
+    executor: ".agents/models.json#opencode.executor"
+    primitive: "san_swarm | subagent"
 triggers:
   - "san_subagent_manager"
   - "délègue à un sous-agent"
@@ -22,13 +22,13 @@ triggers:
   - "lance un sous-agent"
   - "calibre le prompt système"
   - "supervise l'agent éphémère"
-description: "Moteur cartésien de conception, calibrage, supervision et clôture de workers spécialisés Dual-Harness (Antigravity swarm + OpenCode V2 subagent configurés via .agents/models.json / san-framework models). Assemble des prompts hermétiques intégrant la Dialectique Avant Frappe (2 approches viables) et la Présomption de Défaut (verdict binaire LIVRABLE | RETOUR_ATELIER), interdit invoke_subagent(Model: 'inherit') sur Argon/Carbon et valide via validate_subagent_spec.sh v2.2."
+description: "Moteur cartésien de conception, calibrage, supervision et clôture de workers spécialisés Dual-Harness (Antigravity swarm + OpenCode v2.3 san_swarm / subagent configurés via .agents/models.json / san-harness models). Assemble des prompts hermétiques intégrant la Dialectique Avant Frappe (2 approches viables) et la Présomption de Défaut (verdict binaire LIVRABLE | RETOUR_ATELIER), et valide via validate_subagent_spec.sh v3.0."
 ---
 
 # `san_subagent_manager` — Usine de Conception, Calibrage et Supervision de Sous-Agents Chirurgicaux
 
 > **Note d'implantation architecturale :**  
-> Au sein du dépôt source `san_agy_framework`, ce sous-skill réside dans `sub-skills/` afin de formaliser la frontière entre les rôles de direction maîtres (points d'entrée dans `skills/`) et l'outillage transversal. Lors de l'installation dans une codebase cliente par le script d'initialisation, il est déployé dans `.agents/skills/san_subagent_manager/` pour être reconnu nativement par le moteur d'exécution Antigravity CLI.
+> Au sein du dépôt source `san_ai_harness`, ce sous-skill réside dans `sub-skills/` afin de formaliser la frontière entre les rôles de direction maîtres (points d'entrée dans `skills/`) et l'outillage transversal. Lors de l'installation dans une codebase cliente par le script d'initialisation, il est déployé dans `.agents/skills/san_subagent_manager/` pour être reconnu nativement par les harnesses Antigravity & OpenCode.
 
 ---
 
@@ -43,7 +43,7 @@ description: "Moteur cartésien de conception, calibrage, supervision et clôtur
 - **Pour le développeur :** qui bénéficie d'une vitesse d'exécution accrue, d'une prédictibilité totale et de logs d'agents parfaitement structurés.
 
 ### Pour Quoi ?
-- **Sanctuariser le quota & unifier Dual-Harness :** en routant les workers Antigravity vers **`swarm(action: "add", model: "gemini-4-hydrogen-xhigh")`** et les workers OpenCode V2 vers **`subagent`** via `.agents/models.json` (`san-framework models`) — avec **interdiction formelle** d'`invoke_subagent(Model: 'inherit')` sur `Argon`/`Carbon`.
+- **Unifier le routage Dual-Harness :** en orientant les workers Antigravity vers **`swarm`** (modèle configuré dans `.agents/models.json#agy.executor`) et les workers OpenCode v2.3 vers **`san_swarm` / `subagent`** via `.agents/models.json` (`san-harness models`), tout en laissant l'orchestrateur hériter librement du `/model` utilisateur (`inherit-user-model`).
 - **Supprimer le flou d'instruction (*Zero-Ambiguity Guardrail*) :** en injectant des prompts de sous-agents fermés contenant obligatoirement le contexte exact, les fichiers cibles, les règles non négociables et le format de retour attendu.
 - **Appliquer le principe de moindre privilège (*Least Privilege Tooling*) :** en refusant d'accorder à un sous-agent des outils dont il n'a pas strictement besoin (ex: interdire les outils web à un sous-agent d'implémentation de contrôleur local, interdire les outils d'écriture à un sous-agent d'audit).
 - **Bannir les boucles infinies et les hallucinations :** en contraignant chaque mission avec des bornes d'arrêt strictes et un rapport final obligatoire transmis au parent via `send_message`.
@@ -55,7 +55,7 @@ description: "Moteur cartésien de conception, calibrage, supervision et clôtur
 | CE QU'IL FAIT STRICTEMENT | CE QU'IL NE FAIT ABSOLUMENT PAS |
 | :--- | :--- |
 | **Calibrage Sémantique de Mission :** Formalise la demande selon le standard normatif : Rôle précis (2 à 5 mots), Objectif unique, Entrées et sorties formelles, Contraintes strictes. | N'exécute JAMAIS de code métier lui-même $\rightarrow$ il conçoit et arme les agents ; il ne code ni contrôleurs, ni écrans, ni requêtes SQL. |
-| **Routage Dual-Harness (`.agents/models.json`) :** Affecte `gemini-4-hydrogen-xhigh` via `swarm` (Antigravity) ou le profil `<provider>/<model>` configuré via `san-framework models` sur `subagent` (OpenCode V2). | N'appelle JAMAIS `invoke_subagent(Model: 'inherit')` ou `'flash'` sur `Argon`/`Carbon` (risque de fallback silencieux `gemini-3.8-flash-tiered` ou fuite de quota). |
+| **Routage Dual-Harness (`.agents/models.json`) :** Affecte l'exécuteur configuré dans `.agents/models.json#agy.executor` via `swarm` (Antigravity) ou `.agents/models.json#opencode.executor` via `san_swarm` / `subagent` (OpenCode v2.3, via `san-harness models`). | N'impose jamais de nom de modèle orchestrateur en dur ; évite les sous-agents récursifs non contrôlés. |
 | **Sélection Restrictive des Outils (*Tool Sandboxing*) :** Ouvre uniquement les capacités indispensables (interdiction des appels récursifs non encadrés et de la navigation web inutile pour les codeurs). | N'instancie JAMAIS un worker avec un prompt flou ou incomplet (chemins relatifs vagues, absence de commande de test, format de restitution libre). |
 | **Injection de Garde-Fous Anti-Hallucination :** Verrouille dans le prompt l'obligation de se baser sur du code vérifié, l'interdiction d'inventer des packages tiers et l'usage exclusif de `send_message`. | N'autorise JAMAIS la récursion sauvage : `EnableSubagentTools` est désactivé par défaut pour éliminer toute arborescence d'agents incontrôlée. |
 | **Supervision Événementielle Réactive :** Invoque le sous-agent en mode non-bloquant (zéro polling) et libère les ressources via `manage_subagents(action: 'kill')` dès clôture. | Ne se substitue JAMAIS au Fast-Track de l'orchestrateur pour les tâches ménagères immédiates (cochage d'une case, déplacement d'un fichier). |
@@ -71,8 +71,8 @@ flowchart TD
     Req --> Manager["san_subagent_manager"]
     
     Manager --> ModelDecision{"Harnais & Profil Actif ?"}
-    ModelDecision -->|"Antigravity (swarm)"| RouteSwarm["swarm(action: add, model: gemini-4-hydrogen-xhigh)\nSanctuarise Argon/Carbon, Workspace partagé si éditions //"]
-    ModelDecision -->|"OpenCode V2 (subagent)"| RouteOpenCode["subagent (.agents/models.json via san-framework models)\nExécuteur provider/model configuré"]
+    ModelDecision -->|"Antigravity (swarm)"| RouteSwarm["swarm(action: add, model: agy.executor)\nLaisse le /model orchestrateur libre, Workspace partagé si éditions //"]
+    ModelDecision -->|"OpenCode v2.3 (san_swarm / subagent)"| RouteOpenCode["san_swarm / subagent (.agents/models.json via san-harness models)\nExécuteur provider/model configuré"]
     
     RouteSwarm --> Sandbox["Sélection Restrictive des Outils (Least Privilege)\n+ Assemblage du Prompt Fermé Hermétique"]
     RouteOpenCode --> Sandbox
@@ -103,7 +103,7 @@ flowchart TD
 
 ## 4. STRUCTURE INTERNE DU SOUS-SKILL
 
-Lors du déploiement au sein d'une codebase sous Antigravity CLI, le sous-skill présente l'arborescence normative suivante :
+Lors du déploiement au sein d'une codebase sous SAN AI Harness, le sous-skill présente l'arborescence normative suivante :
 
 ```txt
 .agents/skills/san_subagent_manager/
@@ -149,7 +149,7 @@ Ton conversationId parent est : [PARENT_CONVERSATION_ID].
 ### 5. CONSTRAINTS (Garde-fous stricts & Anti-Hallucination)
 - Interdiction formelle de créer ou modifier un fichier en dehors de la liste OUTPUTS.
 - Interdiction d'inventer des packages tiers non déclarés dans les manifestes locaux.
-- Interdiction formelle d'appeler `invoke_subagent(Model: 'inherit')` ou de relancer des sous-agents récursifs non autorisés.
+- Interdiction formelle de lancer des sous-agents récursifs non autorisés (`invoke_subagent` dans un worker).
 - Ne jamais polluer la console avec du texte verbeux : canal final via `post_message` / `send_message`.
 
 ### 6. VALIDATION_COMMAND (Preuve déterministe)
@@ -196,7 +196,7 @@ sequenceDiagram
     Manager->>Manager: 2. Lecture routage .agents/models.json
     Manager->>Manager: 3. Restriction d'Outils (Least Privilege)
     Manager->>Manager: 4. Assemblage du Prompt Fermé Hermétique
-    Manager->>Harness: swarm(add, gemini-4-hydrogen-xhigh) | subagent(opencode)
+    Manager->>Harness: swarm(add, .agents/models.json) | san_swarm(dispatch) | subagent(opencode)
     Harness-->>Sub: Démarrage du worker isolé
     Note over Sub: Exécution chirurgicale sans dérive
     Sub->>Sub: Exécution VALIDATION_COMMAND via run_command
@@ -208,14 +208,14 @@ sequenceDiagram
 
 ### Étape 1 : Qualification du Besoin et Triage de Granularité
 1. **Validation du Principe de Responsabilité Unique (SRP) :** S'assurer que la mission confiée correspond à une action délimitée. Si la demande combine backend, UI et configuration réseau, `san_subagent_manager` la découpe en missions distinctes exécutées en parallèle sur périmètres disjoints (`workspace: "share"` si éditions simultanées).
-2. **Identification des Dépendances :** Consulter `.agents/cache/REPO_MAP.md` et référencer exhaustivement les chemins exacts des fichiers d'entrée (`INPUTS`) et de sortie (`OUTPUTS`).
+2. **Identification des Dépendances :** Inspecter directement les manifestes, schémas et fichiers ciblés (zéro `.agents/cache`), et référencer exhaustivement les chemins exacts des fichiers d'entrée (`INPUTS`) et de sortie (`OUTPUTS`).
 
-### Étape 2 : Routage Dual-Harness (`.agents/models.json` & `san-framework models`)
-Appliquer la doctrine v2.2 Dual-Harness sans jamais appeler `invoke_subagent(Model: 'inherit')` :
+### Étape 2 : Routage Dual-Harness (`.agents/models.json` & `san-harness models`)
+Appliquer la doctrine v3.0 Dual-Harness (tâche simple en `Plan → Execute` natif ; chantiers multi-couches/Duel/QA en Swarm) :
 - **Antigravity (`swarm`) :**
-  - Workers d'exécution (`san-coder-back`, `san-coder-front`, `san-designer-worker`, `san-researcher`) et d'audit (`san-qa-auditor`, `san-architect`) lancés via `swarm(action: "add", model: "gemini-4-hydrogen-xhigh", ...)` (ou modèle configuré dans `.agents/models.json`), avec `model: "pro"` maintenu dans le frontmatter `src/agents/*.md` uniquement pour compatibilité ascendante du parser CLI.
-- **OpenCode V2 (`subagent`) :**
-  - Délégation native via la primitive `subagent` vers les profils `opencode.json` / `.agents/models.json` configurés via `san-framework models` (`opencode-go/*` ou provider choisi).
+  - Workers d'exécution (`san-coder-back`, `san-coder-front`, `san-designer-worker`, `san-researcher`) et d'audit (`san-qa-auditor`, `san-architect`) lancés via `swarm` avec le modèle exécuteur configuré dans `.agents/models.json#agy.executor` (avec `model: "pro"` maintenu dans le frontmatter `src/agents/*.md` pour compatibilité du parser CLI).
+- **OpenCode v2.3 (`san_swarm` / `subagent`) :**
+  - Orchestration multi-workers via l'outil **`san_swarm`** (plugin `.agents/opencode/san-harness-plugin.mjs`, Swarm Board Markdown) ou `subagent` natif vers les profils configurés dans `.agents/models.json#opencode.executor` (`san-harness models`).
 
 ### Étape 3 : Application du Principe de Moindre Privilège (*Tool Sandboxing*)
 Restreindre la surface d'action selon le rôle :
@@ -232,33 +232,33 @@ DisabledTools: [write_file, edit_file, invoke_subagent]  # Lecture seule, Préso
 ### Étape 4 : Assemblage du Prompt Système Hermétique
 Construire le prompt selon le gabarit fermé (`SUBAGENT_PROMPT_TEMPLATE.md`, `ATOMIC_CODER_PROMPT.md` ou `AUDITOR_PROMPT.md`). Vérifier sa conformité statique via `scripts/validate_subagent_spec.sh`.
 
-### Étape 5 : Instanciation Non-Bloquante et Attente Réactive (`swarm_wait`)
-1. **Sous Antigravity :** Spawner via `swarm({ "action": "add", "name": "...", "model": "gemini-4-hydrogen-xhigh", "workspace": "share", "brief": "..." })`, puis appeler `swarm_wait` (zéro polling).
-2. **Sous OpenCode V2 :** Déléguer via l'outil natif `subagent` avec le profil `.agents/models.json`.
+### Étape 5 : Instanciation Non-Bloquante et Attente Réactive (`swarm_wait` / `san_swarm`)
+1. **Sous Antigravity :** Spawner via `swarm({ "action": "add", "name": "...", "model": "<agy.executor depuis .agents/models.json>", "workspace": "share", "brief": "..." })`, puis appeler `swarm_wait` (zéro polling).
+2. **Sous OpenCode v2.3 :** Orchestrer en parallèle via `san_swarm(action: "dispatch", ...)` (qui gère les sessions et rend le Swarm Board) ou déléguer via `subagent` avec le profil `.agents/models.json`.
 
 ### Étape 6 : Réception du Rapport, Contrôle Qualité et Nettoyage
-1. À la reprise d'exécution, vérifier le contenu du rapport et les preuves d'exécution réelles (tests au vert, typage valide, `.agents/cache/last-gate-status.json` si code applicatif).
+1. À la reprise d'exécution, vérifier le contenu du rapport et les preuves d'exécution réelles (tests au vert `exit 0`, typage valide, captures si UI).
 2. Si la tâche est intégrée, libérer le worker `swarm({"action": "kill", "name": "<name>"})`.
 3. En cas de `RETOUR_ATELIER`, relancer une passe corrective ciblée avec les coordonnées exactes (`fichier:ligne`).
 
 ---
 
-## 7. SCRIPT DE VALIDATION STATIQUE (`scripts/validate_subagent_spec.sh` v2.2)
+## 7. SCRIPT DE VALIDATION STATIQUE (`scripts/validate_subagent_spec.sh` v3.0)
 
 Le script déterministe [validate_subagent_spec.sh](../src/skills/san_subagent_manager/scripts/validate_subagent_spec.sh) contrôle les agents natifs (`src/agents/*.md`) et les prompts fermés avant exécution :
 
 ```bash
-# Validation défaut Antigravity swarm (gemini-4-hydrogen-xhigh)
+# Validation défaut Antigravity / Dual-Harness (unified-executor)
 bash .agents/skills/san_subagent_manager/scripts/validate_subagent_spec.sh src/agents/san-architect.md
 
-# Validation profil OpenCode V2 (<provider>/<model>)
+# Validation profil OpenCode v2.3 (<provider>/<model>)
 bash .agents/skills/san_subagent_manager/scripts/validate_subagent_spec.sh src/agents/san-coder-back.md opencode-go/deepseek-v4-pro
 ```
 
 **Contrôles exécutés (`fail-closed`) :**
-- Rejet immédiat des cibles obsolètes `inherit`, `flash`, `gemini-3.1-pro-high`, `gemini-3.8-flash-high`.
-- Acceptation Dual-Harness : `gemini-4-hydrogen-xhigh`, `pro` (compat YAML `src/agents/*.md`), `unified-executor` et `<provider>/<model>` OpenCode V2.
-- Vérification des champs YAML obligatoires (`name`, `description`, `mainAgent`, `subagent`, `model`, `commandExecutionPolicy`, `tools`, `skills`), des sections `RÔLE/MISSION`, `GARDE-FOUS/PÉRIMÈTRE`, `PROTOCOLE DE REDDITION DÉTERMINISTE`, et de la règle anti-`invoke_subagent`.
+- Rejet immédiat des cibles obsolètes ou codées en dur (`inherit`, `flash`, `gemini-3.1-pro-high`, `gemini-3.8-flash-high`, `gemini-4-argon`, `gemini-4-hydrogen-xhigh`).
+- Acceptation Dual-Harness : `pro` (compat YAML `src/agents/*.md`), `unified-executor` et `<provider>/<model>` OpenCode v2.3.
+- Vérification des champs YAML obligatoires (`name`, `description`, `mainAgent`, `subagent`, `model`, `commandExecutionPolicy`, `tools`, `skills`), des sections `RÔLE/MISSION`, `GARDE-FOUS/PÉRIMÈTRE`, `PROTOCOLE DE REDDITION DÉTERMINISTE`, et de la règle anti-récursion.
 
 ---
 
@@ -267,15 +267,15 @@ bash .agents/skills/san_subagent_manager/scripts/validate_subagent_spec.sh src/a
 ### 1. Invariant de Moindre Privilège d'Outils (*Least Privilege*)
 Aucun worker ne doit recevoir un outil qui n'est pas strictement nécessaire à la réalisation immédiate de sa mission.
 
-### 2. Invariant de Routage Dual-Harness (`swarm` | `subagent`)
-- Le thread principal (`Argon`/`Carbon` | OpenCode orchestrateur) reste souverain et délègue sans jamais exposer `/model` à l'utilisateur.
-- Les workers tournent sur l'exécuteur configuré dans `.agents/models.json` (`gemini-4-hydrogen-xhigh` en `swarm` sous Antigravity ; profil `<provider>/<model>` en `subagent` sous OpenCode V2). L'appel à `invoke_subagent(Model: 'inherit')` est banni.
+### 2. Invariant de Routage Dual-Harness (`swarm` | `san_swarm` / `subagent`)
+- Le thread principal (Antigravity ou OpenCode orchestrateur) reste souverain et hérite librement du `/model` choisi par l'utilisateur (`inherit-user-model`).
+- Les workers de chantiers multi-couches/Duel/QA tournent sur l'exécuteur configuré dans `.agents/models.json` (`agy.executor` en `swarm` sous Antigravity ; `opencode.executor` en `san_swarm` / `subagent` sous OpenCode v2.3). L'exécution native `Plan → Execute` reste autorisée pour les tâches simples.
 
 ### 3. Invariant d'Étanchéité du Contexte (*Context Hygiene*)
 Un sous-agent est un travailleur jetable dans une bulle isolée. Les lectures verbeuses de dizaines de fichiers, les stacktraces de compilation et les itérations intermédiaires doivent rester confinées dans son contexte éphémère. Seule la synthèse finale structurée est transmise à l'orchestrateur.
 
 ### 4. Invariant de Communication Asynchrone Native (*Reactive Wakeup*)
-Les agents Antigravity CLI opèrent sur un bus événementiel. Tout mécanisme d'attente active, d'interrogation répétée de statut en boucle (*polling loop*) ou d'endormissement artificiel (`sleep`) est strictement proscrit.
+Les agents SAN AI Harness opèrent sur un bus événementiel. Tout mécanisme d'attente active, d'interrogation répétée de statut en boucle (*polling loop*) ou d'endormissement artificiel (`sleep`) est strictement proscrit.
 
 ### 5. Invariant de Preuve Déterministe de Clôture (*Proof-Backed Delivery*)
 Un sous-agent ne peut déclarer sa mission accomplie sur une simple affirmation verbale. Le rapport de reddition doit impérativement fournir la commande de validation exécutée et son résultat positif (0 erreur, tests au vert).

@@ -1,8 +1,8 @@
 ---
 name: san_devops_expert
 description: Expert d'ingénierie Infrastructure, VPS Linux (Ubuntu), CloudPanel, Mailcow (délivrabilité e-mail 10/10), déploiement CI/CD zéro-downtime, Nginx, Supervisor/PM2, principe de réversibilité absolue et sauvegardes testées sur conteneur jetable.
-version: "2.2.0"
-role: Lead DevOps & Production Reliability Engineer (v2.2 Dual-Harness)
+version: "3.0.0"
+role: Lead DevOps & Production Reliability Engineer (v3.0 Dual-Harness)
 harness: dual_harness
 models_config: ".agents/models.json"
 triggers:
@@ -15,13 +15,13 @@ triggers:
   - "déploie en production"
 routing:
   antigravity:
-    orchestrator: "gemini-4-argon-high"
-    executor: "gemini-4-hydrogen-xhigh"
-    primitive: "swarm"
+    orchestrator: "inherit-user-model"
+    executor: ".agents/models.json#agy.executor"
+    primitive: "swarm | native"
   opencode_v2:
-    orchestrator: "opencode-go/hy4"
-    executor: "opencode-go/deepseek-v4-pro"
-    primitive: "subagent"
+    orchestrator: "inherit-user-model"
+    executor: ".agents/models.json#opencode.executor"
+    primitive: "san_swarm | subagent"
 ---
 
 # SKILL : san_devops_expert — Lead DevOps, Infrastructure & Fiabilité Production (CloudPanel, VPS, Mailcow)

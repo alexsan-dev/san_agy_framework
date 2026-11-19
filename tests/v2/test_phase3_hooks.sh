@@ -1,12 +1,6 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# TEST SUITE : PHASE 3 — GARDE-FOUS MÉCANIQUES DU CYCLE DE VIE (HOOKS NATIFS)
-# ==============================================================================
-# Vérification formelle du fichier hooks.json, de la syntaxe native Antigravity à
-# clé nommée, des 4 scripts ESM (session_start, pre_invocation, pre_tool_guard, post_tool_indexer),
-# de leur latence (< 150ms), du blocage de l'archivage incomplet, du blocage
-# de l'injection de lorem ipsum dans le code/design, de la préservation stricte
-# des permissions utilisateur ('ask'), et de la validation agy plugin validate.
+# TEST SUITE : PHASE 3 — GARDE-FOUS SOBRES (3 HOOKS) & COMPACTION 120K
 # ==============================================================================
 set -euo pipefail
 
@@ -34,9 +28,6 @@ assert_true() {
   fi
 }
 
-# Measure hook execution latency using CLOCK_MONOTONIC (performance.now)
-# to stay immune to wall-clock adjustments while capturing child spawn + run time.
-# Usage: run_hook_timed <out_var> <latency_var> <script_path> <stdin_payload>
 run_hook_timed() {
   local __out_var="$1"
   local __lat_var="$2"
@@ -63,99 +54,58 @@ run_hook_timed() {
 }
 
 echo "======================================================================"
-echo "  TEST PHASE 3 : GARDE-FOUS MÉCANIQUES DU CYCLE DE VIE (HOOKS NATIFS)"
+echo "  TEST PHASE 3 : GARDE-FOUS SOBRES (3 HOOKS) & COMPACTION 120K"
 echo "======================================================================"
 echo ""
 
 # ------------------------------------------------------------------------------
-# 1. Existence physique des fichiers
+# 1. Existence physique des 3 scripts sobres & suppression des anciens bloat hooks
 # ------------------------------------------------------------------------------
-info "1. Vérification physique des fichiers de hooks"
+info "1. Vérification physique des 3 hooks sobres (zéro post_tool_indexer / stop_guard)"
 
 assert_true "hooks.json existe dans src/hooks/" \
   '[ -f "${HOOKS_DIR}/hooks.json" ]'
 
-assert_true "session_start.mjs existe dans src/hooks/scripts/" \
-  '[ -f "${SCRIPTS_DIR}/session_start.mjs" ]'
-
-assert_true "pre_invocation.mjs existe dans src/hooks/scripts/" \
-  '[ -f "${SCRIPTS_DIR}/pre_invocation.mjs" ]'
-
-assert_true "pre_tool_guard.mjs existe dans src/hooks/scripts/" \
-  '[ -f "${SCRIPTS_DIR}/pre_tool_guard.mjs" ]'
-
-assert_true "post_tool_indexer.mjs existe dans src/hooks/scripts/" \
-  '[ -f "${SCRIPTS_DIR}/post_tool_indexer.mjs" ]'
-
-assert_true "stop_guard.mjs existe dans src/hooks/scripts/" \
-  '[ -f "${SCRIPTS_DIR}/stop_guard.mjs" ]'
-
-# ------------------------------------------------------------------------------
-# 2. Droits d'exécution des scripts (.mjs)
-# ------------------------------------------------------------------------------
-info "2. Vérification des permissions d'exécution (chmod +x)"
-
-assert_true "session_start.mjs est exécutable" \
+assert_true "session_start.mjs existe et est exécutable" \
   '[ -x "${SCRIPTS_DIR}/session_start.mjs" ]'
 
-assert_true "pre_invocation.mjs est exécutable" \
+assert_true "pre_invocation.mjs existe et est exécutable" \
   '[ -x "${SCRIPTS_DIR}/pre_invocation.mjs" ]'
 
-assert_true "pre_tool_guard.mjs est exécutable" \
+assert_true "pre_tool_guard.mjs existe et est exécutable" \
   '[ -x "${SCRIPTS_DIR}/pre_tool_guard.mjs" ]'
 
-assert_true "post_tool_indexer.mjs est exécutable" \
-  '[ -x "${SCRIPTS_DIR}/post_tool_indexer.mjs" ]'
-
-assert_true "stop_guard.mjs est exécutable" \
-  '[ -x "${SCRIPTS_DIR}/stop_guard.mjs" ]'
+assert_true "post_tool_indexer.mjs et stop_guard.mjs sont formellement supprimés" \
+  '[ ! -f "${SCRIPTS_DIR}/post_tool_indexer.mjs" ] && [ ! -f "${SCRIPTS_DIR}/stop_guard.mjs" ]'
 
 # ------------------------------------------------------------------------------
-# 3. Structure et syntaxe native de hooks.json
+# 2. Structure et syntaxe native de hooks.json (3 hooks uniquement)
 # ------------------------------------------------------------------------------
-info "3. Validation structurelle de hooks.json (syntaxe à clé nommée)"
+info "2. Validation structurelle de hooks.json (syntaxe à clé nommée, zéro PostToolUse/Stop)"
 
 HOOKS_JSON="${HOOKS_DIR}/hooks.json"
 
 assert_true "hooks.json est un JSON valide" \
   'python3 -m json.tool "${HOOKS_JSON}" > /dev/null 2>&1'
 
-assert_true "hooks.json contient la clé nommée 'san-lifecycle-enforcer'" \
-  'grep -q "\"san-lifecycle-enforcer\"" "${HOOKS_JSON}"'
+assert_true "hooks.json contient SessionStart, PreInvocation et PreToolUse (matcher write_file|edit_file)" \
+  'grep -q "\"SessionStart\"" "${HOOKS_JSON}" && grep -q "\"PreInvocation\"" "${HOOKS_JSON}" && grep -q "\"PreToolUse\"" "${HOOKS_JSON}" && grep -q "\"matcher\": \"write_file|edit_file\"" "${HOOKS_JSON}"'
 
-assert_true "hooks.json configure SessionStart" \
-  'grep -q "\"SessionStart\"" "${HOOKS_JSON}"'
-
-assert_true "hooks.json configure PreInvocation" \
-  'grep -q "\"PreInvocation\"" "${HOOKS_JSON}"'
-
-assert_true "hooks.json configure PreToolUse" \
-  'grep -q "\"PreToolUse\"" "${HOOKS_JSON}"'
-
-assert_true "hooks.json filtre PreToolUse avec matcher 'write_file|edit_file'" \
-  'grep -q "\"matcher\": \"write_file|edit_file\"" "${HOOKS_JSON}"'
-
-assert_true "hooks.json configure PostToolUse" \
-  'grep -q "\"PostToolUse\"" "${HOOKS_JSON}"'
-
-assert_true "hooks.json filtre PostToolUse avec post_tool_indexer.mjs" \
-  'grep -q "post_tool_indexer.mjs" "${HOOKS_JSON}"'
-
-assert_true "hooks.json configure Stop avec stop_guard.mjs" \
-  'grep -q "\"Stop\"" "${HOOKS_JSON}" && grep -q "stop_guard.mjs" "${HOOKS_JSON}"'
+assert_true "hooks.json ne contient plus PostToolUse ni Stop" \
+  '! grep -q "\"PostToolUse\"" "${HOOKS_JSON}" && ! grep -q "\"Stop\"" "${HOOKS_JSON}"'
 
 assert_true "Les timeouts sont configurés à 5s" \
   'grep -q "\"timeout\": 5" "${HOOKS_JSON}"'
 
 # ------------------------------------------------------------------------------
-# 4. Test du script SessionStart (session_start.mjs)
+# 3. Test du script SessionStart (session_start.mjs — sobre, zéro .agents/cache)
 # ------------------------------------------------------------------------------
-info "4. Test de session_start.mjs (détection roadmap, constitution, filtres & latence)"
+info "3. Test de session_start.mjs (roadmap active, PROJECT_PROFILE, zéro écriture cache & latence)"
 
 SESSION_START_INPUT=$(cat << EOF
 {
   "workspacePaths": ["${ROOT_DIR}"],
-  "conversationId": "session-test-uuid-001"
+  "conversationId": "session-test-v3-001"
 }
 EOF
 )
@@ -165,742 +115,133 @@ run_hook_timed SESSION_START_OUTPUT LATENCY "${SCRIPTS_DIR}/session_start.mjs" "
 assert_true "session_start.mjs répond en moins de 150ms (${LATENCY}ms)" \
   '[ "${LATENCY}" -lt 150 ]'
 
-assert_true "session_start.mjs produit un JSON valide" \
-  'echo "${SESSION_START_OUTPUT}" | python3 -m json.tool > /dev/null 2>&1'
+assert_true "session_start.mjs émet le systemMessage [SAN AI HARNESS v3.0]" \
+  'echo "${SESSION_START_OUTPUT}" | python3 -c "import sys,json; d=json.load(sys.stdin); msg=d[\"injectSteps\"][0][\"systemMessage\"][\"systemMessage\"]; assert \"[SAN AI HARNESS v3.0]\" in msg and \"8 workers\" in msg and \"120k auto-compaction\" in msg"'
 
-HAS_SYSTEM_MESSAGE=$(echo "${SESSION_START_OUTPUT}" | python3 -c "
-import sys, json
-data = json.load(sys.stdin)
-steps = data.get('injectSteps', [])
-has_sm = any('systemMessage' in s for s in steps)
-print('true' if has_sm else 'false')
-")
-
-assert_true "session_start.mjs émet une étape 'systemMessage'" \
-  '[ "${HAS_SYSTEM_MESSAGE}" = "true" ]'
-
-CONTAINS_CONSTITUTION=$(echo "${SESSION_START_OUTPUT}" | python3 -c "
-import sys, json
-data = json.load(sys.stdin)
-msg = data['injectSteps'][0]['systemMessage']['systemMessage']
-print('true' if '[SAN.AGY CONSTITUTION v2.0]' in msg and '8 native subagents' in msg else 'false')
-")
-
-assert_true "session_start.mjs injecte la Constitution v2.0 et les 8 sous-agents" \
-  '[ "${CONTAINS_CONSTITUTION}" = "true" ]'
-
-# Test de session_start.mjs avec roadmap active
-ROADMAP_WORKSPACE=$(mktemp -d /tmp/san-active-roadmap.XXXXXX)
-mkdir -p "${ROADMAP_WORKSPACE}/roadmaps"
-echo "# Active Test Roadmap" > "${ROADMAP_WORKSPACE}/roadmaps/ACTIVE_ROADMAP_TEST.md"
-
-ROADMAP_TEST_OUTPUT=$(echo '{"workspacePaths":["'"${ROADMAP_WORKSPACE}"'"]}' | node "${SCRIPTS_DIR}/session_start.mjs")
-rm -rf "${ROADMAP_WORKSPACE}"
-
-DETECTED_ROADMAP=$(echo "${ROADMAP_TEST_OUTPUT}" | python3 -c "
-import sys, json
-data = json.load(sys.stdin)
-msg = data['injectSteps'][0]['systemMessage']['systemMessage']
-print('true' if 'ACTIVE_ROADMAP_TEST.md' in msg else 'false')
-")
-
-assert_true "session_start.mjs détecte la roadmap active (ACTIVE_ROADMAP_TEST.md)" \
-  '[ "${DETECTED_ROADMAP}" = "true" ]'
-
-# Test de session_start.mjs sans roadmap active
-EMPTY_WORKSPACE=$(mktemp -d /tmp/san-empty-workspace.XXXXXX)
-NO_ROADMAP_OUTPUT=$(echo '{"workspacePaths":["'"${EMPTY_WORKSPACE}"'"]}' | node "${SCRIPTS_DIR}/session_start.mjs")
-rm -rf "${EMPTY_WORKSPACE}"
-
-NO_ROADMAP_FOUND=$(echo "${NO_ROADMAP_OUTPUT}" | python3 -c "
-import sys, json
-data = json.load(sys.stdin)
-msg = data['injectSteps'][0]['systemMessage']['systemMessage']
-print('true' if 'Roadmap: none' in msg else 'false')
-")
-
-assert_true "session_start.mjs retourne 'Roadmap: none' si aucune roadmap active" \
-  '[ "${NO_ROADMAP_FOUND}" = "true" ]'
-
-# Test de session_start.mjs avec README.md et template.md ignorés dans roadmaps/
-TEMP_WORKSPACE_README=$(mktemp -d /tmp/san-ws-readme.XXXXXX)
-mkdir -p "${TEMP_WORKSPACE_README}/roadmaps"
-cat << 'EOF' > "${TEMP_WORKSPACE_README}/roadmaps/README.md"
-# Roadmaps Directory
-This directory contains active and archived roadmaps.
-EOF
-cat << 'EOF' > "${TEMP_WORKSPACE_README}/roadmaps/template.md"
-# Roadmap Template
-- [ ] Task
-EOF
-cat << 'EOF' > "${TEMP_WORKSPACE_README}/roadmaps/feature_template.md"
-# Feature Template
-- [ ] Feature task
-EOF
-
-run_hook_timed README_ROADMAP_OUTPUT LATENCY_README "${SCRIPTS_DIR}/session_start.mjs" '{"workspacePaths":["'"${TEMP_WORKSPACE_README}"'"]}'
-rm -rf "${TEMP_WORKSPACE_README}"
-
-README_ROADMAP_IGNORED=$(echo "${README_ROADMAP_OUTPUT}" | python3 -c "
-import sys, json
-data = json.load(sys.stdin)
-msg = data['injectSteps'][0]['systemMessage']['systemMessage']
-print('true' if 'Roadmap: none' in msg else 'false')
-")
-
-assert_true "session_start.mjs ignore README.md et les templates dans roadmaps/ ('Roadmap: none')" \
-  '[ "${README_ROADMAP_IGNORED}" = "true" ]'
-
-assert_true "session_start.mjs avec filtrage README répond en moins de 150ms (${LATENCY_README}ms)" \
-  '[ "${LATENCY_README}" -lt 150 ]'
-
-# Test de session_start.mjs avec PROJECT_PROFILE entre quotes ("cli_devtools")
-TEMP_WORKSPACE_PROFILE=$(mktemp -d /tmp/san-ws-profile.XXXXXX)
-mkdir -p "${TEMP_WORKSPACE_PROFILE}/.agents/rules"
-cat << 'EOF' > "${TEMP_WORKSPACE_PROFILE}/.agents/rules/PROJECT.md"
+# Détection roadmap active sans création de .agents/cache
+TEMP_WS=$(mktemp -d /tmp/san-v3-session.XXXXXX)
+mkdir -p "${TEMP_WS}/roadmaps" "${TEMP_WS}/.agents/rules"
+echo "# Active Test Roadmap" > "${TEMP_WS}/roadmaps/ACTIVE_ROADMAP_TEST.md"
+cat << 'EOF' > "${TEMP_WS}/.agents/rules/PROJECT.md"
 # Project Rules
 PROJECT_PROFILE: "cli_devtools"
 EOF
 
-PROFILE_OUTPUT=$(echo '{"workspacePaths":["'"${TEMP_WORKSPACE_PROFILE}"'"]}' | node "${SCRIPTS_DIR}/session_start.mjs")
-rm -rf "${TEMP_WORKSPACE_PROFILE}"
+SESSION_WS_OUT=$(echo '{"workspacePaths":["'"${TEMP_WS}"'"]}' | node "${SCRIPTS_DIR}/session_start.mjs")
+assert_true "session_start.mjs détecte ACTIVE_ROADMAP_TEST.md et (Profile: cli_devtools) sans créer .agents/cache/" \
+  'echo "${SESSION_WS_OUT}" | python3 -c "import sys,json; msg=json.load(sys.stdin)[\"injectSteps\"][0][\"systemMessage\"][\"systemMessage\"]; assert \"ACTIVE_ROADMAP_TEST.md\" in msg and \"(Profile: cli_devtools)\" in msg" && [ ! -d "${TEMP_WS}/.agents/cache" ]'
 
-PROFILE_DETECTED=$(echo "${PROFILE_OUTPUT}" | python3 -c "
-import sys, json
-data = json.load(sys.stdin)
-msg = data['injectSteps'][0]['systemMessage']['systemMessage']
-print('true' if '(Profile: cli_devtools)' in msg else 'false')
-")
+rm -rf "${TEMP_WS}"
 
-assert_true "session_start.mjs extrait correctement PROJECT_PROFILE avec quotes (\"cli_devtools\")" \
-  '[ "${PROFILE_DETECTED}" = "true" ]'
+# Ignorer README.md et *_template.md dans roadmaps/
+TEMP_WS_EMPTY=$(mktemp -d /tmp/san-v3-empty.XXXXXX)
+mkdir -p "${TEMP_WS_EMPTY}/roadmaps"
+echo "# Roadmaps Directory" > "${TEMP_WS_EMPTY}/roadmaps/README.md"
+echo "# Template" > "${TEMP_WS_EMPTY}/roadmaps/template.md"
+EMPTY_OUT=$(echo '{"workspacePaths":["'"${TEMP_WS_EMPTY}"'"]}' | node "${SCRIPTS_DIR}/session_start.mjs")
+rm -rf "${TEMP_WS_EMPTY}"
 
-# Test de session_start.mjs avec .agents/cache/whats_new_pending.json (injection unique)
-TEMP_WS_WHATSNEW=$(mktemp -d /tmp/san-ws-whatsnew.XXXXXX)
-mkdir -p "${TEMP_WS_WHATSNEW}/.agents/cache"
-cat << 'EOF' > "${TEMP_WS_WHATSNEW}/.agents/cache/whats_new_pending.json"
-{
-  "version": "2.2.0",
-  "updatedAt": "2026-11-14T10:00:00.000Z",
-  "seen": false,
-  "highlights": [
-    "Dual-Harness Antigravity + OpenCode V2 et san-framework models",
-    "19e skill san_transcriber avec Protocole de Relais Sceptique"
-  ]
-}
-EOF
-
-WN_OUT_1=$(echo '{"workspacePaths":["'"${TEMP_WS_WHATSNEW}"'"]}' | node "${SCRIPTS_DIR}/session_start.mjs")
-WN_FIRST_HAS_BANNER=$(echo "${WN_OUT_1}" | python3 -c "
-import sys, json
-data = json.load(sys.stdin)
-msg = data['injectSteps'][0]['systemMessage']['systemMessage']
-ok = (\"[WHAT'S NEW ON SAN.AGY v2.2.0]\" in msg and 'Dual-Harness Antigravity + OpenCode V2' in msg)
-print('true' if ok else 'false')
-")
-assert_true "session_start.mjs injecte [WHAT'S NEW ON SAN.AGY v2.2.0] au 1er démarrage quand seen=false" \
-  '[ "${WN_FIRST_HAS_BANNER}" = "true" ]'
-
-WN_SEEN_MARKED=$(python3 -c "
-import json
-with open('${TEMP_WS_WHATSNEW}/.agents/cache/whats_new_pending.json') as f:
-    d = json.load(f)
-print('true' if d.get('seen') is True else 'false')
-")
-assert_true "session_start.mjs marque seen: true dans .agents/cache/whats_new_pending.json" \
-  '[ "${WN_SEEN_MARKED}" = "true" ]'
-
-WN_OUT_2=$(echo '{"workspacePaths":["'"${TEMP_WS_WHATSNEW}"'"]}' | node "${SCRIPTS_DIR}/session_start.mjs")
-WN_SECOND_SKIPPED=$(echo "${WN_OUT_2}" | python3 -c "
-import sys, json
-data = json.load(sys.stdin)
-msg = data['injectSteps'][0]['systemMessage']['systemMessage']
-print('true' if \"[WHAT'S NEW ON SAN.AGY v2.2.0]\" not in msg else 'false')
-")
-assert_true "session_start.mjs n'injecte plus [WHAT'S NEW ON SAN.AGY v2.2.0] au 2ème démarrage (one-shot)" \
-  '[ "${WN_SECOND_SKIPPED}" = "true" ]'
-
-rm -rf "${TEMP_WS_WHATSNEW}"
-
-# Test de session_start.mjs avec roadmaps/transcripts/TRANSCRIPT_TEST.md (Relais Sceptique)
-TEMP_WS_TRANSCRIPT=$(mktemp -d /tmp/san-ws-transcript.XXXXXX)
-mkdir -p "${TEMP_WS_TRANSCRIPT}/roadmaps/transcripts"
-echo "# Transcript Test" > "${TEMP_WS_TRANSCRIPT}/roadmaps/transcripts/TRANSCRIPT_TEST.md"
-echo "# Readme Ignored" > "${TEMP_WS_TRANSCRIPT}/roadmaps/transcripts/README.md"
-
-TRANSCRIPT_SS_OUT=$(echo '{"workspacePaths":["'"${TEMP_WS_TRANSCRIPT}"'"]}' | node "${SCRIPTS_DIR}/session_start.mjs")
-TRANSCRIPT_DETECTED=$(echo "${TRANSCRIPT_SS_OUT}" | python3 -c "
-import sys, json
-data = json.load(sys.stdin)
-msg = data['injectSteps'][0]['systemMessage']['systemMessage']
-ok = ('Active Relay Transcript:' in msg and 'roadmaps/transcripts/TRANSCRIPT_TEST.md' in msg and 'SKEPTICAL RELAY PROTOCOL' in msg)
-print('true' if ok else 'false')
-")
-assert_true "session_start.mjs détecte roadmaps/transcripts/TRANSCRIPT_TEST.md et injecte 'Active Relay Transcript:'" \
-  '[ "${TRANSCRIPT_DETECTED}" = "true" ]'
-
-rm -f "${TEMP_WS_TRANSCRIPT}/roadmaps/transcripts/TRANSCRIPT_TEST.md"
-TRANSCRIPT_README_IGNORED=$(echo '{"workspacePaths":["'"${TEMP_WS_TRANSCRIPT}"'"]}' | node "${SCRIPTS_DIR}/session_start.mjs" | python3 -c "
-import sys, json
-data = json.load(sys.stdin)
-msg = data['injectSteps'][0]['systemMessage']['systemMessage']
-print('true' if 'Active Relay Transcript:' not in msg else 'false')
-")
-assert_true "session_start.mjs ignore README.md dans roadmaps/transcripts/" \
-  '[ "${TRANSCRIPT_README_IGNORED}" = "true" ]'
-
-rm -rf "${TEMP_WS_TRANSCRIPT}"
+assert_true "session_start.mjs ignore README.md/template.md et retourne Roadmap: none" \
+  'echo "${EMPTY_OUT}" | python3 -c "import sys,json; msg=json.load(sys.stdin)[\"injectSteps\"][0][\"systemMessage\"][\"systemMessage\"]; assert \"Roadmap: none\" in msg"'
 
 # ------------------------------------------------------------------------------
-# 5. Test du script PreInvocation (pre_invocation.mjs)
+# 4. Test du script PreInvocation (pre_invocation.mjs — Garde de Compaction 120k)
 # ------------------------------------------------------------------------------
-info "5. Test de pre_invocation.mjs (Hooks API v2 systemMessage, swarm & latence)"
+info "4. Test de pre_invocation.mjs (Garde Compaction 120k Tokens, CHECKPOINT & latence)"
 
-# Test 5.1 : Prompt positif avec verbe d'action de feature ("Développe le système d'authentification")
-PRE_INV_FEATURE_INPUT=$(cat << EOF
+# 4.1 Sous le seuil : silencieux (injectSteps: [])
+PRE_INV_NORMAL='{"lastUserInput": "Développe le module auth", "conversationId": "pre-inv-normal"}'
+run_hook_timed PRE_NORMAL_OUT LATENCY_PRE "${SCRIPTS_DIR}/pre_invocation.mjs" "${PRE_INV_NORMAL}"
+
+assert_true "pre_invocation.mjs répond en moins de 150ms (${LATENCY_PRE}ms)" \
+  '[ "${LATENCY_PRE}" -lt 150 ]'
+
+assert_true "Sous 120k tokens : pre_invocation.mjs reste silencieux (injectSteps: [])" \
+  'echo "${PRE_NORMAL_OUT}" | python3 -c "import sys,json; d=json.load(sys.stdin); assert d.get(\"injectSteps\") == []"'
+
+# 4.2 Test explicite forceCompactionCheckForTest=true
+PRE_FORCE_OUT=$(echo '{"forceCompactionCheckForTest": true}' | node "${SCRIPTS_DIR}/pre_invocation.mjs")
+assert_true "forceCompactionCheckForTest=true émet l'alerte [SAN HARNESS — COMPACTION 120K] /compact" \
+  'echo "${PRE_FORCE_OUT}" | python3 -c "import sys,json; d=json.load(sys.stdin); msg=d[\"injectSteps\"][0][\"systemMessage\"][\"systemMessage\"]; assert \"[SAN HARNESS — COMPACTION 120K]\" in msg and \"/compact\" in msg"'
+
+# 4.3 Transcript JSONL dépassant 120k -> déclenche compaction ; puis CHECKPOINT -> réinitialise
+TMP_COMPACT_WS=$(mktemp -d /tmp/san-compact-ws.XXXXXX)
+mkdir -p "${TMP_COMPACT_WS}/.agents"
+cat << 'EOF' > "${TMP_COMPACT_WS}/.agents/models.json"
 {
-  "lastUserInput": "Développe le système d'authentification",
-  "conversationId": "pre-inv-feat-001"
+  "version": "3.0.0",
+  "compaction": { "targetTokens": 120000, "auto": true }
 }
 EOF
-)
+TRANSCRIPT_JSONL="${TMP_COMPACT_WS}/transcript.jsonl"
+printf '{"type":"PLANNER_RESPONSE","input_tokens":85000,"cache_read_tokens":45000}\n' > "${TRANSCRIPT_JSONL}"
 
-run_hook_timed PRE_INV_FEATURE_OUTPUT LATENCY_FEATURE "${SCRIPTS_DIR}/pre_invocation.mjs" "${PRE_INV_FEATURE_INPUT}"
+PRE_OVER_OUT=$(echo "{\"workspacePaths\":[\"${TMP_COMPACT_WS}\"],\"transcriptPath\":\"${TRANSCRIPT_JSONL}\"}" | node "${SCRIPTS_DIR}/pre_invocation.mjs")
+assert_true "Transcript JSONL à 130k tokens (>= 120k) déclenche la recommandation /compact" \
+  'echo "${PRE_OVER_OUT}" | python3 -c "import sys,json; d=json.load(sys.stdin); msg=d[\"injectSteps\"][0][\"systemMessage\"][\"systemMessage\"]; assert \"130k\" in msg and \"120k\" in msg"'
 
-assert_true "pre_invocation.mjs répond en moins de 150ms pour feature prompt (${LATENCY_FEATURE}ms)" \
-  '[ "${LATENCY_FEATURE}" -lt 150 ]'
+# Ajout d'un CHECKPOINT post-compaction suivi d'un petit tour (25k tokens)
+printf '{"type":"CHECKPOINT"}\n{"type":"PLANNER_RESPONSE","input_tokens":15000,"cache_read_tokens":10000}\n' >> "${TRANSCRIPT_JSONL}"
+PRE_POST_COMPACT=$(echo "{\"workspacePaths\":[\"${TMP_COMPACT_WS}\"],\"transcriptPath\":\"${TRANSCRIPT_JSONL}\"}" | node "${SCRIPTS_DIR}/pre_invocation.mjs")
+assert_true "Après CHECKPOINT (25k < 120k), pre_invocation.mjs redevient silencieux (injectSteps: [])" \
+  'echo "${PRE_POST_COMPACT}" | python3 -c "import sys,json; d=json.load(sys.stdin); assert d.get(\"injectSteps\") == []"'
 
-assert_true "pre_invocation.mjs produit un JSON valide sur prompt de feature" \
-  'echo "${PRE_INV_FEATURE_OUTPUT}" | python3 -m json.tool > /dev/null 2>&1'
-
-FEATURE_HAS_SYSTEM_MSG=$(echo "${PRE_INV_FEATURE_OUTPUT}" | python3 -c "
-import sys, json
-data = json.load(sys.stdin)
-steps = data.get('injectSteps', [])
-ok = (
-    len(steps) > 0 and
-    isinstance(steps[0].get('systemMessage'), dict) and
-    isinstance(steps[0]['systemMessage'].get('systemMessage'), str) and
-    'ephemeralMessage' not in steps[0]
-)
-print('true' if ok else 'false')
-")
-
-assert_true "pre_invocation.mjs utilise le format Hooks API v2 (systemMessage, zéro ephemeralMessage)" \
-  '[ "${FEATURE_HAS_SYSTEM_MSG}" = "true" ]'
-
-CONTAINS_ENFORCER_TEXT=$(echo "${PRE_INV_FEATURE_OUTPUT}" | python3 -c "
-import sys, json
-data = json.load(sys.stdin)
-msg = data['injectSteps'][0]['systemMessage']['systemMessage']
-ok = ('[SAN.AGY ENFORCER]' in msg and
-      'swarm' in msg and
-      'gemini-4-hydrogen-xhigh' in msg and
-      'REPO_MAP.md' in msg and
-      'san-qa-auditor' in msg)
-print('true' if ok else 'false')
-")
-
-assert_true "pre_invocation.mjs rappelle Map-First, swarm gemini-4-hydrogen-xhigh et san-qa-auditor" \
-  '[ "${CONTAINS_ENFORCER_TEXT}" = "true" ]'
-
-TOKEN_COUNT_CHECK=$(echo "${PRE_INV_FEATURE_OUTPUT}" | python3 -c "
-import sys, json
-data = json.load(sys.stdin)
-msg = data['injectSteps'][0]['systemMessage']['systemMessage']
-words = len(msg.split())
-estimated_tokens = int(words * 1.3)
-print('true' if estimated_tokens < 120 else 'false')
-")
-
-assert_true "Le systemMessage de pre_invocation.mjs reste compact (< 120 tokens)" \
-  '[ "${TOKEN_COUNT_CHECK}" = "true" ]'
-
-# Test 5.2 : Prompt neutre / conversationnel (test négatif : injectSteps doit être vide [])
-PRE_INV_NEUTRAL_INPUT=$(cat << EOF
-{
-  "lastUserInput": "Bonjour comment ça va",
-  "conversationId": "pre-inv-neutral-002"
-}
-EOF
-)
-
-run_hook_timed PRE_INV_NEUTRAL_OUTPUT LATENCY_NEUTRAL "${SCRIPTS_DIR}/pre_invocation.mjs" "${PRE_INV_NEUTRAL_INPUT}"
-
-assert_true "pre_invocation.mjs répond en moins de 150ms pour prompt neutre (${LATENCY_NEUTRAL}ms)" \
-  '[ "${LATENCY_NEUTRAL}" -lt 150 ]'
-
-assert_true "pre_invocation.mjs produit un JSON valide sur prompt neutre" \
-  'echo "${PRE_INV_NEUTRAL_OUTPUT}" | python3 -m json.tool > /dev/null 2>&1'
-
-NEUTRAL_INJECT_EMPTY=$(echo "${PRE_INV_NEUTRAL_OUTPUT}" | python3 -c "
-import sys, json
-data = json.load(sys.stdin)
-steps = data.get('injectSteps', None)
-print('true' if isinstance(steps, list) and len(steps) == 0 else 'false')
-")
-
-assert_true "pre_invocation.mjs renvoie 'injectSteps: []' (aucun bruit) pour prompt neutre ('Bonjour comment ça va')" \
-  '[ "${NEUTRAL_INJECT_EMPTY}" = "true" ]'
+rm -rf "${TMP_COMPACT_WS}"
 
 # ------------------------------------------------------------------------------
-# 6. Test du script PreToolUse Guard (pre_tool_guard.mjs)
+# 5. Test du script PreToolUse Guard (pre_tool_guard.mjs)
 # ------------------------------------------------------------------------------
-info "6. Test de pre_tool_guard.mjs (Règles de garde fail-closed, multi-dialectes & 'ask')"
+info "5. Test de pre_tool_guard.mjs (Règles de garde fail-closed, multi-dialectes & 'ask')"
 
-# Test 6.1 : Blocage de l'archivage d'une roadmap avec tâche non cochée (- [ ])
-ARCHIVE_DENY_INPUT=$(cat << EOF
-{
-  "toolCall": {
-    "name": "write_file",
-    "args": {
-      "Path": "${ROOT_DIR}/roadmaps/archives/2026-10-unfinished.md",
-      "Content": "# Roadmap\n- [x] Tâche 1\n- [ ] Tâche non terminée restante\n"
-    }
-  }
-}
-EOF
-)
+ARCHIVE_DENY_INPUT='{"toolCall":{"name":"write_file","args":{"Path":"roadmaps/archives/2026-unfinished.md","Content":"# Roadmap\n- [x] T1\n- [ ] T2 reste\n"}}}'
+run_hook_timed ARCHIVE_DENY_OUT LAT_PTG "${SCRIPTS_DIR}/pre_tool_guard.mjs" "${ARCHIVE_DENY_INPUT}"
 
-run_hook_timed ARCHIVE_DENY_OUTPUT LATENCY "${SCRIPTS_DIR}/pre_tool_guard.mjs" "${ARCHIVE_DENY_INPUT}"
+assert_true "pre_tool_guard.mjs répond en moins de 150ms (${LAT_PTG}ms)" \
+  '[ "${LAT_PTG}" -lt 150 ]'
 
-assert_true "pre_tool_guard.mjs répond en moins de 150ms (${LATENCY}ms)" \
-  '[ "${LATENCY}" -lt 150 ]'
+assert_true "Règle 1 : bloque (decision: deny) l'archivage d'une roadmap contenant '- [ ]' ([SAN HARNESS GUARD])" \
+  'echo "${ARCHIVE_DENY_OUT}" | python3 -c "import sys,json; d=json.load(sys.stdin); assert d.get(\"decision\")==\"deny\" and \"[SAN HARNESS GUARD]\" in d.get(\"reason\",\"\")"'
 
-ARCHIVE_DECISION=$(echo "${ARCHIVE_DENY_OUTPUT}" | python3 -c "
-import sys, json
-data = json.load(sys.stdin)
-print(data.get('decision', ''))
-")
-
-assert_true "Règle 1 : pre_tool_guard bloque (decision: deny) l'archivage d'une roadmap contenant '- [ ]'" \
-  '[ "${ARCHIVE_DECISION}" = "deny" ]'
-
-ARCHIVE_REASON_CHECK=$(echo "${ARCHIVE_DENY_OUTPUT}" | python3 -c "
-import sys, json
-data = json.load(sys.stdin)
-reason = data.get('reason', '')
-print('true' if '[SAN.AGY GUARD]' in reason and '- [ ] ou * [ ]' in reason else 'false')
-")
-
-assert_true "Règle 1 : La raison du blocage d'archivage est explicite et actionnable" \
-  '[ "${ARCHIVE_REASON_CHECK}" = "true" ]'
-
-# Test 6.2 : Blocage de l'archivage via edit_file et 'Replacement'
-ARCHIVE_EDIT_DENY_INPUT=$(cat << EOF
-{
-  "toolCall": {
-    "name": "edit_file",
-    "args": {
-      "Path": "roadmaps/archives/V1_FINISH.md",
-      "Replacement": "- [ ] Encore un oubli"
-    }
-  }
-}
-EOF
-)
-ARCHIVE_EDIT_DECISION=$(echo "${ARCHIVE_EDIT_DENY_INPUT}" | node "${SCRIPTS_DIR}/pre_tool_guard.mjs" | python3 -c "
-import sys, json
-print(json.load(sys.stdin).get('decision', ''))
-")
-
-assert_true "Règle 1 : pre_tool_guard bloque également via edit_file (Replacement)" \
+ARCHIVE_EDIT_DECISION=$(echo '{"toolCall":{"name":"edit_file","args":{"Path":"roadmaps/archives/V1.md","Replacement":"* [ ] Encore un oubli"}}}' | node "${SCRIPTS_DIR}/pre_tool_guard.mjs" | python3 -c "import sys,json; print(json.load(sys.stdin).get('decision',''))")
+assert_true "Règle 1 : bloque également edit_file (Replacement) avec '* [ ]'" \
   '[ "${ARCHIVE_EDIT_DECISION}" = "deny" ]'
 
-# Test 6.3 : Autorisation 'ask' d'une roadmap complètement terminée dans archives
-ARCHIVE_ALLOW_INPUT=$(cat << EOF
-{
-  "toolCall": {
-    "name": "write_file",
-    "args": {
-      "Path": "${ROOT_DIR}/roadmaps/archives/2026-10-finished.md",
-      "Content": "# Roadmap\n- [x] Tâche 1 terminée\n- [x] Tâche 2 terminée\n"
-    }
-  }
-}
-EOF
-)
-ARCHIVE_ALLOW_DECISION=$(echo "${ARCHIVE_ALLOW_INPUT}" | node "${SCRIPTS_DIR}/pre_tool_guard.mjs" | python3 -c "
-import sys, json
-print(json.load(sys.stdin).get('decision', ''))
-")
-
-assert_true "Règle 1 : pre_tool_guard émet 'ask' pour une roadmap 100% cochée dans archives/" \
+ARCHIVE_ALLOW_DECISION=$(echo '{"toolCall":{"name":"write_file","args":{"Path":"roadmaps/archives/done.md","Content":"# Done\n- [x] T1\n- [x] T2\n"}}}' | node "${SCRIPTS_DIR}/pre_tool_guard.mjs" | python3 -c "import sys,json; print(json.load(sys.stdin).get('decision',''))")
+assert_true "Règle 1 : émet 'ask' pour une roadmap 100% cochée dans archives/" \
   '[ "${ARCHIVE_ALLOW_DECISION}" = "ask" ]'
 
-# Test 6.4 : Blocage de l'injection de lorem ipsum dans le code source (App.tsx)
-LOREM_CODE_INPUT=$(cat << EOF
-{
-  "toolCall": {
-    "name": "write_file",
-    "args": {
-      "Path": "${ROOT_DIR}/src/App.tsx",
-      "Content": "export function Card() { return <p>Lorem ipsum dolor sit amet</p>; }"
-    }
-  }
-}
-EOF
-)
-LOREM_CODE_DECISION=$(echo "${LOREM_CODE_INPUT}" | node "${SCRIPTS_DIR}/pre_tool_guard.mjs" | python3 -c "
-import sys, json
-print(json.load(sys.stdin).get('decision', ''))
-")
-
-assert_true "Règle 2 : pre_tool_guard bloque (decision: deny) l'injection de Lorem Ipsum dans src/App.tsx" \
+LOREM_CODE_DECISION=$(echo '{"toolCall":{"name":"write_file","args":{"Path":"src/App.tsx","Content":"<p>Lorem ipsum dolor sit amet</p>"}}}' | node "${SCRIPTS_DIR}/pre_tool_guard.mjs" | python3 -c "import sys,json; print(json.load(sys.stdin).get('decision',''))")
+assert_true "Règle 2 : bloque (deny) Lorem Ipsum dans src/App.tsx" \
   '[ "${LOREM_CODE_DECISION}" = "deny" ]'
 
-# Test 6.5 : Blocage de l'injection de lorem ipsum dans le dossier design (mockup.html)
-LOREM_DESIGN_INPUT=$(cat << EOF
-{
-  "toolCall": {
-    "name": "edit_file",
-    "args": {
-      "Path": "design/screen_dashboard.html",
-      "Replacement": "<div class='text-sm'>dolor sit amet, consectetur</div>"
-    }
-  }
-}
-EOF
-)
-LOREM_DESIGN_DECISION=$(echo "${LOREM_DESIGN_INPUT}" | node "${SCRIPTS_DIR}/pre_tool_guard.mjs" | python3 -c "
-import sys, json
-print(json.load(sys.stdin).get('decision', ''))
-")
-
-assert_true "Règle 2 : pre_tool_guard bloque l'injection de faux texte dans design/*.html" \
+LOREM_DESIGN_DECISION=$(echo '{"toolCall":{"name":"edit_file","args":{"Path":"design/screen.html","Replacement":"<div>dolor sit amet</div>"}}}' | node "${SCRIPTS_DIR}/pre_tool_guard.mjs" | python3 -c "import sys,json; print(json.load(sys.stdin).get('decision',''))")
+assert_true "Règle 2 : bloque (deny) faux texte dans design/*.html" \
   '[ "${LOREM_DESIGN_DECISION}" = "deny" ]'
 
-# Test 6.6 : Tolérance nominale (ask) sur du code source propre avec données réalistes
-CLEAN_CODE_INPUT=$(cat << EOF
-{
-  "toolCall": {
-    "name": "write_file",
-    "args": {
-      "Path": "${ROOT_DIR}/src/components/UserProfile.tsx",
-      "Content": "export function UserProfile({ name }: { name: string }) { return <span>{name}</span>; }"
-    }
-  }
-}
-EOF
-)
-CLEAN_CODE_DECISION=$(echo "${CLEAN_CODE_INPUT}" | node "${SCRIPTS_DIR}/pre_tool_guard.mjs" | python3 -c "
-import sys, json
-print(json.load(sys.stdin).get('decision', ''))
-")
-
-assert_true "Cas Nominal : pre_tool_guard renvoie scrupuleusement 'ask' sur du code propre" \
+CLEAN_CODE_DECISION=$(echo '{"toolCall":{"name":"write_file","args":{"Path":"src/components/UserProfile.tsx","Content":"export function UserProfile({ name }: { name: string }) { return <span>{name}</span>; }"}}}' | node "${SCRIPTS_DIR}/pre_tool_guard.mjs" | python3 -c "import sys,json; print(json.load(sys.stdin).get('decision',''))")
+assert_true "Cas Nominal : renvoie strictement 'ask' sur du code propre (jamais 'allow')" \
   '[ "${CLEAN_CODE_DECISION}" = "ask" ]'
 
-# Test 6.7 : Garantie absolue qu'aucun chemin conforme ne renvoie 'allow' (fail-safe permissions)
-assert_true "Garantie critique : la décision nominale n'est JAMAIS 'allow' (préserve permissions agy)" \
-  '[ "${CLEAN_CODE_DECISION}" != "allow" ]'
-
-# Test 6.8 : Arguments Jetski/Antigravity (TargetFile + CodeEdit) sur tâche astérisque non cochée (* [ ])
-JETSKI_ARCHIVE_INPUT=$(cat << EOF
-{
-  "toolCall": {
-    "name": "edit_file",
-    "args": {
-      "TargetFile": "roadmaps/archives/plan.md",
-      "CodeEdit": "* [ ] Tâche avec astérisque"
-    }
-  }
-}
-EOF
-)
-
-JETSKI_ARCHIVE_OUTPUT=$(echo "${JETSKI_ARCHIVE_INPUT}" | node "${SCRIPTS_DIR}/pre_tool_guard.mjs")
-JETSKI_ARCHIVE_DECISION=$(echo "${JETSKI_ARCHIVE_OUTPUT}" | python3 -c "
-import sys, json
-data = json.load(sys.stdin)
-print(data.get('decision', ''))
-")
-
-assert_true "Règle 1 Jetski : pre_tool_guard bloque (deny) TargetFile+CodeEdit avec '* [ ]' dans archives/" \
-  '[ "${JETSKI_ARCHIVE_DECISION}" = "deny" ]'
-
-# Test 6.9 : Arguments Jetski/Antigravity (TargetFile + CodeEdit) sur Lorem Ipsum dans code applicatif
-JETSKI_LOREM_INPUT=$(cat << EOF
-{
-  "toolCall": {
-    "name": "edit_file",
-    "args": {
-      "TargetFile": "src/App.tsx",
-      "CodeEdit": "<p>Lorem ipsum dolor sit amet</p>"
-    }
-  }
-}
-EOF
-)
-
-JETSKI_LOREM_OUTPUT=$(echo "${JETSKI_LOREM_INPUT}" | node "${SCRIPTS_DIR}/pre_tool_guard.mjs")
-JETSKI_LOREM_DECISION=$(echo "${JETSKI_LOREM_OUTPUT}" | python3 -c "
-import sys, json
-data = json.load(sys.stdin)
-print(data.get('decision', ''))
-")
-
-assert_true "Règle 2 Jetski : pre_tool_guard bloque (deny) TargetFile+CodeEdit avec Lorem Ipsum dans src/App.tsx" \
-  '[ "${JETSKI_LOREM_DECISION}" = "deny" ]'
-
-# Test 6.10 : Tolérance formelle dans les répertoires et fichiers de tests (tests/unit/guard.test.ts)
-TEST_FILE_LOREM_INPUT=$(cat << EOF
-{
-  "toolCall": {
-    "name": "write_file",
-    "args": {
-      "TargetFile": "tests/unit/guard.test.ts",
-      "CodeEdit": "const dummy = 'Lorem ipsum dolor sit amet';"
-    }
-  }
-}
-EOF
-)
-
-TEST_FILE_LOREM_OUTPUT=$(echo "${TEST_FILE_LOREM_INPUT}" | node "${SCRIPTS_DIR}/pre_tool_guard.mjs")
-TEST_FILE_LOREM_DECISION=$(echo "${TEST_FILE_LOREM_OUTPUT}" | python3 -c "
-import sys, json
-data = json.load(sys.stdin)
-print(data.get('decision', ''))
-")
-
-assert_true "Règle 2 : pre_tool_guard autorise (ask) le Lorem Ipsum dans les fichiers de tests (tests/unit/guard.test.ts)" \
-  '[ "${TEST_FILE_LOREM_DECISION}" = "ask" ]'
-
-# Test 6.11 : Vérification de la raison explicite dans le cas nominal conforme
-NOMINAL_REASON_CHECK=$(echo "${TEST_FILE_LOREM_OUTPUT}" | python3 -c "
-import sys, json
-data = json.load(sys.stdin)
-reason = data.get('reason', '')
-print('true' if '[SAN.AGY GUARD]' in reason and 'confirmation utilisateur' in reason else 'false')
-")
-
-assert_true "Cas Nominal : pre_tool_guard inclut une raison explicite de confirmation utilisateur" \
-  '[ "${NOMINAL_REASON_CHECK}" = "true" ]'
-
 # ------------------------------------------------------------------------------
-# 6B. Test du script PostToolUse (post_tool_indexer.mjs)
+# 6. Validation officielle Antigravity Plugin Engine (agy plugin validate)
 # ------------------------------------------------------------------------------
-info "6B. Test de post_tool_indexer.mjs (indexation AST & génération du cache)"
+info "6. Validation officielle Antigravity Plugin Engine (agy plugin validate --strict --json)"
 
-POST_INDEX_WORKSPACE=$(mktemp -d /tmp/san-post-index-workspace.XXXXXX)
-mkdir -p "${POST_INDEX_WORKSPACE}/.agents/cache"
-mkdir -p "${POST_INDEX_WORKSPACE}/src"
-cat << 'EOF' > "${POST_INDEX_WORKSPACE}/src/service.ts"
-export class UserService {
-  async findUser(id: string) {
-    return { id, name: 'Alice' };
-  }
-}
-export function helper() { return true; }
-EOF
-
-POST_INDEX_INPUT=$(cat << EOF
-{
-  "workspacePaths": ["${POST_INDEX_WORKSPACE}"],
-  "toolCall": {
-    "name": "write_file",
-    "args": {
-      "Path": "${POST_INDEX_WORKSPACE}/src/service.ts"
-    }
-  }
-}
-EOF
-)
-
-run_hook_timed POST_INDEX_OUTPUT LATENCY "${SCRIPTS_DIR}/post_tool_indexer.mjs" "${POST_INDEX_INPUT}"
-
-assert_true "post_tool_indexer.mjs répond en moins de 250ms (${LATENCY}ms)" \
-  '[ "${LATENCY}" -lt 250 ]'
-
-assert_true "post_tool_indexer.mjs produit un JSON valide" \
-  'echo "${POST_INDEX_OUTPUT}" | python3 -m json.tool > /dev/null 2>&1'
-
-assert_true "post_tool_indexer.mjs met à jour .agents/cache/repo-index.json" \
-  '[ -f "${POST_INDEX_WORKSPACE}/.agents/cache/repo-index.json" ] && grep -q "UserService" "${POST_INDEX_WORKSPACE}/.agents/cache/repo-index.json"'
-
-assert_true "post_tool_indexer.mjs met à jour .agents/cache/REPO_MAP.md" \
-  '[ -f "${POST_INDEX_WORKSPACE}/.agents/cache/REPO_MAP.md" ] && grep -q "UserService" "${POST_INDEX_WORKSPACE}/.agents/cache/REPO_MAP.md"'
-
-rm -rf "${POST_INDEX_WORKSPACE}"
-
-# ------------------------------------------------------------------------------
-# 6C. Test du script Stop Guard (stop_guard.mjs)
-# ------------------------------------------------------------------------------
-info "6C. Test de stop_guard.mjs (Circuit Breaker, exemptions & Quality Gate)"
-
-STOP_WS=$(mktemp -d /tmp/san-stop-guard-ws.XXXXXX)
-(
-  cd "${STOP_WS}"
-  git init -q
-  git config user.name "Stop Tester"
-  git config user.email "stop@alexsan.pro"
-  mkdir -p src .agents/cache
-  echo "export const v = 1;" > src/app.js
-  echo "# Doc" > README.md
-  git add .
-  git commit -m "init" -q
-)
-
-# 6C.1 Repo propre -> {}
-run_hook_timed STOP_CLEAN_OUT LATENCY "${SCRIPTS_DIR}/stop_guard.mjs" '{"workspacePaths":["'"${STOP_WS}"'"],"terminationReason":"NO_TOOL_CALL","continuationActive":false}'
-
-assert_true "stop_guard.mjs répond en moins de 150ms (${LATENCY}ms)" \
-  '[ "${LATENCY}" -lt 150 ]'
-
-assert_true "stop_guard.mjs autorise l'arrêt ({}) quand le repo est propre" \
-  '[ "$(echo "${STOP_CLEAN_OUT}" | python3 -c "import sys,json; print(json.load(sys.stdin))")" = "{}" ]'
-
-# 6C.2 Session DOC_ONLY (README.md modifié uniquement) -> {}
-echo "mise à jour doc" >> "${STOP_WS}/README.md"
-STOP_DOC_OUT=$(echo '{"workspacePaths":["'"${STOP_WS}"'"],"terminationReason":"CONVERSATION_TURN_COMPLETE","continuationActive":false}' | node "${SCRIPTS_DIR}/stop_guard.mjs")
-assert_true "stop_guard.mjs autorise l'arrêt ({}) en session DOC_ONLY (exemption *.md)" \
-  '[ "$(echo "${STOP_DOC_OUT}" | python3 -c "import sys,json; print(json.load(sys.stdin))")" = "{}" ]'
-
-# 6C.3 Interruption utilisateur (USER_CANCELED) -> {} même avec code modifié
-echo "export const v = 2;" > "${STOP_WS}/src/app.js"
-STOP_CANCEL_OUT=$(echo '{"workspacePaths":["'"${STOP_WS}"'"],"terminationReason":"USER_CANCELED","continuationActive":false}' | node "${SCRIPTS_DIR}/stop_guard.mjs")
-assert_true "stop_guard.mjs autorise l'arrêt ({}) sur terminationReason=USER_CANCELED" \
-  '[ "$(echo "${STOP_CANCEL_OUT}" | python3 -c "import sys,json; print(json.load(sys.stdin))")" = "{}" ]'
-
-# 6C.4 Code applicatif modifié sans Quality Gate -> Relance 1/2, 2/2, puis Circuit Breaker ({})
-STOP_PAYLOAD='{"workspacePaths":["'"${STOP_WS}"'"],"conversationId":"stop-conv-1","terminationReason":"CONVERSATION_TURN_COMPLETE","continuationActive":false}'
-
-STOP_TRY1=$(echo "${STOP_PAYLOAD}" | node "${SCRIPTS_DIR}/stop_guard.mjs")
-STOP_TRY1_OK=$(echo "${STOP_TRY1}" | python3 -c "import sys,json; d=json.load(sys.stdin); print('true' if d.get('decision')=='continue' and 'Relance 1/2' in d.get('reason','') else 'false')")
-assert_true "stop_guard.mjs bloque (decision: continue, Relance 1/2) si code modifié sans gate" \
-  '[ "${STOP_TRY1_OK}" = "true" ]'
-
-STOP_TRY2=$(echo "${STOP_PAYLOAD}" | node "${SCRIPTS_DIR}/stop_guard.mjs")
-STOP_TRY2_OK=$(echo "${STOP_TRY2}" | python3 -c "import sys,json; d=json.load(sys.stdin); print('true' if d.get('decision')=='continue' and 'Relance 2/2' in d.get('reason','') else 'false')")
-assert_true "stop_guard.mjs bloque (decision: continue, Relance 2/2) au 2ème essai" \
-  '[ "${STOP_TRY2_OK}" = "true" ]'
-
-STOP_TRY3=$(echo "${STOP_PAYLOAD}" | node "${SCRIPTS_DIR}/stop_guard.mjs")
-STOP_TRY3_OK=$(echo "${STOP_TRY3}" | python3 -c "import sys,json; d=json.load(sys.stdin); print('true' if d == {} else 'false')")
-assert_true "stop_guard.mjs déclenche le Circuit Breaker ({}) au 3ème essai (max 2 relances)" \
-  '[ "${STOP_TRY3_OK}" = "true" ]'
-
-# 6C.5 continuationActive: true autorise l'arrêt et remet retryCount à 0
-echo '{"workspacePaths":["'"${STOP_WS}"'"],"conversationId":"stop-conv-2","forceBlockForTest":true,"continuationActive":false}' | node "${SCRIPTS_DIR}/stop_guard.mjs" > /dev/null
-STOP_CONT_OUT=$(echo '{"workspacePaths":["'"${STOP_WS}"'"],"conversationId":"stop-conv-2","continuationActive":true}' | node "${SCRIPTS_DIR}/stop_guard.mjs")
-STOP_CONT_OK=$(echo "${STOP_CONT_OUT}" | python3 -c "import sys,json; print('true' if json.load(sys.stdin) == {} else 'false')")
-assert_true "stop_guard.mjs autorise l'arrêt ({}) quand continuationActive === true" \
-  '[ "${STOP_CONT_OK}" = "true" ]'
-
-# 6C.6 Quality Gate récent et vert (.agents/cache/last-gate-status.json) -> {}
-NOW_ISO=$(node -e "console.log(new Date().toISOString())")
-cat << EOF > "${STOP_WS}/.agents/cache/last-gate-status.json"
-{
-  "passed": true,
-  "timestamp": "${NOW_ISO}"
-}
-EOF
-STOP_GATE_OK=$(echo "${STOP_PAYLOAD}" | node "${SCRIPTS_DIR}/stop_guard.mjs" | python3 -c "import sys,json; print('true' if json.load(sys.stdin) == {} else 'false')")
-assert_true "stop_guard.mjs autorise l'arrêt ({}) si .agents/cache/last-gate-status.json est vert et récent" \
-  '[ "${STOP_GATE_OK}" = "true" ]'
-
-# 6C.7 Mode test unitaire forceBlockForTest: true -> decision: continue
-STOP_FORCE_OK=$(echo '{"workspacePaths":["'"${STOP_WS}"'"],"conversationId":"stop-conv-force","forceBlockForTest":true,"continuationActive":false}' | node "${SCRIPTS_DIR}/stop_guard.mjs" | python3 -c "import sys,json; print('true' if json.load(sys.stdin).get('decision')=='continue' else 'false')")
-assert_true "stop_guard.mjs supporte forceBlockForTest: true pour tests déterministes" \
-  '[ "${STOP_FORCE_OK}" = "true" ]'
-
-rm -rf "${STOP_WS}"
-
-# 6C.8 Exemptions v2.2.0 (design/BRAND.md, design/*.html, opencode.json) & filtre mtimeMs sur vieux fichiers sales
-STOP_WS_V22=$(mktemp -d /tmp/san-stop-guard-v22.XXXXXX)
-(
-  cd "${STOP_WS_V22}"
-  git init -q
-  git config user.name "Stop V22 Tester"
-  git config user.email "stop-v22@alexsan.pro"
-  mkdir -p src design logos .agents/cache
-  echo "export const oldDirty = 1;" > src/old_dirty.js
-  echo "# Initial" > README.md
-  git add .
-  git commit -m "init v22" -q
-)
-
-# A. Fichier dans design/BRAND.md (+ design/mockup.html + opencode.json) ne bloque PAS
-echo "# Brand Spec" > "${STOP_WS_V22}/design/BRAND.md"
-echo "<div>Preview</div>" > "${STOP_WS_V22}/design/mockup.html"
-echo '{"$schema":"https://opencode.ai/config.json"}' > "${STOP_WS_V22}/opencode.json"
-STOP_DESIGN_OUT=$(echo '{"workspacePaths":["'"${STOP_WS_V22}"'"],"terminationReason":"CONVERSATION_TURN_COMPLETE","continuationActive":false}' | node "${SCRIPTS_DIR}/stop_guard.mjs")
-STOP_DESIGN_OK=$(echo "${STOP_DESIGN_OUT}" | python3 -c "import sys,json; print('true' if json.load(sys.stdin) == {} else 'false')")
-assert_true "stop_guard.mjs ne bloque PAS un fichier dans design/BRAND.md (et design/*.html, opencode.json)" \
-  '[ "${STOP_DESIGN_OK}" = "true" ]'
-
-# B. Vieux fichier applicatif modifié (touch -d "20 minutes ago") ne bloque PAS
-echo "export const oldDirty = 2;" > "${STOP_WS_V22}/src/old_dirty.js"
-touch -d "20 minutes ago" "${STOP_WS_V22}/src/old_dirty.js"
-STOP_STALE_OUT=$(echo '{"workspacePaths":["'"${STOP_WS_V22}"'"],"terminationReason":"CONVERSATION_TURN_COMPLETE","continuationActive":false}' | node "${SCRIPTS_DIR}/stop_guard.mjs")
-STOP_STALE_OK=$(echo "${STOP_STALE_OUT}" | python3 -c "import sys,json; print('true' if json.load(sys.stdin) == {} else 'false')")
-assert_true "stop_guard.mjs ne bloque PAS un vieux fichier modifié (src/old_dirty.js modifié il y a 20 minutes)" \
-  '[ "${STOP_STALE_OK}" = "true" ]'
-
-# C. Contre-épreuve Anti-Testing Theater : si src/old_dirty.js est touché à l'instant, stop_guard DOIT bloquer
-touch "${STOP_WS_V22}/src/old_dirty.js"
-STOP_FRESH_OUT=$(echo '{"workspacePaths":["'"${STOP_WS_V22}"'"],"conversationId":"stop-v22-fresh","terminationReason":"CONVERSATION_TURN_COMPLETE","continuationActive":false}' | node "${SCRIPTS_DIR}/stop_guard.mjs")
-STOP_FRESH_OK=$(echo "${STOP_FRESH_OUT}" | python3 -c "import sys,json; print('true' if json.load(sys.stdin).get('decision') == 'continue' else 'false')")
-assert_true "stop_guard.mjs bloque bien (decision: continue) si src/old_dirty.js est modifié récemment" \
-  '[ "${STOP_FRESH_OK}" = "true" ]'
-
-rm -rf "${STOP_WS_V22}"
-
-# ------------------------------------------------------------------------------
-# 6D. Garde-fou Anti-OOM & Git-First (.gitignore, fichiers >512KB, binaires)
-# ------------------------------------------------------------------------------
-info "6D. Test Anti-OOM & Git-First (repo_mapper.mjs & session_start.mjs)"
-
-OOM_WS=$(mktemp -d /tmp/san-oom-guard-ws.XXXXXX)
-(
-  cd "${OOM_WS}"
-  git init -q
-  git config user.name "OOM Tester"
-  git config user.email "oom@alexsan.pro"
-  mkdir -p .agents/cache src google-cloud-sdk/lib
-  echo "google-cloud-sdk/" > .gitignore
-  echo "export function realFeature() { return 42; }" > src/real.ts
-  echo "export function ignoredSdk() { return 0; }" > google-cloud-sdk/lib/sdk.js
-  # Fichier > 600KB suivi mais trop volumineux pour l'indexeur AST
-  python3 -c 'print("export const x = \"" + ("A" * 620000) + "\";")' > src/huge.js
-  # Fichier binaire avec octet nul
-  python3 -c 'open("src/blob.js", "wb").write(b"export function binFake(){}\x00\x01\x02")'
-  git add .gitignore src/real.ts src/huge.js src/blob.js
-  git commit -m "init" -q
-)
-
-node --max-old-space-size=128 "${ROOT_DIR}/src/skills/san_cartographer/scripts/repo_mapper.mjs" --root "${OOM_WS}" > /dev/null
-assert_true "repo_mapper.mjs indexe src/real.ts et ignore google-cloud-sdk/ (.gitignore) + huge.js (>512KB) + binaire" \
-  'grep -q "realFeature" "${OOM_WS}/.agents/cache/repo-index.json" && ! grep -q "ignoredSdk" "${OOM_WS}/.agents/cache/repo-index.json" && ! grep -q "src/huge.js" "${OOM_WS}/.agents/cache/repo-index.json" && ! grep -q "binFake" "${OOM_WS}/.agents/cache/repo-index.json"'
-
-rm -f "${OOM_WS}/.agents/cache/repo-index.json" "${OOM_WS}/.agents/cache/REPO_MAP.md"
-echo '{"workspacePaths":["'"${OOM_WS}"'"]}' | node --max-old-space-size=128 "${SCRIPTS_DIR}/session_start.mjs" > /dev/null
-assert_true "session_start.mjs indexe src/real.ts sous --max-old-space-size=128 et ignore google-cloud-sdk/ + huge.js" \
-  '[ -f "${OOM_WS}/.agents/cache/repo-index.json" ] && grep -q "realFeature" "${OOM_WS}/.agents/cache/repo-index.json" && ! grep -q "ignoredSdk" "${OOM_WS}/.agents/cache/repo-index.json" && ! grep -q "src/huge.js" "${OOM_WS}/.agents/cache/repo-index.json"'
-
-rm -rf "${OOM_WS}"
-
-# ------------------------------------------------------------------------------
-# 7. Validation officielle Antigravity Plugin Engine (agy plugin validate)
-# ------------------------------------------------------------------------------
-info "7. Validation officielle Antigravity Plugin Engine (agy plugin validate --strict --json)"
-
-TMP_PLUGIN_DIR=$(mktemp -d /tmp/san-v2-hooks-validation.XXXXXX)
+TMP_PLUGIN_DIR=$(mktemp -d /tmp/san-v3-hooks-validation.XXXXXX)
 trap 'rm -rf "${TMP_PLUGIN_DIR}"' EXIT
 
 mkdir -p "${TMP_PLUGIN_DIR}/assets" "${TMP_PLUGIN_DIR}/hooks/scripts"
 
 cat << 'EOF' > "${TMP_PLUGIN_DIR}/plugin.json"
 {
-  "name": "san-framework",
-  "version": "2.2.0",
-  "description": "Framework Antigravity san_* v2.2 - Cycle de vie & Garde-fous d'orchestration",
+  "name": "san-ai-harness",
+  "version": "3.0.0",
+  "description": "SAN AI Harness san_* v3.0 - 3 Garde-fous Sobres & Compaction 120k",
   "logo": "assets/logo.svg"
 }
 EOF
 
-cp "${ROOT_DIR}/logos/san_framework_icon.svg" "${TMP_PLUGIN_DIR}/assets/logo.svg"
+cp "${ROOT_DIR}/logos/san_harness_icon.svg" "${TMP_PLUGIN_DIR}/assets/logo.svg"
 cp "${HOOKS_DIR}/hooks.json" "${TMP_PLUGIN_DIR}/hooks.json"
 cp "${SCRIPTS_DIR}"/*.mjs "${TMP_PLUGIN_DIR}/hooks/scripts/"
 
@@ -911,47 +252,23 @@ VALIDATION_EXIT=${VALIDATION_EXIT:-0}
 assert_true "agy plugin validate s'exécute avec succès (exit code 0)" \
   '[ "${VALIDATION_EXIT}" -eq 0 ]'
 
-HOOKS_DETECTED=$(echo "${VALIDATION_OUTPUT}" | python3 -c "
-import sys, json
-try:
-    data = json.load(sys.stdin)
-    print(data.get('components', {}).get('hooks', 0))
-except Exception:
-    print(-1)
-")
-
-assert_true "Le validateur Antigravity a détecté exactement 1 configuration de hooks" \
+HOOKS_DETECTED=$(echo "${VALIDATION_OUTPUT}" | python3 -c "import sys,json; print(json.load(sys.stdin).get('components',{}).get('hooks',0))")
+assert_true "Le validateur Antigravity détecte 1 configuration de hooks" \
   '[ "${HOOKS_DETECTED}" -eq 1 ]'
 
-FINDINGS_COUNT=$(echo "${VALIDATION_OUTPUT}" | python3 -c "
-import sys, json
-try:
-    data = json.load(sys.stdin)
-    findings = data.get('findings', [])
-    errors_or_warns = [f for f in findings if f.get('severity') in ('error', 'warning')]
-    print(len(errors_or_warns))
-except Exception:
-    print(-1)
-")
-
+FINDINGS_COUNT=$(echo "${VALIDATION_OUTPUT}" | python3 -c "import sys,json; print(len([f for f in json.load(sys.stdin).get('findings',[]) if f.get('severity') in ('error','warning')]))")
 assert_true "Le validateur Antigravity ne remonte 0 erreur et 0 warning sur hooks.json" \
   '[ "${FINDINGS_COUNT}" -eq 0 ]'
 
-# ------------------------------------------------------------------------------
-# Synthèse Finale
-# ------------------------------------------------------------------------------
 echo ""
 echo "======================================================================"
-echo "  RÉSULTATS DE LA SUITE DE TEST PHASE 3 : HOOKS DU CYCLE DE VIE"
-echo "======================================================================"
-echo -e "  Tests réussis : \033[32m${PASSED_TESTS}\033[0m"
-echo -e "  Tests échoués : \033[31m${FAILED_TESTS}\033[0m"
+echo "  RÉSULTATS PHASE 3 : ${PASSED_TESTS} passés, ${FAILED_TESTS} échecs"
 echo "======================================================================"
 
 if [ "${FAILED_TESTS}" -eq 0 ]; then
-  green "🎉 TOUTES LES ASSERTIONS PHASE 3 SONT AU VERT ! SUCCÈS TOTAL."
+  green "TOUTES LES ASSERTIONS PHASE 3 SONT AU VERT ! SUCCÈS TOTAL."
   exit 0
 else
-  red "❌ DES ASSERTIONS ONT ÉCHOUÉ DANS LA PHASE 3."
+  red "DES ASSERTIONS ONT ÉCHOUÉ DANS LA PHASE 3."
   exit 1
 fi

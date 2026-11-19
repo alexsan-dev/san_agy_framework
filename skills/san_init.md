@@ -1,19 +1,19 @@
 ---
 name: san_init
 title: Expert d'Initialisation, d'Isolation Git et d'Onboarding de Dépôt
-version: "2.2.0"
+version: "3.0.0"
 type: entry_point
 harness: dual_harness
 models_config: ".agents/models.json"
 routing:
   antigravity:
-    orchestrator: "gemini-4-argon-high"
-    executor: "gemini-4-hydrogen-xhigh"
-    primitive: "swarm"
+    orchestrator: "inherit-user-model"
+    executor: ".agents/models.json#agy.executor"
+    primitive: "swarm | native"
   opencode_v2:
-    orchestrator: "opencode-go/hy4"
-    executor: "opencode-go/deepseek-v4-pro"
-    primitive: "subagent"
+    orchestrator: "inherit-user-model"
+    executor: ".agents/models.json#opencode.executor"
+    primitive: "san_swarm | subagent"
 ---
 
 # `san_init` — Expert d'Initialisation, d'Isolation Git et d'Onboarding de Dépôt
@@ -30,7 +30,7 @@ routing:
 ### Pour Quoi ?
 - **Éliminer le syndrome de la « répétition perpétuelle » :** Ne plus jamais avoir à réexpliquer à l'IA la palette graphique, l'esprit de la marque, les conventions d'architecture, la politique de tests ou la gestion des roadmaps.
 - **Bannir définitivement la fuite de métadonnées IA :** Proscrire les commits intempestifs de `.agents/` sur les dépôts distants partagés et éliminer les conflits de merge sur des fichiers d'agents tiers.
-- **Déploiement Dual-Harness Antigravity / OpenCode V2 (`san_*` v2.2) :** Déployer les règles avec leurs frontmatters YAML officiels (`trigger: always_on`, `trigger: glob`, `trigger: model_decision`), la configuration `.agents/models.json` et la constitution racine `AGENTS.md` pour un chargement contextuel précis sans dilution.
+- **Déploiement Dual-Harness Antigravity / OpenCode v2.3 (`san_*` v3.0) :** Déployer les règles avec leurs frontmatters YAML officiels (`trigger: always_on`, `trigger: glob`, `trigger: model_decision`), la configuration `.agents/models.json`, le plugin `.agents/opencode/` et la constitution racine `AGENTS.md` pour un chargement contextuel précis sans dilution.
 - **Convertir le savoir éparpillé sans perte :** Sauvegarder les configurations tierces (`.cursorrules`, `CLAUDE.md`, etc.) dans `.agents/backups/legacy-ai-configs/` et unifier les règles vers le standard Antigravity.
 
 ---
@@ -40,11 +40,11 @@ routing:
 ### Ce qu'il FAIT :
 1. **Détection Exhaustive de la Stack :** Identifie avec précision la technologie hôte parmi 10 stacks majeures (React, Vite, Next.js, Expo, React Native CLI, Laravel, AdonisJS, NestJS, Go, Python), ses gestionnaires de paquets, fichiers de configuration et conventions de ports.
 2. **Hygiène Git & Isolation Stricte :** Déploie et exécute le script `git_ai_hygiene.sh` pour désindexer (`git rm -r --cached`), verrouiller `.gitignore` et `.git/info/exclude` (incluant `__pycache__/`, `*.py[cod]`, `*$py.class`), et marquer les fichiers critiques avec `git update-index --skip-worktree`.
-3. **Déploiement des Règles Contextuelles Natives v2.2 :** Instancie les règles avec leurs frontmatters YAML officiels (`trigger: always_on`, `trigger: glob`, `trigger: model_decision`), `.agents/models.json` (`san-framework models`) et la constitution racine `AGENTS.md`.
+3. **Déploiement des Règles Contextuelles Natives v3.0 :** Instancie les règles avec leurs frontmatters YAML officiels (`trigger: always_on`, `trigger: glob`, `trigger: model_decision`), `.agents/models.json` (`san-harness models`), `.agents/opencode/` et la constitution racine `AGENTS.md`.
 4. **Sauvegarde & Hygiène des Configurations Tierces :** Détecte les résidus d'anciens agents (`CLAUDE.md`, `.cursorrules`, `.windsurfrules`, `.copilot/`), sauvegarde proprement leur contenu dans `.agents/backups/legacy-ai-configs/<timestamp>/` puis assainit l'espace de travail.
 5. **Génération des Templates de Règles Normatives :** Installe les versions complètes de `BRAND_TEMPLATE.md`, `PRODUCT_TEMPLATE.md`, `PROJECT_TEMPLATE.md`, `API_TEMPLATE.md` et `GEMINI_INDEX_TEMPLATE.md`.
 6. **Onboarding Cas 1 (Dépôt Frais) :** Pilote un entretien structuré en 4 volets pour capturer l'âme de marque (`BRAND.md`), le logo (`LOGO.md`), le cadrage produit (`PRODUCT.md`) et les invariants techniques (`PROJECT.md`).
-7. **Onboarding Cas 2 (Codebase Existante / Monorepo) :** Déploie des workers d'inspection autonome en lecture seule via `swarm` (`gemini-4-hydrogen-xhigh`) ou `subagent` OpenCode V2 (`.agents/models.json`) pour extraire styles, tokens, schémas SQL et conventions sans interroger inutilement le développeur.
+7. **Onboarding Cas 2 (Codebase Existante / Monorepo) :** Déploie des workers d'inspection autonome en lecture seule via `swarm` (exécuteur `.agents/models.json#agy.executor`) ou `san_swarm` / `subagent` OpenCode v2.3 (`.agents/models.json#opencode.executor`) pour extraire styles, tokens, schémas SQL et conventions sans interroger inutilement le développeur.
 8. **Pipeline Vectoriel de Logos :** Déploie et exécute le script `svg_to_png.mjs` basé sur Sharp pour dériver les déclinaisons PNG obligatoires (favicons, icônes Apple, Android/PWA, splash screens mobiles).
 
 ### Ce qu'il NE FAIT PAS :
@@ -128,7 +128,7 @@ fi
 
 ## 5. DÉPLOIEMENT DES RÈGLES CONTEXTUELLES NATIVES & CONSTITUTION RACINE
 
-Le framework v2.2 Dual-Harness gère nativement le ciblage contextuel des règles par leurs frontmatters YAML officiels (`trigger: always_on`, `trigger: glob`, `trigger: model_decision`), la configuration `.agents/models.json` ainsi que la constitution racine `<racine>/AGENTS.md`.
+Le harness v3.0 Dual-Harness gère nativement le ciblage contextuel des règles par leurs frontmatters YAML officiels (`trigger: always_on`, `trigger: glob`, `trigger: model_decision`), la configuration `.agents/models.json` ainsi que la constitution racine `<racine>/AGENTS.md`.
 
 ### Frontmatters Officiels des Règles (`.agents/rules/`) :
 - **`PROJECT.md` :**
@@ -528,9 +528,9 @@ Le mouvement traduit la réactivité et la rigueur du système. Zéro animation 
 
 ---
 
-## 2. ROUTAGE STRICT DUAL-HARNESS (`.agents/models.json` / `san-framework models`)
-* **Session Principale (Orchestrateur Souverain) :** Antigravity `gemini-4-argon-high` / `Carbon` | OpenCode V2 `opencode-go/hy4` (configurable via `san-framework models`). Planification, architecture, cadrage.
-* **Workers Spécialisés (Code, Audit, Recherche) :** Sous Antigravity via **`swarm(action: "add", model: "gemini-4-hydrogen-xhigh")`** ; sous OpenCode V2 via **`subagent`** (`.agents/models.json`). Interdiction formelle de `invoke_subagent(Model: 'inherit')` sur `Argon`/`Carbon`.
+## 2. ROUTAGE DUAL-HARNESS (`.agents/models.json` / `san-harness models`)
+* **Session Principale (Orchestrateur Souverain) :** Antigravity & OpenCode v2.3 héritent librement du `/model` choisi par l'utilisateur (`inherit-user-model`, planification, architecture, cadrage, `Plan → Execute` sur tâches simples).
+* **Workers Spécialisés (Code, Audit, Recherche) :** Sous Antigravity via **`swarm`** (modèle configuré dans `.agents/models.json#agy.executor`) ; sous OpenCode v2.3 via **`san_swarm` / `subagent`** (`.agents/models.json#opencode.executor`). Compaction automatique à `120 000` tokens (`/compact`, zéro `.agents/cache`).
 
 ---
 
@@ -616,7 +616,7 @@ Toutes les réponses de l'API respectent une enveloppe immuable :
 ```markdown
 # TABLE DE ROUTAGE PRINCIPALE ANTIGRAVITY (`GEMINI.md`)
 
-> **Index Souverain Local :** Ce fichier constitue la table de routage exclusive lue par le harness Antigravity CLI lors de l'initialisation de session. Il référence les règles locales et les skills opérationnels du projet.
+> **Index Souverain Local :** Ce fichier constitue la table de routage exclusive lue par les harnesses Antigravity & OpenCode lors de l'initialisation de session. Il référence les règles locales et les skills opérationnels du projet.
 
 ---
 
@@ -680,7 +680,7 @@ Poser un questionnaire ciblé et structuré au développeur :
 4. **Socle d'Ingénierie :** Validation des choix d'architecture.
 
 ### Étape 3B : Cas Codebase Existante / Monorepo (Rétro-Ingénierie Autonome)
-Déployer `san-researcher` en lecture seule via Dual-Harness (`swarm` avec `gemini-4-hydrogen-xhigh` | `subagent` OpenCode V2 selon `.agents/models.json`) :
+Déployer `san-researcher` en lecture seule via Dual-Harness (`swarm` | `san_swarm` / `subagent` OpenCode v2.3 selon `.agents/models.json`) :
 1. Extraction des styles existants (`tailwind.config.*`, CSS vars) $\rightarrow$ Synthèse `BRAND.md`.
 2. Localisation des logos et icônes $\rightarrow$ Synthèse `LOGO.md`.
 3. Analyse des modèles de données et routes $\rightarrow$ Synthèse `PRODUCT.md` et `API.md`.
@@ -710,7 +710,7 @@ Déployer `san-researcher` en lecture seule via Dual-Harness (`swarm` avec `gemi
 Dans une architecture monorepo (`apps/web`, `apps/mobile`, `packages/api`), le dossier `.agents/` se situe **exclusivement à la racine du dépôt Git**. Les sous-dossiers n'ont pas de `.agents/` propre : leurs particularités techniques sont documentées dans `.agents/rules/technicals/*.md`.
 
 ### 3. Invariant de Constitution Permanente `<racine>/AGENTS.md`
-Le fichier racine `AGENTS.md` ancre la gouvernance Dual-Harness (`san_*` v2.2) sur l'ensemble de la codebase et n'est jamais supprimé lors de l'hygiène Git.
+Le fichier racine `AGENTS.md` ancre la gouvernance Dual-Harness (`san_*` v3.0) sur l'ensemble de la codebase et n'est jamais supprimé lors de l'hygiène Git.
 
 ### 4. Invariant de Preuve Graphique
 Le fichier `LOGO.md` et les assets générés par `svg_to_png.mjs` doivent exister physiquement sur le disque avant que l'étape d'onboarding ne soit déclarée terminée.

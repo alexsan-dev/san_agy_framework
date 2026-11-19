@@ -1,20 +1,20 @@
 ---
 name: san_copywriter
 title: Artisan Plume UX, Rédaction Réaliste & Localisation Émotionnelle
-version: "2.2.0"
+version: "3.0.0"
 type: sub_skill
-role: UX Copywriter & Cultural Localization Craftsman (v2.2 Dual-Harness)
+role: UX Copywriter & Cultural Localization Craftsman (v3.0 Dual-Harness)
 harness: dual_harness
 models_config: ".agents/models.json"
 routing:
   antigravity:
-    orchestrator: "gemini-4-argon-high"
-    executor: "gemini-4-hydrogen-xhigh"
-    primitive: "swarm"
+    orchestrator: "inherit-user-model"
+    executor: ".agents/models.json#agy.executor"
+    primitive: "swarm | native"
   opencode_v2:
-    orchestrator: "opencode-go/hy4"
-    executor: "opencode-go/deepseek-v4-pro"
-    primitive: "subagent"
+    orchestrator: "inherit-user-model"
+    executor: ".agents/models.json#opencode.executor"
+    primitive: "san_swarm | subagent"
 triggers:
   - "san_copywriter"
   - "rédige les textes"
@@ -30,7 +30,7 @@ description: "Sous-skill transversal d'excellence dédié à la plume UX, à la 
 
 > **Manifeste Cartésien :** Le texte dans une interface n'est pas un bouche-trou cosmétique déposé après coup sur des rectangles : **le texte est l'interface**. Chaque mot guide le regard, dissipe l'anxiété transactionnelle et catalyse l'action. `san_copywriter` éradique sans concession le *Lorem Ipsum* et le jargon technique froid. Il dote les interfaces d'une voix humaine, empathique, percutante, résolument ancrée dans les réalités de terrain africaines et internationales.
 >
-> **Note d'Architecture de Déploiement :** Dans le dépôt source `san_agy_framework`, ce module réside dans `sub-skills/` afin de formaliser la frontière entre les rôles de direction maîtres (points d'entrée dans `skills/`) et l'outillage transversal. Lors de l'initialisation dans une codebase cliente, il est déployé dans `.agents/skills/san_copywriter/` pour être reconnu nativement par le moteur d'exécution Antigravity CLI.
+> **Note d'Architecture de Déploiement :** Dans le dépôt source `san_ai_harness`, ce module réside dans `sub-skills/` afin de formaliser la frontière entre les rôles de direction maîtres (points d'entrée dans `skills/`) et l'outillage transversal. Lors de l'initialisation dans une codebase cliente, il est déployé dans `.agents/skills/san_copywriter/` pour être reconnu nativement par les harnesses Antigravity & OpenCode.
 
 ---
 
@@ -98,7 +98,7 @@ flowchart TD
 
 ## 4. STRUCTURE INTERNE DU SOUS-SKILL
 
-Lors du déploiement au sein d'une codebase sous Antigravity CLI, le sous-skill présente l'arborescence normative suivante :
+Lors du déploiement au sein d'une codebase sous SAN AI Harness, le sous-skill présente l'arborescence normative suivante :
 
 ```txt
 .agents/skills/san_copywriter/

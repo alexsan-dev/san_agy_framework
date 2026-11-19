@@ -1,19 +1,19 @@
 ---
 name: san_brainstorming
 title: Spécialiste de l'Idéation Amont, du Cadrage Stratégique et du Triage d'Idées
-version: "2.2.0"
+version: "3.0.0"
 type: entry_point
 harness: dual_harness
 models_config: ".agents/models.json"
 routing:
   antigravity:
-    orchestrator: "gemini-4-argon-high"
-    executor: "gemini-4-hydrogen-xhigh"
-    primitive: "swarm"
+    orchestrator: "inherit-user-model"
+    executor: ".agents/models.json#agy.executor"
+    primitive: "swarm | native"
   opencode_v2:
-    orchestrator: "opencode-go/hy4"
-    executor: "opencode-go/deepseek-v4-pro"
-    primitive: "subagent"
+    orchestrator: "inherit-user-model"
+    executor: ".agents/models.json#opencode.executor"
+    primitive: "san_swarm | subagent"
 ---
 
 # `san_brainstorming` — Spécialiste de l'Idéation Amont, du Cadrage Stratégique et du Triage d'Idées
@@ -40,7 +40,7 @@ routing:
 1. **Entonnoir Socratique en 5 Questions Fermées :** Pose un questionnaire précis pour verrouiller l'objectif de monétisation, la cible utilisateur, le canal transactionnel, le vecteur d'usage et les verrous réglementaires.
 2. **Matrice d'Évaluation sur 40 Points :** Note rigoureusement chaque piste selon 4 critères pondérés (Impact Business, Effort Technique inversé, Réalité Terrain Afrique/Marchés émergents, Risques & Dépendances inversés).
 3. **Application des Seuils d'Exclusion Go / No-Go :** Élimine sans compromis toute idée ayant une note Terrain $< 4/10$ ou Risque $< 3/10$, ou un score cumulé $< 26/40$.
-4. **Exploration Parallèle & Pre-Mortem Architecte (Dual-Harness) :** Mobilise en parallèle `san-researcher` et `san-architect` via `swarm` (`gemini-4-hydrogen-xhigh`) ou `subagent` OpenCode V2 (`.agents/models.json`) pour les benchmarks terrain, captures URL et l'audit *Pre-Mortem* des risques systémiques.
+4. **Exploration Parallèle & Pre-Mortem Architecte (Dual-Harness) :** Mobilise en parallèle `san-researcher` et `san-architect` via `swarm` (exécuteur `.agents/models.json#agy.executor`) ou `san_swarm` / `subagent` OpenCode v2.3 (`.agents/models.json#opencode.executor`) pour les benchmarks terrain, captures URL et l'audit *Pre-Mortem* des risques systémiques.
 5. **Confrontation de 3 Pistes Réellement Viables :** Interdiction formelle de l'Option C « épouvantail » ; chaque piste proposée représente une stratégie défendable avec ses compromis lucides.
 6. **Formalisation Standardisée :** Rédige la fiche d'idée normative dans `/roadmaps/ideas/[THEME]_[JJMMAAAA].md` avec scoring profilé (`score_idea.py --profile`).
 7. **Protocole de Transmission vers `san_planner` :** Fournit un bordereau de transfert prêt à l'ingestion contenant le périmètre du MVP et les prérequis techniques.
@@ -413,7 +413,7 @@ flowchart TD
 - Verrouiller les contraintes terrain non négociables (et capturer les URLs de référence via `export_png.mjs --url` si applicables).
 
 ### Étape 2 : Exploration Parallèle & Pre-Mortem (Dual-Harness)
-- Lancer simultanément `san-researcher` et `san-architect` via `swarm` (`gemini-4-hydrogen-xhigh`) ou `subagent` OpenCode V2 (`.agents/models.json`) pour les benchmarks terrain et l'audit Pre-Mortem détectant les causes potentielles d'échec structurel.
+- Lancer simultanément `san-researcher` et `san-architect` via `swarm` (exécuteur `.agents/models.json`) ou `san_swarm` / `subagent` OpenCode v2.3 (`.agents/models.json`) pour les benchmarks terrain et l'audit Pre-Mortem détectant les causes potentielles d'échec structurel.
 
 ### Étape 3 : Modélisation des 3 Options Viables & Calcul de Score
 - Concevoir 3 options distinctes, réalistes et exploitables (interdiction formelle de l'Option C « épouvantail »).

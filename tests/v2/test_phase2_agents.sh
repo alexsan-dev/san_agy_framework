@@ -124,10 +124,10 @@ with open('${AGENTS_DIR}/${agent}') as f:
 done
 
 # ------------------------------------------------------------------------------
-# 4. Doctrine Modèles v2.2 Dual-Harness : frontmatter 'pro' + swarm/subagent + models.json
+# 4. Doctrine Modèles v3.0 Dual-Harness : frontmatter 'pro' + swarm/san_swarm/subagent + models.json (zéro modèle codé en dur)
 # ------------------------------------------------------------------------------
 echo ""
-info "4. Vérification de l'attribution des modèles v2.2 Dual-Harness (frontmatter 'pro' + models.json)"
+info "4. Vérification de l'attribution des modèles v3.0 Dual-Harness (frontmatter 'pro' + models.json)"
 
 for agent in "${EXPECTED_AGENTS[@]}"; do
   assert_true "${agent} déclare model: 'pro' dans le frontmatter YAML" \
@@ -138,8 +138,8 @@ with open('${AGENTS_DIR}/${agent}') as f:
 assert fm.get('model') == 'pro'
 \""
 
-  assert_true "${agent} référence Dual-Harness (models.json, subagent, gemini-4-hydrogen-xhigh & swarm, zéro 3.1-pro / 3.8-flash)" \
-    'grep -q "gemini-4-hydrogen-xhigh" "${AGENTS_DIR}/${agent}" && grep -q "swarm" "${AGENTS_DIR}/${agent}" && grep -q "models.json" "${AGENTS_DIR}/${agent}" && grep -q "subagent" "${AGENTS_DIR}/${agent}" && ! grep -q "gemini-3.1-pro-high" "${AGENTS_DIR}/${agent}" && ! grep -q "gemini-3.8-flash-high" "${AGENTS_DIR}/${agent}"'
+  assert_true "${agent} référence Dual-Harness (models.json, san_swarm/subagent & swarm, zéro modèle dur)" \
+    'grep -q "swarm" "${AGENTS_DIR}/${agent}" && grep -q "models.json" "${AGENTS_DIR}/${agent}" && grep -q "subagent" "${AGENTS_DIR}/${agent}" && ! grep -q "gemini-4-hydrogen-xhigh" "${AGENTS_DIR}/${agent}" && ! grep -q "gemini-4-argon" "${AGENTS_DIR}/${agent}" && ! grep -q "gemini-3.1-pro-high" "${AGENTS_DIR}/${agent}" && ! grep -q "gemini-3.8-flash-high" "${AGENTS_DIR}/${agent}"'
 done
 
 # ------------------------------------------------------------------------------
@@ -296,9 +296,9 @@ trap 'rm -rf "${TMP_PLUGIN_DIR}"' EXIT
 # Construire un bundle plugin valide avec les 8 agents
 cat << 'EOF' > "${TMP_PLUGIN_DIR}/plugin.json"
 {
-  "name": "san-framework",
-  "version": "2.2.0",
-  "description": "Framework Antigravity san_* v2.2 - Suite de 8 sous-agents natifs"
+  "name": "san-ai-harness",
+  "version": "3.0.0",
+  "description": "SAN AI Harness san_* v3.0 - Suite de 8 workers natifs"
 }
 EOF
 

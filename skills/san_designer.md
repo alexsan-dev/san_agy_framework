@@ -1,19 +1,19 @@
 ---
 name: san_designer
 title: Expert Design Visuel Haute Fidélité, UI Mockups 100% Code & Visual Craft
-version: "2.2.0"
+version: "3.0.0"
 type: domain_expert
 harness: dual_harness
 models_config: ".agents/models.json"
 routing:
   antigravity:
-    orchestrator: "gemini-4-argon-high"
-    executor: "gemini-4-hydrogen-xhigh"
-    primitive: "swarm"
+    orchestrator: "inherit-user-model"
+    executor: ".agents/models.json#agy.executor"
+    primitive: "swarm | native"
   opencode_v2:
-    orchestrator: "opencode-go/hy4"
-    executor: "opencode-go/deepseek-v4-pro"
-    primitive: "subagent"
+    orchestrator: "inherit-user-model"
+    executor: ".agents/models.json#opencode.executor"
+    primitive: "san_swarm | subagent"
   workers:
     worker: "san-designer-worker"
     auditor: "san-qa-auditor"
@@ -211,9 +211,9 @@ flowchart TD
 
 ---
 
-## 7. LA BOUCLE VISUELLE MULTIMODALE, CAPTURE LIVE `--url` & AUDIT `/ux-scan` (v2.2)
+## 7. LA BOUCLE VISUELLE MULTIMODALE, CAPTURE LIVE `--url` & AUDIT `/ux-scan` (v3.0)
 
-Le workflow `/ux-scan` et la génération d'écrans reposent sur la **Capture Live des Références** puis la **Boucle Visuelle Multimodale Obligatoire** en Dual-Harness (`swarm` avec `gemini-4-hydrogen-xhigh` | `subagent` OpenCode V2 via `.agents/models.json`) :
+Le workflow `/ux-scan` et la génération d'écrans reposent sur la **Capture Live des Références** puis la **Boucle Visuelle Multimodale Obligatoire** en Dual-Harness (`swarm` | `san_swarm` / `subagent` OpenCode v2.3 via `.agents/models.json`) :
 
 ```mermaid
 flowchart TD
@@ -241,7 +241,7 @@ Le sous-agent `san-designer-worker` produit la maquette HTML/Tailwind :
 Génération déterministe haute résolution via `export_png.mjs`, servant la maquette sur un serveur HTTP éphémère local avec attente de `document.fonts.ready` et `networkidle`.
 
 ### Étape 3 : Étape de Doute Visuel Multimodal (`san-qa-auditor` Dual-Harness)
-L'orchestrateur spawne impérativement `san-qa-auditor` (`swarm` avec `gemini-4-hydrogen-xhigh` | `subagent` OpenCode V2) :
+L'orchestrateur spawne `san-qa-auditor` (`swarm` | `san_swarm` / `subagent` OpenCode v2.3 via `.agents/models.json`) :
 1. **Inspection Visuelle Réelle :** L'auditeur lit directement le fichier `.png` généré via `read_file`.
 2. **Identification de 3 Axes d'Élévation :**
    - Équilibre des masses & aération spatiale.

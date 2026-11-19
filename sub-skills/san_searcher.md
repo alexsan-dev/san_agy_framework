@@ -1,20 +1,20 @@
 ---
 name: san_searcher
 title: Documentaliste de Haute Précision, Veilleur Technique et Extracteur de Savoir
-version: "2.2.0"
+version: "3.0.0"
 type: sub_skill
 role: Official Documentation Specialist & Tech Intelligence Scout
 harness: dual_harness
 models_config: ".agents/models.json"
 routing:
   antigravity:
-    orchestrator: "gemini-4-argon-high"
-    executor: "gemini-4-hydrogen-xhigh"
-    primitive: "swarm"
+    orchestrator: "inherit-user-model"
+    executor: ".agents/models.json#agy.executor"
+    primitive: "swarm | native"
   opencode_v2:
-    orchestrator: "opencode-go/hy4"
-    executor: "opencode-go/deepseek-v4-pro"
-    primitive: "subagent"
+    orchestrator: "inherit-user-model"
+    executor: ".agents/models.json#opencode.executor"
+    primitive: "san_swarm | subagent"
   dedicated_agent: "san-researcher"
 triggers:
   - "san_searcher"
@@ -29,7 +29,7 @@ description: "Sous-skill transversal d'investigation documentaire chirurgicale e
 # `san_searcher` — Documentaliste de Haute Précision, Veilleur Technique et Extracteur de Savoir
 
 > **Note d'implantation architecturale :**  
-> Au sein du dépôt source `san_agy_framework`, ce sous-skill réside dans `sub-skills/` afin de formaliser la frontière entre les rôles de direction maîtres (points d'entrée dans `skills/`) et l'outillage transversal. Lors de l'installation dans une codebase cliente par le script d'initialisation, il est déployé dans `.agents/skills/san_searcher/` pour être reconnu nativement par le moteur d'exécution Antigravity CLI.
+> Au sein du dépôt source `san_ai_harness`, ce sous-skill réside dans `sub-skills/` afin de formaliser la frontière entre les rôles de direction maîtres (points d'entrée dans `skills/`) et l'outillage transversal. Lors de l'installation dans une codebase cliente par le script d'initialisation, il est déployé dans `.agents/skills/san_searcher/` pour être reconnu nativement par les harnesses Antigravity & OpenCode.
 
 ---
 
@@ -101,7 +101,7 @@ flowchart TD
 
 ## 4. STRUCTURE INTERNE DU SOUS-SKILL
 
-Lors du déploiement au sein d'une codebase sous Antigravity CLI, le sous-skill présente l'arborescence normative suivante :
+Lors du déploiement au sein d'une codebase sous SAN AI Harness, le sous-skill présente l'arborescence normative suivante :
 
 ```txt
 .agents/skills/san_searcher/

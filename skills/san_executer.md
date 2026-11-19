@@ -1,20 +1,20 @@
 ---
 name: san_executer
 title: Chef d'Orchestre d'Implémentation Full-Stack et Moteur d'Exécution Principal
-version: "2.2.0"
+version: "3.0.0"
 type: entry_point
 alias: san_execute
 harness: dual_harness
 models_config: ".agents/models.json"
 routing:
   antigravity:
-    orchestrator: "gemini-4-argon-high"
-    executor: "gemini-4-hydrogen-xhigh"
-    primitive: "swarm"
+    orchestrator: "inherit-user-model"
+    executor: ".agents/models.json#agy.executor"
+    primitive: "swarm | native"
   opencode_v2:
-    orchestrator: "opencode-go/hy4"
-    executor: "opencode-go/deepseek-v4-pro"
-    primitive: "subagent"
+    orchestrator: "inherit-user-model"
+    executor: ".agents/models.json#opencode.executor"
+    primitive: "san_swarm | subagent"
   workers:
     coder_back: "san-coder-back"
     coder_front: "san-coder-front"
@@ -54,11 +54,11 @@ routing:
    - Retry exponentiel avec jitter aléatoire pour les appels réseaux dégradés.
    - File d'attente Outbox locale (SQLite / MMKV / IndexedDB) pour l'écriture hors-ligne avec synchronisation transparente.
 5. **Délégation Dual-Harness & Dialectique des 2 Approches :**
-   - Délègue chaque tâche atomique à `san-coder-back` ou `san-coder-front` via **`swarm(action: "add", model: "gemini-4-hydrogen-xhigh")`** (Antigravity) ou **`subagent`** configuré par `.agents/models.json` / `san-framework models` (OpenCode V2) — jamais `invoke_subagent(Model: "inherit")` sur `Argon`/`Carbon`.
+   - Tâche simple / mono-couche : exécution directe possible en cycle natif `Plan → Execute`. Multi-couches / Duel UI : délègue aux workers (`san-coder-back`, `san-coder-front`) via **`swarm`** (Antigravity, modèle exécuteur `.agents/models.json`) ou **`san_swarm` / `subagent`** (OpenCode v2.3 via `.agents/models.json` / `san-harness models`).
    - Obligation formelle d'inclure dans leur prompt la clause de **Dialectique 2 Approches** (Approche A conservatrice vs Approche B optimale/performante).
 6. **Entonnoir d'Audit Consolidé en 2 Étages & Relais Sceptique :**
    - **Étage 1 (Scripté Déterministe Fail-Closed) :** Lancement de `scripts/e2e_verification_gate.sh`, `backend_quality_gate.sh` ou `front_quality_gate.sh`. Arrêt immédiat sans LLM si un test échoue.
-   - **Étage 2 (Inquisiteur Sceptique QA) :** Spawner `san-qa-auditor` en Dual-Harness (`swarm` / `subagent`, lecture seule) avec présomption d'anomalies. Si `RETOUR_ATELIER`, itération jusqu'au verdict `LIVRABLE`. En fin de quota, passer par [`san_transcriber`](san_transcriber.md).
+   - **Étage 2 (Inquisiteur Sceptique QA) :** Spawner `san-qa-auditor` en Dual-Harness (`swarm` / `san_swarm` / `subagent`, lecture seule) avec présomption d'anomalies. Si `RETOUR_ATELIER`, itération jusqu'au verdict `LIVRABLE`. À l'approche des `120k` tokens, déclencher `/compact` (zéro transcript).
 7. **Fast-Track d'Hygiène Orchestrateur :** Vérifie le code réel avant de cocher les cases `- [x]`, met à jour `CHANGELOG.md` et exécute `scripts/archive_roadmap.sh`.
 
 ### Ce qu'il NE FAIT PAS :
@@ -305,7 +305,7 @@ flowchart TD
 - Créer la requête Bruno correspondante et valider les assertions de retour HTTP.
 
 ### Étape 3 : Orchestration de l'Implémentation (Dual-Harness `swarm` / `subagent`)
-- Les workers (`gemini-4-hydrogen-xhigh` via `swarm`, ou exécuteur `.agents/models.json` via `subagent` OpenCode V2) implémentent :
+- Les workers (exécuteur `.agents/models.json` via `swarm` ou `san_swarm` / `subagent` OpenCode v2.3) implémentent :
   - Côté serveur : contrôleurs, form requests, services métier, tests unitaires.
   - Côté client : composants avec gestion stricte des **5 états obligatoires** (Idéal, Vide, Chargement, Erreur, Succès/Hors-ligne), animations 60 fps conformes à `BRAND.md`.
 
@@ -447,7 +447,7 @@ Aucune implémentation de composant ou d'écran ne peut débuter sans un contrat
 
 ### 3. Invariant de Délégation et de Routage Dual-Harness
 - L'orchestrateur est un stratège : il ne code jamais directement.
-- Les workers de code (`san-coder-back`, `san-coder-front`) et d'audit (`san-qa-auditor`) tournent via **`swarm`** (`gemini-4-hydrogen-xhigh`, Antigravity) ou **`subagent`** (`.agents/models.json`, OpenCode V2) — jamais via `invoke_subagent(Model: 'inherit')` sur `Argon`/`Carbon`.
+- Pour les chantiers multi-couches ou les audits, les workers de code (`san-coder-back`, `san-coder-front`) et d'audit (`san-qa-auditor`) tournent via **`swarm`** (Antigravity, `.agents/models.json#agy.executor`) ou **`san_swarm` / `subagent`** (OpenCode v2.3, `.agents/models.json#opencode.executor`), laissant l'orchestrateur hériter librement du `/model` utilisateur.
 - Le Fast-Track d'hygiène (cochage de cases prouvées, déplacement d'archive, mise à jour changelog) est exécuté directement par l'orchestrateur.
 
 ### 4. Invariant de Solidarité Transactionnelle (Tout ou Rien)

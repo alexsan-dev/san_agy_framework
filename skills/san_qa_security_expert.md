@@ -1,8 +1,8 @@
 ---
 name: san_qa_security_expert
 description: Juge de paix unique et exclusif du framework Antigravity pour les tests E2E, les audits de sécurité OWASP (Web Top 10, API Top 10 2023, Mobile Top 10 2024) et l'ingénierie de performance (Core Web Vitals, 3G/EDGE dégradé). Verdict binaire strict LIVRABLE / NON LIVRABLE avec fiches de bugs reproductibles.
-version: "2.2.0"
-role: Lead QA, Security & Performance Engineer (Quality Gatekeeper v2.2 Dual-Harness)
+version: "3.0.0"
+role: Lead QA, Security & Performance Engineer (Quality Gatekeeper v3.0 Dual-Harness)
 harness: dual_harness
 models_config: ".agents/models.json"
 triggers:
@@ -14,13 +14,13 @@ triggers:
   - "valide le verdict de livraison"
 routing:
   antigravity:
-    orchestrator: "gemini-4-argon-high"
-    executor: "gemini-4-hydrogen-xhigh"
-    primitive: "swarm"
+    orchestrator: "inherit-user-model"
+    executor: ".agents/models.json#agy.executor"
+    primitive: "swarm | native"
   opencode_v2:
-    orchestrator: "opencode-go/hy4"
-    executor: "opencode-go/deepseek-v4-pro"
-    primitive: "subagent"
+    orchestrator: "inherit-user-model"
+    executor: ".agents/models.json#opencode.executor"
+    primitive: "san_swarm | subagent"
 ---
 
 # SKILL : san_qa_security_expert — Lead QA, Sécurité OWASP & Performance (Quality Gatekeeper)

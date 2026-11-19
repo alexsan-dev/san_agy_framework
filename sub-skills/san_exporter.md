@@ -1,20 +1,20 @@
 ---
 name: san_exporter
 title: Artisan Exportation Headless, Rendu Graphique & Pipeline d'Assets
-version: "2.2.0"
+version: "3.0.0"
 type: sub_skill
 role: Headless Export Engineer & Graphical Asset Pipeline Specialist
 harness: dual_harness
 models_config: ".agents/models.json"
 routing:
   antigravity:
-    orchestrator: "gemini-4-argon-high"
-    executor: "gemini-4-hydrogen-xhigh"
-    primitive: "swarm"
+    orchestrator: "inherit-user-model"
+    executor: ".agents/models.json#agy.executor"
+    primitive: "swarm | native"
   opencode_v2:
-    orchestrator: "opencode-go/hy4"
-    executor: "opencode-go/deepseek-v4-pro"
-    primitive: "subagent"
+    orchestrator: "inherit-user-model"
+    executor: ".agents/models.json#opencode.executor"
+    primitive: "san_swarm | subagent"
   workers:
     worker: "san-designer-worker"
     auditor: "san-qa-auditor"
@@ -33,7 +33,7 @@ description: "Sous-skill transversal d'automatisation de capture headless et de 
 
 > **Manifeste Cartésien :** Dans un flux d'ingénierie moderne, aucune capture d'écran, aucun favicon et aucun asset de publication sur les stores ne doit être découpé manuellement au curseur dans un logiciel graphique. Le processus de restitution doit être **déterministe, automatisé et reproductible en une commande CLI unique**. `san_exporter` orchestre le moteur de capture headless (Playwright) et le pipeline vectoriel matriciel (`sharp`) pour transformer le code HTML statique et les vecteurs SVG en livrables d'une netteté absolue au pixel près.
 >
-> **Note d'Architecture de Déploiement :** Dans le dépôt source `san_agy_framework`, ce module réside dans `sub-skills/` afin de formaliser la frontière entre les rôles de direction maîtres (points d'entrée dans `skills/`) et l'outillage transversal. Lors de l'initialisation dans une codebase cliente, il est déployé dans `.agents/skills/san_exporter/` pour être reconnu nativement par le moteur d'exécution Antigravity CLI.
+> **Note d'Architecture de Déploiement :** Dans le dépôt source `san_ai_harness`, ce module réside dans `sub-skills/` afin de formaliser la frontière entre les rôles de direction maîtres (points d'entrée dans `skills/`) et l'outillage transversal. Lors de l'initialisation dans une codebase cliente, il est déployé dans `.agents/skills/san_exporter/` pour être reconnu nativement par les harnesses Antigravity & OpenCode.
 
 ---
 
@@ -107,7 +107,7 @@ flowchart TD
 
 ## 4. STRUCTURE INTERNE DU SOUS-SKILL
 
-Lors du déploiement au sein d'une codebase sous Antigravity CLI, le sous-skill présente l'arborescence normative suivante :
+Lors du déploiement au sein d'une codebase sous SAN AI Harness, le sous-skill présente l'arborescence normative suivante :
 
 ```txt
 .agents/skills/san_exporter/
@@ -120,8 +120,8 @@ Lors du déploiement au sein d'une codebase sous Antigravity CLI, le sous-skill 
 │   ├── HTML_CANVAS_SPEC_HEADER.html         # En-tête de spécification canvas à insérer dans les maquettes
 │   └── EXPORT_MANIFEST_TEMPLATE.json        # Schéma du registre d'intégrité avec signatures SHA-256
 └── scripts/
-    ├── export_png.mjs                       # Moteur Playwright v2.2 (HTML local anti-CORS, --url live, --full-page, --audit-dom)
-    └── svg_to_png.mjs                       # Compilateur Sharp v2.2 unifié (--output-dir / --sizes & --out-dir ITMS-90717)
+    ├── export_png.mjs                       # Moteur Playwright v3.0 (HTML local anti-CORS, --url live, --full-page, --audit-dom)
+    └── svg_to_png.mjs                       # Compilateur Sharp v3.0 unifié (--output-dir / --sizes & --out-dir ITMS-90717)
 ```
 
 ---

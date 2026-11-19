@@ -1,19 +1,19 @@
 ---
 name: san_backend_expert
 title: Lead Backend & Distributed Systems Engineer (Laravel, AdonisJS, Redis, PostgreSQL, Contract-First Bruno)
-version: "2.2.0"
+version: "3.0.0"
 type: domain_expert
 harness: dual_harness
 models_config: ".agents/models.json"
 routing:
   antigravity:
-    orchestrator: "gemini-4-argon-high"
-    executor: "gemini-4-hydrogen-xhigh"
-    primitive: "swarm"
+    orchestrator: "inherit-user-model"
+    executor: ".agents/models.json#agy.executor"
+    primitive: "swarm | native"
   opencode_v2:
-    orchestrator: "opencode-go/hy4"
-    executor: "opencode-go/deepseek-v4-pro"
-    primitive: "subagent"
+    orchestrator: "inherit-user-model"
+    executor: ".agents/models.json#opencode.executor"
+    primitive: "san_swarm | subagent"
   workers:
     coder_back: "san-coder-back"
     auditor: "san-qa-auditor"

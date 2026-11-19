@@ -1,20 +1,20 @@
 ---
 name: san_design_tokens
 title: Gardien des Design Tokens, de la Vérité BRAND.md & de la Signature Cinétique
-version: "2.2.0"
+version: "3.0.0"
 type: sub_skill
 role: Design Tokens Architect & Motion Signature Keeper
 harness: dual_harness
 models_config: ".agents/models.json"
 routing:
   antigravity:
-    orchestrator: "gemini-4-argon-high"
-    executor: "gemini-4-hydrogen-xhigh"
-    primitive: "swarm"
+    orchestrator: "inherit-user-model"
+    executor: ".agents/models.json#agy.executor"
+    primitive: "swarm | native"
   opencode_v2:
-    orchestrator: "opencode-go/hy4"
-    executor: "opencode-go/deepseek-v4-pro"
-    primitive: "subagent"
+    orchestrator: "inherit-user-model"
+    executor: ".agents/models.json#opencode.executor"
+    primitive: "san_swarm | subagent"
   workers:
     worker: "san-coder-front"
     auditor: "san-qa-auditor"
@@ -33,7 +33,7 @@ description: "Sous-skill transversal garant de la source unique de vérité esth
 
 > **Manifeste Cartésien :** Le désordre visuel et l'incohérence esthétique naissent toujours de la dispersion des vérités. Lorsqu'un développeur invente une couleur hexadécimale arbitraire dans une balise ou improvise un rayon de courbure au jugé, l'âme du produit s'effrite. `san_design_tokens` érige le fichier `.agents/rules/BRAND.md` en sanctuaire inviolable. Il transforme ces choix fondamentaux en un réseau de tokens statiques et cinétiques distribués de manière déterministe à toutes les couches d'exécution (Web, Mobile, HTML statique).
 >
-> **Note d'Architecture de Déploiement :** Dans le dépôt source `san_agy_framework`, ce module réside dans `sub-skills/` afin de formaliser la frontière entre les rôles de direction maîtres (points d'entrée dans `skills/`) et l'outillage transversal. Lors de l'initialisation dans une codebase cliente, il est déployé dans `.agents/skills/san_design_tokens/` pour qu'Antigravity CLI le mobilise comme sous-skill d'autorité sur le design system.
+> **Note d'Architecture de Déploiement :** Dans le dépôt source `san_ai_harness`, ce module réside dans `sub-skills/` afin de formaliser la frontière entre les rôles de direction maîtres (points d'entrée dans `skills/`) et l'outillage transversal. Lors de l'initialisation dans une codebase cliente, il est déployé dans `.agents/skills/san_design_tokens/` pour que les harnesses Antigravity & OpenCode le mobilisent comme sous-skill d'autorité sur le design system.
 
 ---
 
@@ -98,7 +98,7 @@ flowchart TD
 
 ## 4. STRUCTURE INTERNE DU SOUS-SKILL
 
-Lors du déploiement au sein d'une codebase sous Antigravity CLI, le sous-skill présente l'arborescence normative suivante :
+Lors du déploiement au sein d'une codebase sous SAN AI Harness, le sous-skill présente l'arborescence normative suivante :
 
 ```txt
 .agents/skills/san_design_tokens/

@@ -37,20 +37,20 @@ echo ""
 # ------------------------------------------------------------------------------
 info "0. Vérification de la version 2.2.0 dans package.json & CLI"
 PKG_VERSION=$(node -e "const pkg = JSON.parse(fs.readFileSync('${ROOT_DIR}/package.json', 'utf8')); console.log(pkg.version);")
-assert_true "package.json a pour version '2.2.0' (actuel: ${PKG_VERSION})" \
-  '[ "${PKG_VERSION}" = "2.2.0" ]'
+assert_true "package.json a pour version '3.0.0' (actuel: ${PKG_VERSION})" \
+  '[ "${PKG_VERSION}" = "3.0.0" ]'
 
 CLI_VERSION_OUTPUT=$(node "${CLI_INDEX}" --version)
-assert_true "CLI index.js --version retourne '2.2.0'" \
-  'echo "${CLI_VERSION_OUTPUT}" | grep -q "2.2.0"'
+assert_true "CLI index.js --version retourne '3.0.0'" \
+  'echo "${CLI_VERSION_OUTPUT}" | grep -q "3.0.0"'
 
 WHATS_NEW_OUTPUT=$(node "${CLI_INDEX}" whats-new)
-assert_true "CLI index.js whats-new affiche 'What'\''s New on san-agy v2.2.0'" \
-  'echo "${WHATS_NEW_OUTPUT}" | grep -q "What'\''s New on san-agy v2.2.0"'
+assert_true "CLI index.js whats-new affiche 'What'\''s New on san_ai_harness v3.0.0'" \
+  'echo "${WHATS_NEW_OUTPUT}" | grep -q "What'\''s New on san_ai_harness v3.0.0"'
 
 HELP_OUTPUT=$(node "${CLI_INDEX}" --help)
-assert_true "CLI index.js --help documente whats-new, models et --light" \
-  'echo "${HELP_OUTPUT}" | grep -q "whats-new" && echo "${HELP_OUTPUT}" | grep -q "models" && echo "${HELP_OUTPUT}" | grep -q "\-\-light"'
+assert_true "CLI index.js --help documente whats-new, models, --compaction et --light" \
+  'echo "${HELP_OUTPUT}" | grep -q "whats-new" && echo "${HELP_OUTPUT}" | grep -q "models" && echo "${HELP_OUTPUT}" | grep -q "\-\-compaction" && echo "${HELP_OUTPUT}" | grep -q "\-\-light"'
 
 # ------------------------------------------------------------------------------
 # 1. Scénario 1 : init --local (Les 4 couches + gouvernance souveraine + hygiène réversible)
@@ -69,15 +69,15 @@ echo '{"rules": ["BRAND"]}' > "${TMP_LOCAL}/.agents/rules.json"
 
 INIT_OUTPUT=$(node "${CLI_INDEX}" init --local --all --dir="${TMP_LOCAL}")
 assert_true "init --local s'exécute avec succès" \
-  'echo "${INIT_OUTPUT}" | grep -q "INSTALLATION DU FRAMEWORK ANTIGRAVITY"'
+  'echo "${INIT_OUTPUT}" | grep -q "INSTALLATION DE SAN AI HARNESS"'
 
 # Couche 1 : Skills
 SKILLS_COUNT=$(find "${TMP_LOCAL}/.agents/skills" -mindepth 1 -maxdepth 1 -type d | wc -l)
-assert_true "Couche 1 : Les 19 skills sont installés dans .agents/skills/ (détectés: ${SKILLS_COUNT})" \
-  '[ "${SKILLS_COUNT}" -eq 19 ]'
+assert_true "Couche 1 : Les 17 skills sont installés dans .agents/skills/ (détectés: ${SKILLS_COUNT})" \
+  '[ "${SKILLS_COUNT}" -eq 17 ]'
 
-assert_true "Dual-Harness : .agents/models.json créé en version 2.2.0" \
-  'python3 -c "import json; d=json.load(open(\"${TMP_LOCAL}/.agents/models.json\")); assert d[\"version\"]==\"2.2.0\" and d[\"agy\"][\"executor\"]==\"gemini-4-hydrogen-xhigh\" and d[\"opencode\"][\"executor\"]==\"opencode-go/deepseek-v4-pro\""'
+assert_true "Dual-Harness : .agents/models.json créé en version 3.0.0 (orchestrateurs inherit-user-model & compaction 120k)" \
+  'python3 -c "import json; d=json.load(open(\"${TMP_LOCAL}/.agents/models.json\")); assert d[\"version\"]==\"3.0.0\" and d[\"agy\"][\"orchestrator\"]==\"inherit-user-model\" and d[\"agy\"][\"executor\"]==\"gemini-4-hydrogen-xhigh\" and d[\"opencode\"][\"orchestrator\"]==\"inherit-user-model\" and d[\"opencode\"][\"executor\"]==\"opencode-go/deepseek-v4-pro\" and d[\"compaction\"][\"targetTokens\"]==120000"'
 
 EXECUTABLE_SCRIPTS_COUNT=$(find "${TMP_LOCAL}/.agents/skills" -type f -name "*.sh" -perm -111 | wc -l)
 assert_true "Couche 1 : Les scripts de skills possèdent le bit exécutable (chmod +x, count: ${EXECUTABLE_SCRIPTS_COUNT})" \
@@ -123,11 +123,8 @@ assert_true "Couche 4 : pre_invocation.mjs est présent et exécutable" \
 assert_true "Couche 4 : pre_tool_guard.mjs est présent et exécutable" \
   '[ -x "${TMP_LOCAL}/.agents/hooks/scripts/pre_tool_guard.mjs" ]'
 
-assert_true "Couche 4 : post_tool_indexer.mjs est présent et exécutable" \
-  '[ -x "${TMP_LOCAL}/.agents/hooks/scripts/post_tool_indexer.mjs" ]'
-
-assert_true "Couche 4 : stop_guard.mjs est présent et exécutable" \
-  '[ -x "${TMP_LOCAL}/.agents/hooks/scripts/stop_guard.mjs" ]'
+assert_true "Couche 4 : post_tool_indexer.mjs, stop_guard.mjs et .agents/cache/ sont absents" \
+  '[ ! -e "${TMP_LOCAL}/.agents/hooks/scripts/post_tool_indexer.mjs" ] && [ ! -e "${TMP_LOCAL}/.agents/hooks/scripts/stop_guard.mjs" ] && [ ! -e "${TMP_LOCAL}/.agents/cache" ]'
 
 # Gouvernance racine
 assert_true "Gouvernance : <root>/AGENTS.md est déployé à la racine" \
@@ -184,7 +181,7 @@ assert_true "doctor retourne un code de sortie 0 sur un repo conforme" \
 assert_true "doctor affiche 'CONFORME (6/6 PILIERS AU VERT)'" \
   'echo "${DOCTOR_OUTPUT}" | grep -q "CONFORME (6/6 PILIERS AU VERT)"'
 
-for p in "Gouvernance souveraine" "Règles normatives" "Sous-agents natifs" "Garde-fous mécaniques" "Catalogue des 19 skills" "Étanchéité Git"; do
+for p in "Gouvernance souveraine" "Règles normatives" "Sous-agents natifs" "Garde-fous mécaniques" "Catalogue des 17 skills" "Étanchéité Git"; do
   assert_true "doctor valide le pilier : ${p}" \
     'echo "${DOCTOR_OUTPUT}" | grep -E "✔.*${p}"'
 done
@@ -226,27 +223,38 @@ set -e
 assert_true "doctor échoue (code 1) lorsque AGENTS.md possède un frontmatter YAML interdit" \
   '[ "${DOC_CODE_C}" -eq 1 ] && echo "${DOC_BROKEN_C}" | grep -q "NON CONFORME"'
 
-# Cas D : stop_guard.mjs absent
+# Cas D : pre_invocation.mjs absent
 cp "${TMP_LOCAL}/AGENTS.md" "${TMP_BROKEN}/AGENTS.md"
-rm -f "${TMP_BROKEN}/.agents/hooks/scripts/stop_guard.mjs"
+rm -f "${TMP_BROKEN}/.agents/hooks/scripts/pre_invocation.mjs"
 set +e
 DOC_BROKEN_D=$(node "${CLI_INDEX}" doctor --dir="${TMP_BROKEN}")
 DOC_CODE_D=$?
 set -e
-assert_true "doctor échoue (code 1) lorsque stop_guard.mjs est absent" \
+assert_true "doctor échoue (code 1) lorsque pre_invocation.mjs est absent" \
   '[ "${DOC_CODE_D}" -eq 1 ] && echo "${DOC_BROKEN_D}" | grep -q "NON CONFORME"'
+
+# Cas E : .agents/cache résiduel présent -> doctor doit échouer
+cp "${TMP_LOCAL}/.agents/hooks/scripts/pre_invocation.mjs" "${TMP_BROKEN}/.agents/hooks/scripts/pre_invocation.mjs"
+mkdir -p "${TMP_BROKEN}/.agents/cache"
+echo "# old map" > "${TMP_BROKEN}/.agents/cache/REPO_MAP.md"
+set +e
+DOC_BROKEN_E=$(node "${CLI_INDEX}" doctor --dir="${TMP_BROKEN}")
+DOC_CODE_E=$?
+set -e
+assert_true "doctor échoue (code 1) lorsque .agents/cache/ obsolète est présent" \
+  '[ "${DOC_CODE_E}" -eq 1 ] && echo "${DOC_BROKEN_E}" | grep -q "NON CONFORME"'
 
 rm -rf "${TMP_BROKEN}"
 
 # ------------------------------------------------------------------------------
-# 4. Scénario 4 : Commande update (migration v1.0 -> v2.2 non destructive & What's New)
+# 4. Scénario 4 : Commande update (migration v2.x -> v3.0, purge cache & What's New)
 # ------------------------------------------------------------------------------
-info "4. Scénario update sur un projet v1.0 avec textes personnalisés"
+info "4. Scénario update sur un projet legacy avec textes personnalisés & résidus .agents/cache"
 TMP_V1=$(mktemp -d)
 trap 'rm -rf "${TMP_LOCAL}" "${TMP_V1}"' EXIT
 
 git -C "${TMP_V1}" init -q
-mkdir -p "${TMP_V1}/.agents/rules"
+mkdir -p "${TMP_V1}/.agents/rules" "${TMP_V1}/.agents/cache" "${TMP_V1}/.agents/hooks/scripts" "${TMP_V1}/.agents/skills/san_init" "${TMP_V1}/.agents/skills/san_cartographer" "${TMP_V1}/.agents/skills/san_transcriber"
 cat << 'EOF' > "${TMP_V1}/.agents/rules/BRAND.md"
 # CHARTE GRAPHIQUE V1 DU CLIENT
 * Palette principale : #123456 et #ABCDEF
@@ -260,31 +268,37 @@ cat << 'EOF' > "${TMP_V1}/.agents/rules/PRODUCT.md"
 * Support multi-devises Afrique de l'Ouest
 EOF
 
-mkdir -p "${TMP_V1}/.agents/skills/san_init"
+cat << 'EOF' > "${TMP_V1}/.agents/rules/PROJECT.md"
+---
+trigger: always_on
+---
+# Règles Projet Legacy
+* Auth hashing : Argon2id + salage fort.
+* Routing legacy : Argon -> swarm gemini-4-hydrogen-xhigh ; consulter .agents/cache/REPO_MAP.md.
+* Relais : san_transcriber
+EOF
+
+echo "# legacy map" > "${TMP_V1}/.agents/cache/REPO_MAP.md"
+echo '{"legacy":true}' > "${TMP_V1}/.agents/cache/repo-index.json"
+echo "// old" > "${TMP_V1}/.agents/hooks/scripts/post_tool_indexer.mjs"
+echo "// old" > "${TMP_V1}/.agents/hooks/scripts/stop_guard.mjs"
+echo "# dup" > "${TMP_V1}/.agents/AGENTS.md"
 echo "skill v1 obsolète" > "${TMP_V1}/.agents/skills/san_init/SKILL.md"
 echo '{"rules": ["BRAND", "PRODUCT"]}' > "${TMP_V1}/.agents/rules.json"
 
 UPDATE_OUTPUT=$(node "${CLI_INDEX}" update --dir="${TMP_V1}")
-assert_true "update s'exécute avec succès" \
-  'echo "${UPDATE_OUTPUT}" | grep -q "MIGRATION & MISE À JOUR v2.2"'
+assert_true "update s'exécute avec succès (bannière MIGRATION & MISE À JOUR v3.0.0)" \
+  'echo "${UPDATE_OUTPUT}" | grep -q "MIGRATION & MISE À JOUR v3.0.0"'
 
-assert_true "update affiche l'encart What'\''s New on san-agy v2.2.0 dans le terminal" \
-  'echo "${UPDATE_OUTPUT}" | grep -q "What'\''s New on san-agy v2.2.0"'
+assert_true "update affiche l'encart What'\''s New on san_ai_harness v3.0.0 dans le terminal" \
+  'echo "${UPDATE_OUTPUT}" | grep -q "What'\''s New on san_ai_harness v3.0.0"'
 
-assert_true "update génère .agents/cache/whats_new_pending.json avec version=2.2.0 et seen=false" \
-  'python3 -c "import json; d=json.load(open(\"${TMP_V1}/.agents/cache/whats_new_pending.json\")); assert d[\"version\"]==\"2.2.0\" and d[\"seen\"] is False and len(d.get(\"highlights\", [])) >= 5"'
+assert_true "update purge .agents/cache, post_tool_indexer.mjs, stop_guard.mjs, san_cartographer, san_transcriber et .agents/AGENTS.md" \
+  '[ ! -e "${TMP_V1}/.agents/cache" ] && [ ! -e "${TMP_V1}/.agents/hooks/scripts/post_tool_indexer.mjs" ] && [ ! -e "${TMP_V1}/.agents/hooks/scripts/stop_guard.mjs" ] && [ ! -e "${TMP_V1}/.agents/skills/san_cartographer" ] && [ ! -e "${TMP_V1}/.agents/skills/san_transcriber" ] && [ ! -e "${TMP_V1}/.agents/AGENTS.md" ]'
 
-# Vérification injection unique au 1er SessionStart post-update
-SESSION_V1_OUT1=$(echo '{"workspacePaths":["'"${TMP_V1}"'"]}' | node "${TMP_V1}/.agents/hooks/scripts/session_start.mjs")
-assert_true "1er SessionStart post-update injecte [WHAT'\''S NEW ON SAN.AGY v2.2.0] et bascule seen=true" \
-  'python3 -c "import sys,json; out=json.loads(sys.argv[1]); msg=out[\"injectSteps\"][0][\"systemMessage\"][\"systemMessage\"]; assert \"[WHAT'\''S NEW ON SAN.AGY v2.2.0]\" in msg; cache=json.load(open(\"${TMP_V1}/.agents/cache/whats_new_pending.json\")); assert cache[\"seen\"] is True" "${SESSION_V1_OUT1}"'
-
-SESSION_V1_OUT2=$(echo '{"workspacePaths":["'"${TMP_V1}"'"]}' | node "${TMP_V1}/.agents/hooks/scripts/session_start.mjs")
-assert_true "2ème SessionStart post-update n'\''injecte plus [WHAT'\''S NEW ON SAN.AGY v2.2.0]" \
-  'python3 -c "import sys,json; out=json.loads(sys.argv[1]); msg=out[\"injectSteps\"][0][\"systemMessage\"][\"systemMessage\"]; assert \"[WHAT'\''S NEW ON SAN.AGY v2.2.0]\" not in msg" "${SESSION_V1_OUT2}"'
-
-assert_true "update installe stop_guard.mjs exécutable" \
-  '[ -x "${TMP_V1}/.agents/hooks/scripts/stop_guard.mjs" ]'
+PROJECT_MIGRATED=$(cat "${TMP_V1}/.agents/rules/PROJECT.md")
+assert_true "update migre PROJECT.md (supprime gemini-4-hydrogen-xhigh/REPO_MAP/san_transcriber) tout en préservant Argon2id" \
+  'echo "${PROJECT_MIGRATED}" | grep -q "Argon2id" && ! echo "${PROJECT_MIGRATED}" | grep -q "gemini-4-hydrogen-xhigh" && ! echo "${PROJECT_MIGRATED}" | grep -q "REPO_MAP" && ! echo "${PROJECT_MIGRATED}" | grep -q "san_transcriber"'
 
 # Vérification Smart Merge Frontmatter
 BRAND_POST=$(cat "${TMP_V1}/.agents/rules/BRAND.md")
@@ -313,8 +327,8 @@ assert_true "update : Les 8 sous-agents ont été installés dans .agents/agents
 assert_true "update : .agents/hooks.json a été installé" \
   '[ -f "${TMP_V1}/.agents/hooks.json" ]'
 
-assert_true "update : Les 19 skills sont resynchronisés" \
-  '[ "$(find "${TMP_V1}/.agents/skills" -mindepth 1 -maxdepth 1 -type d | wc -l)" -eq 19 ]'
+assert_true "update : Les 17 skills sont resynchronisés" \
+  '[ "$(find "${TMP_V1}/.agents/skills" -mindepth 1 -maxdepth 1 -type d | wc -l)" -eq 17 ]'
 
 assert_true "update : AGENTS.md souverain est créé à la racine" \
   '[ -f "${TMP_V1}/AGENTS.md" ]'
@@ -349,8 +363,8 @@ assert_true "Plugin global : assets/logo.svg est présent" \
 assert_true "Plugin global : hooks.json est placé à la racine du plugin" \
   '[ -f "${TMP_GLOBAL}/hooks.json" ]'
 
-assert_true "Plugin global : Les 5 scripts de hooks sont dans hooks/scripts/ et exécutables" \
-  '[ -x "${TMP_GLOBAL}/hooks/scripts/session_start.mjs" ] && [ -x "${TMP_GLOBAL}/hooks/scripts/pre_invocation.mjs" ] && [ -x "${TMP_GLOBAL}/hooks/scripts/pre_tool_guard.mjs" ] && [ -x "${TMP_GLOBAL}/hooks/scripts/post_tool_indexer.mjs" ] && [ -x "${TMP_GLOBAL}/hooks/scripts/stop_guard.mjs" ]'
+assert_true "Plugin global : Les 3 scripts de hooks sobres sont dans hooks/scripts/ et exécutables (zéro post_tool_indexer / stop_guard)" \
+  '[ -x "${TMP_GLOBAL}/hooks/scripts/session_start.mjs" ] && [ -x "${TMP_GLOBAL}/hooks/scripts/pre_invocation.mjs" ] && [ -x "${TMP_GLOBAL}/hooks/scripts/pre_tool_guard.mjs" ] && [ ! -e "${TMP_GLOBAL}/hooks/scripts/post_tool_indexer.mjs" ] && [ ! -e "${TMP_GLOBAL}/hooks/scripts/stop_guard.mjs" ]'
 
 assert_true "Plugin global : Les 8 agents sont dans agents/" \
   '[ "$(find "${TMP_GLOBAL}/agents" -name "san-*.md" | wc -l)" -eq 8 ]'
@@ -358,8 +372,8 @@ assert_true "Plugin global : Les 8 agents sont dans agents/" \
 assert_true "Plugin global : Les 5 règles avec frontmatter sont dans rules/" \
   '[ "$(find "${TMP_GLOBAL}/rules" -name "*.md" | wc -l)" -eq 5 ]'
 
-assert_true "Plugin global : Les 19 skills sont dans skills/" \
-  '[ "$(find "${TMP_GLOBAL}/skills" -mindepth 1 -maxdepth 1 -type d | wc -l)" -eq 19 ]'
+assert_true "Plugin global : Les 17 skills sont dans skills/" \
+  '[ "$(find "${TMP_GLOBAL}/skills" -mindepth 1 -maxdepth 1 -type d | wc -l)" -eq 17 ]'
 
 # Validation officielle Google Antigravity
 if command -v agy >/dev/null 2>&1; then
@@ -376,8 +390,8 @@ if command -v agy >/dev/null 2>&1; then
     '[ "${AGY_AGENTS}" -eq 8 ]'
 
   AGY_SKILLS=$(echo "${AGY_VAL_JSON}" | node -e "const d=JSON.parse(fs.readFileSync(0,'utf8')); console.log(d.components?.skills ?? 0)")
-  assert_true "agy plugin validate détecte 19 skills (détectés: ${AGY_SKILLS})" \
-    '[ "${AGY_SKILLS}" -eq 19 ]'
+  assert_true "agy plugin validate détecte 17 skills (détectés: ${AGY_SKILLS})" \
+    '[ "${AGY_SKILLS}" -eq 17 ]'
 
   AGY_HOOKS=$(echo "${AGY_VAL_JSON}" | node -e "const d=JSON.parse(fs.readFileSync(0,'utf8')); console.log(d.components?.hooks ?? 0)")
   assert_true "agy plugin validate détecte 1 hook (détectés: ${AGY_HOOKS})" \
@@ -406,16 +420,16 @@ trap 'rm -rf "${TMP_LOCAL}" "${TMP_LIGHT}"' EXIT
 git -C "${TMP_LIGHT}" init -q
 LIGHT_INIT_OUT=$(node "${CLI_INDEX}" init --local --light --dir="${TMP_LIGHT}")
 assert_true "init --local --light s'exécute avec succès" \
-  'echo "${LIGHT_INIT_OUT}" | grep -q "INSTALLATION DU FRAMEWORK ANTIGRAVITY"'
+  'echo "${LIGHT_INIT_OUT}" | grep -q "INSTALLATION DE SAN AI HARNESS"'
 
 assert_true "Mode --light : .agents/skills.json créé avec version=1 et inherits vers src/skills" \
   'python3 -c "import json,os; d=json.load(open(\"${TMP_LIGHT}/.agents/skills.json\")); expected=os.path.realpath(\"${ROOT_DIR}/src/skills\"); assert d.get(\"version\")==1 and len(d.get(\"inherits\", []))>=1 and os.path.realpath(d[\"inherits\"][0])==expected"'
 
-assert_true "Mode --light : les 19 dossiers lourds ne sont PAS copiés dans .agents/skills/" \
+assert_true "Mode --light : les 17 dossiers lourds ne sont PAS copiés dans .agents/skills/" \
   '[ ! -d "${TMP_LIGHT}/.agents/skills" ]'
 
-assert_true "Mode --light : rules, agents, hooks (dont stop_guard.mjs) et cache REPO_MAP.md sont locaux" \
-  '[ -f "${TMP_LIGHT}/.agents/rules/PROJECT.md" ] && [ -f "${TMP_LIGHT}/.agents/agents/san-architect.md" ] && [ -x "${TMP_LIGHT}/.agents/hooks/scripts/stop_guard.mjs" ] && [ -f "${TMP_LIGHT}/.agents/cache/REPO_MAP.md" ] && [ -f "${TMP_LIGHT}/AGENTS.md" ]'
+assert_true "Mode --light : rules, agents, 3 hooks sobres locaux & zéro .agents/cache/" \
+  '[ -f "${TMP_LIGHT}/.agents/rules/PROJECT.md" ] && [ -f "${TMP_LIGHT}/.agents/agents/san-architect.md" ] && [ -x "${TMP_LIGHT}/.agents/hooks/scripts/pre_invocation.mjs" ] && [ ! -e "${TMP_LIGHT}/.agents/cache" ] && [ -f "${TMP_LIGHT}/AGENTS.md" ]'
 
 set +e
 DOC_LIGHT_OUT=$(node "${CLI_INDEX}" doctor --dir="${TMP_LIGHT}")
@@ -426,8 +440,8 @@ assert_true "doctor valide le projet en mode --light (code 0, 6/6 PILIERS AU VER
 
 # Test update --light
 LIGHT_UPDATE_OUT=$(node "${CLI_INDEX}" update --light --dir="${TMP_LIGHT}")
-assert_true "update --light met à jour sans copier .agents/skills/ et génère whats_new_pending.json" \
-  '[ ! -d "${TMP_LIGHT}/.agents/skills" ] && [ -f "${TMP_LIGHT}/.agents/skills.json" ] && [ -f "${TMP_LIGHT}/.agents/cache/whats_new_pending.json" ] && echo "${LIGHT_UPDATE_OUT}" | grep -q "What'\''s New on san-agy v2.2.0"'
+assert_true "update --light met à jour sans copier .agents/skills/ et sans créer .agents/cache/" \
+  '[ ! -d "${TMP_LIGHT}/.agents/skills" ] && [ -f "${TMP_LIGHT}/.agents/skills.json" ] && [ ! -e "${TMP_LIGHT}/.agents/cache" ] && echo "${LIGHT_UPDATE_OUT}" | grep -q "What'\''s New on san_ai_harness v3.0.0"'
 
 # Test chemin fantôme dans .agents/skills.json -> doctor doit échouer (code 1)
 echo '{"version": 1, "inherits": ["/tmp/chemin_fantome_san_skills_inexistant"]}' > "${TMP_LIGHT}/.agents/skills.json"
@@ -441,20 +455,20 @@ assert_true "doctor échoue (code 1) si .agents/skills.json pointe vers un chemi
 rm -rf "${TMP_LIGHT}"
 
 # ------------------------------------------------------------------------------
-# 7. Scénario 7 : Commande models & OpenCode V2 (opencode.json + opencode debug agents)
+# 7. Scénario 7 : Commande models & OpenCode V2.3 (plugin san_swarm + compaction 120k/150k + debug agents)
 # ------------------------------------------------------------------------------
-info "7. Scénario san-framework models (.agents/models.json, opencode.json V2 & opencode debug agents)"
+info "7. Scénario san-harness models (.agents/models.json, opencode.json V2.3 & opencode --standalone debug agents)"
 TMP_MODELS=$(mktemp -d)
 trap 'rm -rf "${TMP_LOCAL}" "${TMP_MODELS}"' EXIT
 
 git -C "${TMP_MODELS}" init -q
 node "${CLI_INDEX}" init --local --all --opencode --dir="${TMP_MODELS}" > /dev/null
 
-MODELS_OUT=$(node "${CLI_INDEX}" models --opencode=opencode-go/qwen3.8-flash --agy=gemini-4-hydrogen-xhigh --dir="${TMP_MODELS}")
-assert_true "san-framework models met à jour .agents/models.json (opencode-go/qwen3.8-flash & gemini-4-hydrogen-xhigh)" \
-  'python3 -c "import json; d=json.load(open(\"${TMP_MODELS}/.agents/models.json\")); assert d[\"version\"]==\"2.2.0\" and d[\"opencode\"][\"executor\"]==\"opencode-go/qwen3.8-flash\" and d[\"agy\"][\"executor\"]==\"gemini-4-hydrogen-xhigh\""'
+MODELS_OUT=$(node "${CLI_INDEX}" models --opencode=opencode-go/qwen3.8-flash --agy=gemini-4-hydrogen-xhigh --compaction=150000 --dir="${TMP_MODELS}")
+assert_true "san-harness models met à jour .agents/models.json (v3.0.0, qwen3.8-flash, agy & compaction 150000)" \
+  'python3 -c "import json; d=json.load(open(\"${TMP_MODELS}/.agents/models.json\")); assert d[\"version\"]==\"3.0.0\" and d[\"agy\"][\"orchestrator\"]==\"inherit-user-model\" and d[\"opencode\"][\"orchestrator\"]==\"inherit-user-model\" and d[\"opencode\"][\"executor\"]==\"opencode-go/qwen3.8-flash\" and d[\"agy\"][\"executor\"]==\"gemini-4-hydrogen-xhigh\" and d[\"compaction\"][\"targetTokens\"]==150000"'
 
-assert_true "san-framework models met à jour les 8 agents dans opencode.json (mode: subagent, model: opencode-go/qwen3.8-flash)" \
+assert_true "san-harness models met à jour opencode.json V2.3 (san-orchestrator sans model, plugins, commands, 8 workers)" \
   'python3 -c "
 import json
 expected = [
@@ -462,7 +476,13 @@ expected = [
   \"san-coder-front\", \"san-qa-auditor\", \"san-ops-devops\", \"san-growth-legal\"
 ]
 c = json.load(open(\"${TMP_MODELS}/opencode.json\"))
+assert c.get(\"default_agent\") == \"san-orchestrator\"
+assert \"./.agents/opencode\" in c.get(\"plugins\", [])
+assert c.get(\"compaction\", {}).get(\"auto\") is True
+assert \"san-board\" in c.get(\"commands\", {}) and \"san-swarm\" in c.get(\"commands\", {})
 agents = c.get(\"agents\", {})
+orch = agents.get(\"san-orchestrator\", {})
+assert orch.get(\"mode\") == \"primary\" and (\"model\" not in orch or not orch[\"model\"]), orch
 assert all(a in agents for a in expected), f\"Missing agents: {set(expected)-set(agents)}\"
 for a in expected:
     assert agents[a].get(\"model\") == \"opencode-go/qwen3.8-flash\", a
@@ -472,9 +492,12 @@ for ro in (\"san-researcher\", \"san-architect\", \"san-qa-auditor\"):
     assert any(p.get(\"action\") == \"edit\" and p.get(\"effect\") == \"deny\" for p in perms), ro
 "'
 
+assert_true "Plugin OpenCode Swarm Board déployé dans .agents/opencode/" \
+  '[ -f "${TMP_MODELS}/.agents/opencode/san-harness-plugin.mjs" ] && [ -f "${TMP_MODELS}/.agents/opencode/package.json" ]'
+
 MODELS_VIEW_OUT=$(node "${CLI_INDEX}" models --dir="${TMP_MODELS}")
-assert_true "san-framework models (lecture) affiche les modèles actifs" \
-  'echo "${MODELS_VIEW_OUT}" | grep -q "opencode-go/qwen3.8-flash" && echo "${MODELS_VIEW_OUT}" | grep -q "gemini-4-hydrogen-xhigh"'
+assert_true "san-harness models (lecture) affiche les modèles actifs et compaction" \
+  'echo "${MODELS_VIEW_OUT}" | grep -q "opencode-go/qwen3.8-flash" && echo "${MODELS_VIEW_OUT}" | grep -q "gemini-4-hydrogen-xhigh" && echo "${MODELS_VIEW_OUT}" | grep -q "150000"'
 
 OPENCODE_BIN=""
 if command -v opencode >/dev/null 2>&1; then
@@ -485,17 +508,19 @@ fi
 
 if [ -n "${OPENCODE_BIN}" ]; then
   set +e
-  OC_DEBUG_OUT=$(cd "${TMP_MODELS}" && "${OPENCODE_BIN}" debug agents 2>&1)
+  OC_DEBUG_OUT=$(cd "${TMP_MODELS}" && "${OPENCODE_BIN}" --standalone debug agents 2>&1)
   OC_DEBUG_CODE=$?
   set -e
-  assert_true "opencode debug agents s'exécute sans erreur (exit code 0)" \
+  assert_true "opencode --standalone debug agents s'exécute sans erreur (exit code 0)" \
     '[ "${OC_DEBUG_CODE}" -eq 0 ]'
 
-  assert_true "opencode debug agents découvre les 8 sous-agents san-* avec mode subagent et modèle opencode-go/qwen3.8-flash" \
+  assert_true "opencode debug agents découvre san-orchestrator (primary) + les 8 san-* (subagent, qwen3.8-flash)" \
     'python3 -c "
 import sys, json
-data = json.loads(sys.argv[1])
+raw = sys.argv[1]
+data = json.loads(raw[raw.index(\"[\"):])
 by_id = {a.get(\"id\"): a for a in data if isinstance(a, dict)}
+assert \"san-orchestrator\" in by_id and by_id[\"san-orchestrator\"].get(\"mode\") == \"primary\"
 expected = [
   \"san-researcher\", \"san-architect\", \"san-designer-worker\", \"san-coder-back\",
   \"san-coder-front\", \"san-qa-auditor\", \"san-ops-devops\", \"san-growth-legal\"
@@ -565,8 +590,8 @@ p.wait(timeout=5)
 os.close(master)
 print(buf.decode("utf-8", errors="replace"))
 ')
-assert_true "san-framework sans argument en TTY détecte .agents/ existant et propose [1] Mettre à jour" \
-  'echo "${PTY_OUT}" | grep -q "Framework Antigravity déjà installé dans ce projet" && echo "${PTY_OUT}" | grep -q "${TMP_MONO}" && echo "${PTY_OUT}" | grep -q "Mettre à jour vers"'
+assert_true "san-harness sans argument en TTY détecte .agents/ existant et propose [1] Mettre à jour" \
+  'echo "${PTY_OUT}" | grep -q "SAN AI Harness déjà installé dans ce projet" && echo "${PTY_OUT}" | grep -q "${TMP_MONO}" && echo "${PTY_OUT}" | grep -q "Mettre à jour vers"'
 
 rm -rf "${TMP_MONO}"
 

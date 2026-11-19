@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# SUITE OFFICIELLE D'INTÉGRATION E2E & HARNESS v2.0 (Google Antigravity)
-# Framework : @alexsan/agy-framework (san_*)
+# SUITE OFFICIELLE D'INTÉGRATION E2E & HARNESS v3.0 (Dual-Harness)
+# Framework : @alexsan/san-ai-harness (san_*)
 # Auteur    : Alexsan.pro · Cartesian Engineering & Cognitive Harness
 # ==============================================================================
 # Valide de bout en bout les 4 assertions clés de la Section 7.2 :
@@ -110,8 +110,8 @@ assert_true "Plugin global : logo assets/logo.svg présent" \
 assert_true "Plugin global : hooks.json présent à la racine du plugin" \
   '[ -f "${TMP_GLOBAL}/hooks.json" ]'
 
-assert_true "Plugin global : 5 scripts de hooks exécutables dans hooks/scripts/" \
-  '[ -x "${TMP_GLOBAL}/hooks/scripts/session_start.mjs" ] && [ -x "${TMP_GLOBAL}/hooks/scripts/pre_invocation.mjs" ] && [ -x "${TMP_GLOBAL}/hooks/scripts/pre_tool_guard.mjs" ] && [ -x "${TMP_GLOBAL}/hooks/scripts/post_tool_indexer.mjs" ] && [ -x "${TMP_GLOBAL}/hooks/scripts/stop_guard.mjs" ]'
+assert_true "Plugin global : 3 scripts de hooks sobres exécutables dans hooks/scripts/ (zéro post_tool_indexer / stop_guard)" \
+  '[ -x "${TMP_GLOBAL}/hooks/scripts/session_start.mjs" ] && [ -x "${TMP_GLOBAL}/hooks/scripts/pre_invocation.mjs" ] && [ -x "${TMP_GLOBAL}/hooks/scripts/pre_tool_guard.mjs" ] && [ ! -e "${TMP_GLOBAL}/hooks/scripts/post_tool_indexer.mjs" ] && [ ! -e "${TMP_GLOBAL}/hooks/scripts/stop_guard.mjs" ]'
 
 GLOBAL_AGENTS_COUNT=$(find "${TMP_GLOBAL}/agents" -type f -name "san-*.md" | wc -l)
 assert_true "Plugin global : exactement 8 sous-agents dans agents/ (${GLOBAL_AGENTS_COUNT}/8)" \
@@ -122,8 +122,8 @@ assert_true "Plugin global : 5 règles avec frontmatter dans rules/ (${GLOBAL_RU
   '[ "${GLOBAL_RULES_COUNT}" -ge 1 ] && [ "${GLOBAL_RULES_COUNT}" -eq 5 ]'
 
 GLOBAL_SKILLS_COUNT=$(find "${TMP_GLOBAL}/skills" -mindepth 1 -maxdepth 1 -type d -name "san_*" | wc -l)
-assert_true "Plugin global : exactement 19 skills dans skills/ (${GLOBAL_SKILLS_COUNT}/19)" \
-  '[ "${GLOBAL_SKILLS_COUNT}" -eq 19 ]'
+assert_true "Plugin global : exactement 17 skills dans skills/ (${GLOBAL_SKILLS_COUNT}/17)" \
+  '[ "${GLOBAL_SKILLS_COUNT}" -eq 17 ]'
 
 # 1.3 Validation officielle Google Antigravity Plugin Engine
 if command -v agy >/dev/null 2>&1; then
@@ -148,8 +148,8 @@ if command -v agy >/dev/null 2>&1; then
     '[ "${AGY_RULES}" -ge 1 ]'
 
   AGY_SKILLS=$(echo "${AGY_VAL_JSON}" | node -e "const d=JSON.parse(fs.readFileSync(0,'utf8')); console.log(d.components?.skills ?? 0)")
-  assert_true "agy plugin validate détecte exactement 19 skills (détectés: ${AGY_SKILLS})" \
-    '[ "${AGY_SKILLS}" -eq 19 ]'
+  assert_true "agy plugin validate détecte exactement 17 skills (détectés: ${AGY_SKILLS})" \
+    '[ "${AGY_SKILLS}" -eq 17 ]'
 
   AGY_FINDINGS=$(echo "${AGY_VAL_JSON}" | node -e "const d=JSON.parse(fs.readFileSync(0,'utf8')); console.log((d.findings ?? []).length)")
   assert_true "agy plugin validate relève 0 finding (0 warning, 0 note, findings: [])" \
@@ -239,7 +239,7 @@ EOF
 # 2.1 Déploiement local complet via init --local --all
 INIT_LOCAL_OUT=$(node "${CLI_INDEX}" init --local --all --dir="${TMP_CLIENT}")
 assert_true "init --local --all s'exécute avec succès sur le projet client" \
-  'echo "${INIT_LOCAL_OUT}" | grep -q "INSTALLATION DU FRAMEWORK ANTIGRAVITY"'
+  'echo "${INIT_LOCAL_OUT}" | grep -q "INSTALLATION DE SAN AI HARNESS"'
 
 # 2.2 Exécution de doctor et validation des 6/6 piliers
 set +e
@@ -265,8 +265,8 @@ assert_true "doctor valide le Pilier 3 (Sous-agents natifs .agents/agents/*.md)"
 assert_true "doctor valide le Pilier 4 (Garde-fous mécaniques hooks.json & scripts)" \
   'echo "${DOCTOR_OUT}" | grep -E "✔.*Garde-fous mécaniques"'
 
-assert_true "doctor valide le Pilier 5 (Catalogue des 19 skills <= 130 lignes)" \
-  'echo "${DOCTOR_OUT}" | grep -E "✔.*Catalogue des 19 skills"'
+assert_true "doctor valide le Pilier 5 (Catalogue des 17 skills <= 130 lignes)" \
+  'echo "${DOCTOR_OUT}" | grep -E "✔.*Catalogue des 17 skills"'
 
 assert_true "doctor valide le Pilier 6 (Étanchéité Git)" \
   'echo "${DOCTOR_OUT}" | grep -E "✔.*Étanchéité Git"'
@@ -324,14 +324,16 @@ cat << 'EOF' > "${TMP_V1}/.agents/rules.json"
 EOF
 
 echo "v1 obsolete skill" > "${TMP_V1}/.agents/skills/san_init/SKILL.md"
+mkdir -p "${TMP_V1}/.agents/cache"
+echo "# old REPO_MAP" > "${TMP_V1}/.agents/cache/REPO_MAP.md"
 
 # 3.1 Exécution de update
 UPDATE_OUT=$(node "${CLI_INDEX}" update --dir="${TMP_V1}")
-assert_true "update s'exécute avec succès sur le repo legacy v1.0" \
-  'echo "${UPDATE_OUT}" | grep -q "MIGRATION & MISE À JOUR v2.2"'
+assert_true "update s'exécute avec succès sur le repo legacy (MIGRATION & MISE À JOUR v3.0.0)" \
+  'echo "${UPDATE_OUT}" | grep -q "MIGRATION & MISE À JOUR v3.0.0"'
 
-assert_true "update crée .agents/cache/whats_new_pending.json (version 2.2.0, seen=false)" \
-  'python3 -c "import json; d=json.load(open(\"${TMP_V1}/.agents/cache/whats_new_pending.json\")); assert d[\"version\"]==\"2.2.0\" and d[\"seen\"] is False"'
+assert_true "update purge activement .agents/cache/ (REPO_MAP.md supprimé)" \
+  '[ ! -e "${TMP_V1}/.agents/cache" ]'
 
 # 3.2 Vérifications Smart Merge sur BRAND.md
 BRAND_MIGRATED=$(cat "${TMP_V1}/.agents/rules/BRAND.md")
@@ -367,8 +369,8 @@ assert_true "Fichier .agents/hooks.json installé et valide" \
   '[ -f "${TMP_V1}/.agents/hooks.json" ]'
 
 V1_SKILLS_COUNT=$(find "${TMP_V1}/.agents/skills" -mindepth 1 -maxdepth 1 -type d -name "san_*" 2>/dev/null | wc -l)
-assert_true "19 compétences resynchronisées dans .agents/skills/ (${V1_SKILLS_COUNT}/19)" \
-  '[ "${V1_SKILLS_COUNT}" -eq 19 ]'
+assert_true "17 compétences resynchronisées dans .agents/skills/ (${V1_SKILLS_COUNT}/17)" \
+  '[ "${V1_SKILLS_COUNT}" -eq 17 ]'
 
 assert_true "Constitution souveraine <root>/AGENTS.md créée à la racine" \
   '[ -f "${TMP_V1}/AGENTS.md" ]'
@@ -402,40 +404,38 @@ SESSION_HAS_CONSTITUTION=$(echo "${SESSION_OUTPUT}" | python3 -c "
 import sys, json
 data = json.load(sys.stdin)
 msg = data.get('injectSteps', [{}])[0].get('systemMessage', {}).get('systemMessage', '')
-print('true' if '[SAN.AGY CONSTITUTION v2.0]' in msg and '8 native subagents' in msg else 'false')
+print('true' if '[SAN AI HARNESS v3.0]' in msg and '8 workers' in msg and '120k auto-compaction' in msg else 'false')
 ")
-assert_true "session_start.mjs injecte la Constitution souveraine v2.0" \
+assert_true "session_start.mjs injecte la bannière [SAN AI HARNESS v3.0] + 8 workers + 120k auto-compaction" \
   '[ "${SESSION_HAS_CONSTITUTION}" = "true" ]'
 
-# 4.2 Test PreInvocation (pre_invocation.mjs)
+# 4.2 Test PreInvocation (pre_invocation.mjs — Garde de Compaction 120k)
 PRE_INV_INPUT='{"lastUserInput": "Développe le module de paiement MoMo", "conversationId": "e2e-test-preinv"}'
 PRE_INV_OUTPUT=$(echo "${PRE_INV_INPUT}" | node "${HOOK_SCRIPTS_DIR}/pre_invocation.mjs")
 
-assert_true "pre_invocation.mjs produit un JSON valide sur prompt de développement" \
+assert_true "pre_invocation.mjs produit un JSON valide" \
   'echo "${PRE_INV_OUTPUT}" | python3 -m json.tool > /dev/null 2>&1'
 
-PRE_INV_ENFORCES=$(echo "${PRE_INV_OUTPUT}" | python3 -c "
-import sys, json
-data = json.load(sys.stdin)
-steps = data.get('injectSteps', [])
-sm = steps[0].get('systemMessage', {}) if steps and isinstance(steps[0], dict) else {}
-msg = sm.get('systemMessage', '') if isinstance(sm, dict) else ''
-ok = ('swarm' in msg and 'gemini-4-hydrogen-xhigh' in msg and 'san-qa-auditor' in msg)
-print('true' if ok else 'false')
-")
-assert_true "pre_invocation.mjs injecte le rappel Hooks API v2 (swarm/hydrogen-xhigh/QA)" \
-  '[ "${PRE_INV_ENFORCES}" = "true" ]'
-
-PRE_INV_NEUTRAL_INPUT='{"lastUserInput": "Bonjour quel temps fait-il ?", "conversationId": "e2e-test-neutral"}'
-PRE_INV_NEUTRAL_OUTPUT=$(echo "${PRE_INV_NEUTRAL_INPUT}" | node "${HOOK_SCRIPTS_DIR}/pre_invocation.mjs")
-PRE_INV_NEUTRAL_EMPTY=$(echo "${PRE_INV_NEUTRAL_OUTPUT}" | python3 -c "
+PRE_INV_SILENT=$(echo "${PRE_INV_OUTPUT}" | python3 -c "
 import sys, json
 data = json.load(sys.stdin)
 steps = data.get('injectSteps', None)
 print('true' if isinstance(steps, list) and len(steps) == 0 else 'false')
 ")
-assert_true "pre_invocation.mjs renvoie injectSteps: [] pour une question neutre" \
-  '[ "${PRE_INV_NEUTRAL_EMPTY}" = "true" ]'
+assert_true "pre_invocation.mjs reste silencieux (injectSteps: []) sous 120k tokens" \
+  '[ "${PRE_INV_SILENT}" = "true" ]'
+
+PRE_INV_COMPACT_OUTPUT=$(echo '{"forceCompactionCheckForTest": true, "conversationId": "e2e-test-compact"}' | node "${HOOK_SCRIPTS_DIR}/pre_invocation.mjs")
+PRE_INV_COMPACT_OK=$(echo "${PRE_INV_COMPACT_OUTPUT}" | python3 -c "
+import sys, json
+data = json.load(sys.stdin)
+steps = data.get('injectSteps', [])
+sm = steps[0].get('systemMessage', {}) if steps and isinstance(steps[0], dict) else {}
+msg = sm.get('systemMessage', '') if isinstance(sm, dict) else ''
+print('true' if '[SAN HARNESS — COMPACTION 120K]' in msg and '/compact' in msg else 'false')
+")
+assert_true "pre_invocation.mjs déclenche l'alerte [SAN HARNESS — COMPACTION 120K] /compact au seuil" \
+  '[ "${PRE_INV_COMPACT_OK}" = "true" ]'
 
 # 4.3 Test PreToolUse Guard (pre_tool_guard.mjs)
 # A. Blocage archivage incomplet -> deny
@@ -462,29 +462,9 @@ DECISION_CLEAN=$(echo "${CLEAN_CODE_INPUT}" | node "${HOOK_SCRIPTS_DIR}/pre_tool
 assert_true "pre_tool_guard.mjs émet 'ask' pour du code propre" \
   '[ "${DECISION_CLEAN}" = "ask" ]'
 
-# 4.3B Test Stop Guard (stop_guard.mjs)
-STOP_CONV_ID="e2e-test-stop-guard-$$"
-STOP_PAYLOAD="{\"conversationId\":\"${STOP_CONV_ID}\",\"workspacePaths\":[\"${TMP_CLIENT}\"],\"terminationReason\":\"NO_TOOL_CALL\",\"forceBlockForTest\":true}"
-
-STOP_BLOCK=$(echo "${STOP_PAYLOAD}" | node "${HOOK_SCRIPTS_DIR}/stop_guard.mjs")
-STOP_BLOCK_OK=$(echo "${STOP_BLOCK}" | python3 -c "import sys,json; d=json.load(sys.stdin); print('true' if d.get('decision')=='continue' and 'Relance 1/2' in d.get('reason','') else 'false')")
-assert_true "stop_guard.mjs relance (decision='continue') si forceBlockForTest=true (Relance 1/2)" \
-  '[ "${STOP_BLOCK_OK}" = "true" ]'
-
-STOP_BLOCK2=$(echo "${STOP_PAYLOAD}" | node "${HOOK_SCRIPTS_DIR}/stop_guard.mjs")
-STOP_BLOCK2_OK=$(echo "${STOP_BLOCK2}" | python3 -c "import sys,json; d=json.load(sys.stdin); print('true' if d.get('decision')=='continue' and 'Relance 2/2' in d.get('reason','') else 'false')")
-assert_true "stop_guard.mjs déclenche Relance 2/2 avant circuit breaker" \
-  '[ "${STOP_BLOCK2_OK}" = "true" ]'
-
-STOP_CB=$(echo "${STOP_PAYLOAD}" | node "${HOOK_SCRIPTS_DIR}/stop_guard.mjs")
-STOP_CB_OK=$(echo "${STOP_CB}" | python3 -c "import sys,json; print('true' if json.load(sys.stdin)=={} else 'false')")
-assert_true "stop_guard.mjs active le Circuit Breaker ({}) après 2 relances" \
-  '[ "${STOP_CB_OK}" = "true" ]'
-
-STOP_CONT=$(echo "{\"conversationId\":\"${STOP_CONV_ID}-cont\",\"workspacePaths\":[\"${TMP_CLIENT}\"],\"continuationActive\":true}" | node "${HOOK_SCRIPTS_DIR}/stop_guard.mjs")
-STOP_CONT_OK=$(echo "${STOP_CONT}" | python3 -c "import sys,json; print('true' if json.load(sys.stdin)=={} else 'false')")
-assert_true "stop_guard.mjs laisse terminer ({}) quand continuationActive=true" \
-  '[ "${STOP_CONT_OK}" = "true" ]'
+# 4.3B Contrôle de suppression des anciens hooks & cache
+assert_true "post_tool_indexer.mjs, stop_guard.mjs et .agents/cache/ absents du projet client" \
+  '[ ! -e "${HOOK_SCRIPTS_DIR}/post_tool_indexer.mjs" ] && [ ! -e "${HOOK_SCRIPTS_DIR}/stop_guard.mjs" ] && [ ! -e "${TMP_CLIENT}/.agents/cache" ]'
 
 # 4.4 Les 4 Quality Gates Fail-Closed
 TMP_GATES="${TMP_ROOT}/gates_validation"

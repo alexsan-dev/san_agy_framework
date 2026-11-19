@@ -84,14 +84,29 @@ if ! grep -q "san_planner" "${PROJECT_DIR}/AGENTS.md"; then
 fi
 pass "AGENTS.md généré avec le marqueur et la liste des compétences."
 
-# 1.2 opencode.json valide avec skills.paths et instructions
+# 1.2 opencode.json V2.3 valide (skills.paths, instructions, plugins, compaction 120k, commands, san-orchestrator)
 if [[ ! -f "${PROJECT_DIR}/opencode.json" ]]; then
   fail "opencode.json n'a pas été généré !"
 fi
-if ! python3 -c "import json,sys; c=json.load(open(sys.argv[1])); assert '.agents/skills' in c['skills']['paths']; assert '.agents/GEMINI.md' in c['instructions']" "${PROJECT_DIR}/opencode.json"; then
-  fail "opencode.json invalide : skills.paths ou instructions manquants !"
+if ! python3 -c "
+import json, sys
+c = json.load(open(sys.argv[1]))
+assert '.agents/skills' in c['skills']['paths']
+assert '.agents/GEMINI.md' in c['instructions']
+assert c.get('default_agent') == 'san-orchestrator'
+assert './.agents/opencode' in c.get('plugins', [])
+assert c.get('compaction', {}).get('auto') is True
+assert 'san-board' in c.get('commands', {}) and 'san-swarm' in c.get('commands', {})
+orch = c.get('agents', {}).get('san-orchestrator', {})
+assert orch.get('mode') == 'primary'
+assert 'model' not in orch or not orch['model'], f'san-orchestrator ne doit pas forcer model: {orch.get(\"model\")}'
+" "${PROJECT_DIR}/opencode.json"; then
+  fail "opencode.json V2.3 invalide (skills.paths/instructions/plugins/compaction/san-orchestrator) !"
 fi
-pass "opencode.json valide : skills.paths et instructions corrects."
+if [[ ! -f "${PROJECT_DIR}/.agents/opencode/san-harness-plugin.mjs" ]] || [[ ! -f "${PROJECT_DIR}/.agents/opencode/package.json" ]]; then
+  fail "Plugin OpenCode .agents/opencode/san-harness-plugin.mjs ou package.json manquant !"
+fi
+pass "opencode.json V2.3 & plugin Swarm Board (.agents/opencode/) valides (san-orchestrator libre, compaction 120k)."
 
 # 1.3 AGENTS.md n'est PAS purgé en mode opencode
 if [[ ! -f "${PROJECT_DIR}/AGENTS.md" ]]; then

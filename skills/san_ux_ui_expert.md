@@ -1,19 +1,19 @@
 ---
 name: san_ux_ui_expert
 title: Lead Frontend & Mobile Engineer (React.js, React Native, Expo, Tailwind CSS, TypeScript Strict)
-version: "2.2.0"
+version: "3.0.0"
 type: domain_expert
 harness: dual_harness
 models_config: ".agents/models.json"
 routing:
   antigravity:
-    orchestrator: "gemini-4-argon-high"
-    executor: "gemini-4-hydrogen-xhigh"
-    primitive: "swarm"
+    orchestrator: "inherit-user-model"
+    executor: ".agents/models.json#agy.executor"
+    primitive: "swarm | native"
   opencode_v2:
-    orchestrator: "opencode-go/hy4"
-    executor: "opencode-go/deepseek-v4-pro"
-    primitive: "subagent"
+    orchestrator: "inherit-user-model"
+    executor: ".agents/models.json#opencode.executor"
+    primitive: "san_swarm | subagent"
   workers:
     coder_front: "san-coder-front"
     auditor: "san-qa-auditor"

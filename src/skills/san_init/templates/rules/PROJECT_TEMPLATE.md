@@ -55,7 +55,7 @@ Chaque projet adopte un profil contextuel qui conditionne les contraintes produi
 ## 4. INVARIANTS, COMPACTION 120K & FAST-TRACK
 
 * **Alignement Socratique & Visuel Préalable :** L'Orchestrateur valide les choix structurants via `ask_question` / `question` et capture les URLs d'inspiration (`export_png.mjs --url`) avant de déléguer roadmap ou UI.
-* **Compaction Automatique 120k :** Zéro `.agents/cache` redondant ; compacter le fil de conversation à `120 000` tokens (`/compact`) pour maintenir la précision au moindre coût.
+* **Compaction Automatique 120k :** Zéro index map/cache redondant ; compacter le fil de conversation à `120 000` tokens (`/compact`) pour maintenir la précision au moindre coût.
 * **Fast-Track d'Hygiène Autorisé :** L'orchestrateur peut intervenir directement pour cocher `- [x]` après test réel `exit 0`, archiver une roadmap vers `roadmaps/archives/`, mettre à jour `CHANGELOG.md` ou enrichir `.agents/rules/*.md`.
 
 ---

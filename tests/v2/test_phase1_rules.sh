@@ -55,19 +55,19 @@ assert_true "AGENTS_INDEX_TEMPLATE.md fait < 4 KB (${AGENTS_SIZE} octets)" \
   '[ "${AGENTS_SIZE}" -lt 4096 ]'
 
 # ------------------------------------------------------------------------------
-# 2. Vérification des 6 Lois d'Airain et de la Table de Routage d'Intention
+# 2. Vérification des Principes Adaptatifs v3.0 et de la Table de Routage
 # ------------------------------------------------------------------------------
-info "2. Vérification des 6 Lois d'Airain et de la Table de Routage"
+info "2. Vérification des Principes Adaptatifs v3.0 et de la Table de Routage"
 
-for law in "Zéro Solo-Coding" "Reconnaissance Factuelle" "Sous-Agents Atomiques" "Doute Contradictoire" "Contract-First" "Preuve par le Code Fail-Closed"; do
-  assert_true "AGENTS_INDEX_TEMPLATE.md contient la loi : $law" \
-    'grep -q "$law" "${TEMPLATES_DIR}/AGENTS_INDEX_TEMPLATE.md"'
-  assert_true "GEMINI_INDEX_TEMPLATE.md contient la loi : $law" \
-    'grep -q "$law" "${TEMPLATES_DIR}/GEMINI_INDEX_TEMPLATE.md"'
+for law in "Plan → Execute" "Alignement" "Doute Contradictoire" "Contract-First" "Preuve par le Code" "Compaction"; do
+  assert_true "AGENTS_INDEX_TEMPLATE.md contient le principe : $law" \
+    'grep -qi "$law" "${TEMPLATES_DIR}/AGENTS_INDEX_TEMPLATE.md"'
+  assert_true "GEMINI_INDEX_TEMPLATE.md contient le principe : $law" \
+    'grep -qi "$law" "${TEMPLATES_DIR}/GEMINI_INDEX_TEMPLATE.md"'
 done
 
 assert_true "AGENTS_INDEX_TEMPLATE.md contient la Table de Routage d'Intention" \
-  'grep -q "TABLE DE ROUTAGE AUTOMATIQUE D'\''INTENTION" "${TEMPLATES_DIR}/AGENTS_INDEX_TEMPLATE.md"'
+  'grep -q "TABLE DE ROUTAGE" "${TEMPLATES_DIR}/AGENTS_INDEX_TEMPLATE.md"'
 
 for intent in "Idéation, cadrage, scoring" \
               "Roadmap, phases, découpage" \
@@ -114,14 +114,14 @@ assert_true "PROJECT_TEMPLATE.md fait < 8 KB (${PROJECT_SIZE} octets)" \
 assert_true "PROJECT_TEMPLATE.md documente PROJECT_PROFILE avec les 5 profils" \
   'grep -q "PROJECT_PROFILE:.*global_saas.*emerging_market_3g.*mobile_consumer.*cli_devtools.*api_platform" "${RULES_DIR}/PROJECT_TEMPLATE.md"'
 
-assert_true "PROJECT_TEMPLATE.md documente la doctrine swarm & gemini-4-hydrogen-xhigh (zéro 3.1-pro / 3.8-flash)" \
-  'grep -q "gemini-4-hydrogen-xhigh" "${RULES_DIR}/PROJECT_TEMPLATE.md" && grep -q "swarm" "${RULES_DIR}/PROJECT_TEMPLATE.md" && ! grep -q "gemini-3.1-pro-high" "${RULES_DIR}/PROJECT_TEMPLATE.md" && ! grep -q "gemini-3.8-flash-high" "${RULES_DIR}/PROJECT_TEMPLATE.md"'
+assert_true "PROJECT_TEMPLATE.md documente l'orchestration libre, Plan → Execute, compaction 120k (zéro Argon/Hydrogen/3.1-pro)" \
+  'grep -q "inherit-user-model" "${RULES_DIR}/PROJECT_TEMPLATE.md" && grep -q "swarm" "${RULES_DIR}/PROJECT_TEMPLATE.md" && grep -q "120 000" "${RULES_DIR}/PROJECT_TEMPLATE.md" && ! grep -q "gemini-4-hydrogen-xhigh" "${RULES_DIR}/PROJECT_TEMPLATE.md" && ! grep -q "gemini-4-argon" "${RULES_DIR}/PROJECT_TEMPLATE.md" && ! grep -q "gemini-3.1-pro-high" "${RULES_DIR}/PROJECT_TEMPLATE.md" && ! grep -q "gemini-3.8-flash-high" "${RULES_DIR}/PROJECT_TEMPLATE.md"'
 
-assert_true "AGENTS_INDEX_TEMPLATE.md et GEMINI_INDEX_TEMPLATE.md imposent Dual-Harness (swarm + subagent + models.json)" \
-  'grep -q "gemini-4-hydrogen-xhigh" "${TEMPLATES_DIR}/AGENTS_INDEX_TEMPLATE.md" && grep -q "swarm" "${TEMPLATES_DIR}/AGENTS_INDEX_TEMPLATE.md" && grep -q "models.json" "${TEMPLATES_DIR}/AGENTS_INDEX_TEMPLATE.md" && grep -q "subagent" "${TEMPLATES_DIR}/AGENTS_INDEX_TEMPLATE.md" && grep -q "gemini-4-hydrogen-xhigh" "${TEMPLATES_DIR}/GEMINI_INDEX_TEMPLATE.md" && grep -q "swarm" "${TEMPLATES_DIR}/GEMINI_INDEX_TEMPLATE.md" && grep -q "models.json" "${TEMPLATES_DIR}/GEMINI_INDEX_TEMPLATE.md"'
+assert_true "AGENTS_INDEX_TEMPLATE.md et GEMINI_INDEX_TEMPLATE.md imposent Dual-Harness v3.0 (inherit-user-model, swarm, san_swarm, models.json, compaction 120k)" \
+  'grep -q "inherit-user-model" "${TEMPLATES_DIR}/AGENTS_INDEX_TEMPLATE.md" && grep -q "swarm" "${TEMPLATES_DIR}/AGENTS_INDEX_TEMPLATE.md" && grep -q "san_swarm" "${TEMPLATES_DIR}/AGENTS_INDEX_TEMPLATE.md" && grep -q "models.json" "${TEMPLATES_DIR}/AGENTS_INDEX_TEMPLATE.md" && grep -q "120k" "${TEMPLATES_DIR}/AGENTS_INDEX_TEMPLATE.md" && grep -q "inherit-user-model" "${TEMPLATES_DIR}/GEMINI_INDEX_TEMPLATE.md" && grep -q "swarm" "${TEMPLATES_DIR}/GEMINI_INDEX_TEMPLATE.md" && grep -q "models.json" "${TEMPLATES_DIR}/GEMINI_INDEX_TEMPLATE.md" && ! grep -q "gemini-4-hydrogen-xhigh" "${TEMPLATES_DIR}/AGENTS_INDEX_TEMPLATE.md"'
 
-assert_true "AGENTS_INDEX_TEMPLATE.md, GEMINI_INDEX_TEMPLATE.md et PROJECT_TEMPLATE.md documentent l'alignement socratique (ask_question) et san_transcriber" \
-  'grep -q "ask_question" "${TEMPLATES_DIR}/AGENTS_INDEX_TEMPLATE.md" && grep -q "san_transcriber" "${TEMPLATES_DIR}/AGENTS_INDEX_TEMPLATE.md" && grep -q "ask_question" "${TEMPLATES_DIR}/GEMINI_INDEX_TEMPLATE.md" && grep -q "san_transcriber" "${TEMPLATES_DIR}/GEMINI_INDEX_TEMPLATE.md" && grep -q "ask_question" "${RULES_DIR}/PROJECT_TEMPLATE.md" && grep -q "san_transcriber" "${RULES_DIR}/PROJECT_TEMPLATE.md"'
+assert_true "AGENTS_INDEX_TEMPLATE.md, GEMINI_INDEX_TEMPLATE.md et PROJECT_TEMPLATE.md documentent l'alignement socratique (ask_question) et zéro .agents/cache" \
+  'grep -q "ask_question" "${TEMPLATES_DIR}/AGENTS_INDEX_TEMPLATE.md" && ! grep -q "REPO_MAP" "${TEMPLATES_DIR}/AGENTS_INDEX_TEMPLATE.md" && grep -q "ask_question" "${TEMPLATES_DIR}/GEMINI_INDEX_TEMPLATE.md" && ! grep -q "REPO_MAP" "${TEMPLATES_DIR}/GEMINI_INDEX_TEMPLATE.md" && grep -q "ask_question" "${RULES_DIR}/PROJECT_TEMPLATE.md" && ! grep -q "REPO_MAP" "${RULES_DIR}/PROJECT_TEMPLATE.md"'
 
 # PRODUCT_TEMPLATE.md
 assert_true "PRODUCT_TEMPLATE.md possède trigger: model_decision" \
@@ -224,7 +224,7 @@ rm -rf "${TMP_PLUGIN_DIR}"
 # ------------------------------------------------------------------------------
 # 7. Vérification de la taille de AGENTS.md généré (< 4096 octets)
 # ------------------------------------------------------------------------------
-info "7. Vérification de la taille de AGENTS.md généré avec les 19 compétences (< 4096 octets)"
+info "7. Vérification de la taille de AGENTS.md généré avec les 17 compétences (< 4096 octets)"
 
 TMP_AGENTS_GEN_DIR=$(mktemp -d /tmp/test_san_agents_gen_XXXXXX)
 node -e "
@@ -235,8 +235,8 @@ GEN_AGENTS_SIZE=$(wc -c < "${TMP_AGENTS_GEN_DIR}/AGENTS.md" | tr -d ' ')
 assert_true "AGENTS.md généré fait strictement < 4096 octets (${GEN_AGENTS_SIZE} octets)" \
   '[ "${GEN_AGENTS_SIZE}" -lt 4096 ]'
 
-assert_true "AGENTS.md généré contient les 19 compétences san_* (dont san_transcriber)" \
-  'grep -q "san_ux_ui_expert" "${TMP_AGENTS_GEN_DIR}/AGENTS.md" && grep -q "san_backend_expert" "${TMP_AGENTS_GEN_DIR}/AGENTS.md" && grep -q "san_transcriber" "${TMP_AGENTS_GEN_DIR}/AGENTS.md"'
+assert_true "AGENTS.md généré contient les 17 compétences san_* (sans cartographer/transcriber)" \
+  'grep -q "san_ux_ui_expert" "${TMP_AGENTS_GEN_DIR}/AGENTS.md" && grep -q "san_backend_expert" "${TMP_AGENTS_GEN_DIR}/AGENTS.md" && grep -q "san_doc_keeper" "${TMP_AGENTS_GEN_DIR}/AGENTS.md" && ! grep -q "san_transcriber" "${TMP_AGENTS_GEN_DIR}/AGENTS.md" && ! grep -q "san_cartographer" "${TMP_AGENTS_GEN_DIR}/AGENTS.md"'
 
 assert_true "AGENTS.md généré contient les descriptions ultra-concises" \
   'grep -q "API, transactions DB et idempotence." "${TMP_AGENTS_GEN_DIR}/AGENTS.md" && grep -q "Composants front/mobile, 5 états et 60 fps." "${TMP_AGENTS_GEN_DIR}/AGENTS.md"'

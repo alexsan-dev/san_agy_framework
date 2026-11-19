@@ -1,20 +1,20 @@
 ---
 name: san_doc_keeper
 title: Gardien de l'Intégrité Documentaire, Synchronisation et Hygiène de Versioning
-version: "2.2.0"
+version: "3.0.0"
 type: sub_skill
 role: Documentation Integrity Keeper & Release Archivist
 harness: dual_harness
 models_config: ".agents/models.json"
 routing:
   antigravity:
-    orchestrator: "gemini-4-argon-high"
-    executor: "gemini-4-hydrogen-xhigh"
-    primitive: "swarm"
+    orchestrator: "inherit-user-model"
+    executor: ".agents/models.json#agy.executor"
+    primitive: "swarm | native"
   opencode_v2:
-    orchestrator: "opencode-go/hy4"
-    executor: "opencode-go/deepseek-v4-pro"
-    primitive: "subagent"
+    orchestrator: "inherit-user-model"
+    executor: ".agents/models.json#opencode.executor"
+    primitive: "san_swarm | subagent"
 triggers:
   - "san_doc_keeper"
   - "mets à jour le changelog"
@@ -29,7 +29,7 @@ description: "Sous-skill transversal d'hygiène documentaire continue et d'archi
 # `san_doc_keeper` — Gardien de l'Intégrité Documentaire, Synchronisation et Hygiène de Versioning
 
 > **Note d'implantation architecturale :**  
-> Au sein du dépôt source `san_agy_framework`, ce sous-skill réside dans `sub-skills/` afin de formaliser la frontière entre les rôles de direction maîtres (points d'entrée dans `skills/`) et l'outillage transversal. Lors de l'installation dans une codebase cliente par le script d'initialisation, il est déployé dans `.agents/skills/san_doc_keeper/` pour être reconnu nativement par le moteur d'exécution Antigravity CLI.
+> Au sein du dépôt source `san_ai_harness`, ce sous-skill réside dans `sub-skills/` afin de formaliser la frontière entre les rôles de direction maîtres (points d'entrée dans `skills/`) et l'outillage transversal. Lors de l'installation dans une codebase cliente par le script d'initialisation, il est déployé dans `.agents/skills/san_doc_keeper/` pour être reconnu nativement par les harnesses Antigravity & OpenCode.
 
 ---
 
@@ -44,7 +44,7 @@ description: "Sous-skill transversal d'hygiène documentaire continue et d'archi
 
 ### Pour Quoi ?
 - **Prévenir la pourriture documentaire (*Documentation Rot*) :** lorsque le code évolue mais que la documentation stagne, les agents futurs sont induits en erreur par des informations périmées, entraînant hallucinations et régressions.
-- **Garantir le protocole « Fast-Track d'Hygiène » (*Zero-Token Waste*) :** les opérations ménagères (cochage de cases de tâches prouvées, déplacement via `archive_roadmap.sh` unifié vers `roadmaps/archives/<BASENAME>` avec en-tête SHA-256, insertion d'entrées changelog) sont exécutées directement par l'orchestrateur ou via un worker Dual-Harness (`swarm` avec `gemini-4-hydrogen-xhigh` | `subagent` OpenCode V2), sans jamais appeler `invoke_subagent(Model: 'inherit')`.
+- **Garantir le protocole « Fast-Track d'Hygiène » (*Zero-Token Waste*) :** les opérations ménagères (cochage de cases de tâches prouvées, déplacement via `archive_roadmap.sh` unifié vers `roadmaps/archives/<BASENAME>` avec en-tête SHA-256, insertion d'entrées changelog) sont exécutées directement par l'orchestrateur (`edit_file` / `run_command`) ou via un worker Dual-Harness (`swarm` | `san_swarm` / `subagent` via `.agents/models.json`).
 - **Assurer la clôture déterministe des roadmaps :** aucune roadmap active ne traîne indéfiniment dans `/roadmaps/` une fois terminée ; elle est formellement vérifiée (100 % de cases cochées sur preuves de code) puis migrée vers `/roadmaps/archives/`.
 
 ---
@@ -57,7 +57,7 @@ description: "Sous-skill transversal d'hygiène documentaire continue et d'archi
 | **Synchronisation du `README.md` :** Met à jour les versions de runtimes, variables d'environnement (`.env.example`) et commandes d'amorçage/test réelles. | N'archive JAMAIS une roadmap incomplète : la présence d'une seule case non cochée `- [ ]` ou non prouvée entraîne le refus catégorique d'archivage. |
 | **Audit et Archivage Cartésien des Roadmaps :** Inspecte le fichier cible dans `/roadmaps/*.md`, s'assure que **100 % des cases `- [x]` sont cochées**, calcule l'empreinte SHA-256 et déplace le fichier vers `/roadmaps/archives/`. | Ne supprime JAMAIS de fichiers de roadmap (`rm`) : l'archivage est toujours une opération de préservation d'historique (`mv`). |
 | **Mise à Jour de la Base de Règles Décentralisée :** Actualise `.agents/rules/PROJECT.md` et `.agents/rules/API.md` lors de l'ajout d'une commande ou d'une évolution de contrat. | Ne modifie JAMAIS le code source applicatif (`.ts`, `.php`, `.tsx`, `.sql`) : son périmètre est strictement documentaire. |
-| **Mode d'Exécution Fast-Track Sobre en Tokens :** Autorise l'orchestrateur à agir directement avec `edit_file` / `run_command` ou délègue via Dual-Harness (`swarm` / `subagent`). | N'appelle JAMAIS `invoke_subagent(Model: 'inherit')` pour éditer du markdown ménager ou déplacer des fichiers. |
+| **Mode d'Exécution Fast-Track Sobre en Tokens :** Autorise l'orchestrateur à agir directement avec `edit_file` / `run_command` ou délègue via Dual-Harness (`swarm` / `san_swarm` / `subagent`). | Ne spawne jamais un worker lourd pour éditer du markdown ménager ou déplacer des fichiers simples. |
 
 ---
 
@@ -105,7 +105,7 @@ flowchart TD
 
 ## 4. STRUCTURE INTERNE DU SOUS-SKILL
 
-Lors du déploiement au sein d'une codebase sous Antigravity CLI, le sous-skill présente l'arborescence normative suivante :
+Lors du déploiement au sein d'une codebase sous SAN AI Harness, le sous-skill présente l'arborescence normative suivante :
 
 ```txt
 .agents/skills/san_doc_keeper/
@@ -418,7 +418,7 @@ Aucune liberté stylistique désordonnée n'est tolérée dans le `CHANGELOG.md`
 Les roadmaps achevées, fiches d'idées concrétisées et rapports de tests validés ne sont jamais détruits via `rm`. Ils sont déplacés dans des répertoires d'archives dédiés (`/roadmaps/archives/`, `docs/research/`) pour conserver la mémoire infalsifiable de l'évolution du produit.
 
 ### 4. Invariant Fast-Track & Sobriété en Tokens (*Token-Light Hygiene*)
-Les opérations de maintenance documentaire doivent s'exécuter directement par l'orchestrateur (Fast-Track sans sous-agent), ou via un worker Dual-Harness (`swarm` / `subagent` via `.agents/models.json`, jamais `invoke_subagent(Model: 'inherit')`).
+Les opérations de maintenance documentaire doivent s'exécuter directement par l'orchestrateur (Fast-Track sans sous-agent), ou via un worker Dual-Harness (`swarm` / `san_swarm` / `subagent` via `.agents/models.json`).
 
 ### 5. Invariant d'Intégrité de Clôture (*100% Checkbox Completeness*)
 Aucun fichier de roadmap ne peut rejoindre `/roadmaps/archives/` s'il contient ne serait-ce qu'une seule case non cochée `- [ ]`. Si une tâche est abandonnée d'un commun accord avec le développeur, elle doit être explicitement rayée ou annotée `[ANNULÉ : justification]` avant archivage.

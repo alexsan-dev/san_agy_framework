@@ -1,4 +1,4 @@
-# CHANGELOG — `san_agy_framework`
+# CHANGELOG — `san_ai_harness`
 
 All notable changes to this project will be documented in this file.
 
@@ -13,7 +13,44 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Planned
 - Official publication on the public npm registry (`npm publish --access public`).
-- Pilot deployments on production codebases.
+- Extended production deployments.
+
+---
+
+## [3.0.0] - 2026-11-19
+
+### Added
+- **`san_ai_harness` Identity (`@alexsan/san-ai-harness`) & `san-harness` Binary:**
+  - Rebranded package, GitHub repository (`alexsan-dev/san_ai_harness`), and visual identity with primary CLI `san-harness` (retaining `san-framework` and `agy-framework` backward-compatible aliases).
+  - Theme-adaptive GitHub SVG logos (`logos/san_harness_logo_dark.svg`, `logos/san_harness_logo_light.svg`, `logos/san_harness_icon.svg`) wired via `<picture>` in both READMEs.
+- **Native OpenCode v2.3.0 Plugin (`src/opencode/san-harness-plugin.mjs`) & Swarm Board:**
+  - Pure-Node ESM plugin (zero Bun dependency) deployed automatically to `.agents/opencode/` on `init --opencode` / `update --opencode`.
+  - Registers the **`san_swarm`** tool (`dispatch`, `board`, `status`), live Markdown **Swarm Board** + Workflow Summary rendering, and `/san-board` command inside `opencode.json`.
+  - Declares primary agent **`san-orchestrator`** without a hardcoded `model` field so it freely inherits the user's selected `/model`.
+- **120k-Token Auto-Compaction (`--compaction=<tokens>`):**
+  - Added `compaction: { targetTokens: 120000, auto: true }` to `.agents/models.json` and `san-harness models --compaction=<tokens>` flag.
+  - Rewrote `src/hooks/scripts/pre_invocation.mjs` as a `120 000`-token auto-compaction guard (silent `{ injectSteps: [] }` below threshold) alongside native OpenCode `compaction` (`auto: true`, `background: true`, `keep.tokens: 12000`, `buffer: 20000`) settings and plugin hooks.
+
+### Changed
+- **Complete Model Decoupling & Adaptive Orchestration Doctrine (`inherit-user-model`):**
+  - Removed all hardcoded orchestrator model identifiers (`Argon`, `Carbon`, `hy4`, `gemini-4-argon-high`, `gemini-4-hydrogen-xhigh`) across all 8 agents, 17 skills, 17 root wrappers, and templates (`AGENTS_INDEX_TEMPLATE.md`, `GEMINI_INDEX_TEMPLATE.md`, `PROJECT_TEMPLATE.md`, `ROADMAP_TEMPLATE.md`).
+  - Orchestrators inherit the user's `/model`; only worker executors are configured via `.agents/models.json` (`san-harness models`).
+  - Relaxed mechanical delegation locks: simple/single-layer tasks may use native **`Plan → Execute`** directly, reserving `swarm` (Antigravity) and `san_swarm` / `subagent` (OpenCode) for multi-layer work, Studio Duel UI, and adversarial `san-qa-auditor` QA.
+  - Added surgical v2.x migration for `.agents/rules/*.md` during `san-harness update` while preserving custom project rules and legitimate `Argon2id` crypto references.
+
+### Removed
+- **Full Purge of `.agents/cache/`, AST Map & Transcripts Modules:**
+  - Removed token-bloating modules: `src/skills/san_cartographer/`, `src/skills/san_transcriber/`, `src/hooks/scripts/post_tool_indexer.mjs`, `src/hooks/scripts/stop_guard.mjs`, `REPO_MAP.md`, `.agents/cache/`, and `roadmaps/transcripts/` (streamlining the catalog from 19 to **17 skills** and from 5 to **3 lean hooks**).
+  - Active cleanup via `purgeObsoleteArtifacts()` during `san-harness init` / `san-harness update` (removing legacy `.agents/cache/`, obsolete hooks/skills, and duplicate `.agents/AGENTS.md`), verified by `san-harness doctor`.
+
+---
+
+## [2.2.1] - 2026-11-18
+
+### Fixed
+- Fixed `ReferenceError: resolveProjectRoot is not defined` in `san-framework update` (`src/cli/installer.js`).
+- Added native recognition of existing installations (`.agents/` or `.agents/skills.json`) with monorepo upward root resolution to stop spurious re-install prompts.
+- Hardened the legacy repository scanner with a Git-First (`git ls-files`) anti-OOM strategy on large repositories (subsequently superseded by 120k auto-compaction in v3.0.0).
 
 ---
 

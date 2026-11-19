@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # ==============================================================================
 # TEST AUTOMATISÉ : LOT 4A - DURCISSEMENT DES QUALITY GATES FAIL-CLOSED
-# Framework : Google Antigravity (@alexsan/agy-framework)
+# Framework : SAN AI Harness (@alexsan/san-ai-harness)
 # ==============================================================================
 set -euo pipefail
 
