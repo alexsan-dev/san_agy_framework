@@ -54,7 +54,7 @@ export const DEFAULT_MODELS_CONFIG = {
   },
   opencode: {
     orchestrator: 'inherit-user-model',
-    executor: 'opencode-go/deepseek-v4-pro'
+    executor: 'opencode-go/qwen3.8-flash'
   }
 };
 
@@ -564,10 +564,7 @@ function normalizeModelsConfig(raw = {}) {
     },
     agy: {
       ...agySrc,
-      orchestrator:
-        typeof agySrc.orchestrator === 'string' && agySrc.orchestrator.trim()
-          ? agySrc.orchestrator.trim()
-          : DEFAULT_MODELS_CONFIG.agy.orchestrator,
+      orchestrator: 'inherit-user-model',
       executor:
         typeof agySrc.executor === 'string' && agySrc.executor.trim()
           ? agySrc.executor.trim()
@@ -575,10 +572,7 @@ function normalizeModelsConfig(raw = {}) {
     },
     opencode: {
       ...ocSrc,
-      orchestrator:
-        typeof ocSrc.orchestrator === 'string' && ocSrc.orchestrator.trim()
-          ? ocSrc.orchestrator.trim()
-          : DEFAULT_MODELS_CONFIG.opencode.orchestrator,
+      orchestrator: 'inherit-user-model',
       executor:
         typeof ocSrc.executor === 'string' && ocSrc.executor.trim()
           ? ocSrc.executor.trim()
@@ -792,8 +786,8 @@ export function mergeOpencodeConfig(projectRoot, optionsOrDryRun = {}) {
     '',
     'Tu utilises le modèle choisi par l’utilisateur via `/model` (ne jamais demander ou forcer un autre modèle d’orchestration).',
     '- **Tâches simples / mono-couche :** le cycle natif `Plan → Execute` est autorisé directement après respect des règles `.agents/rules/*.md`.',
-    '- **Features multi-couches, Studio Duel UI, ou audit contradictoire (`san-qa-auditor`) :** délègue en parallèle via `san_swarm(action: "dispatch", waveTitle: "...", tasks: [...])` (ou `subagent`).',
-    '- **Vue Tableau Obligatoire :** Dès que `san_swarm` est invoqué, affiche intégralement le tableau Markdown Swarm Board et le Workflow Summary retournés dans ta réponse finale à l’utilisateur.',
+    '- **Features multi-couches, Studio Duel UI, ou audit contradictoire (`san-qa-auditor`) :** privilégie `san_swarm(action: "dispatch", waveTitle: "...", tasks: [...])` pour alimenter le Swarm Board en direct. Les 8 workers `san-*` sont déjà liés à `opencode.executor` dans `opencode.json` / `.agents/models.json` (y compris en appel `subagent` natif — ne jamais prétendre qu’ils basculent sur le modèle principal).',
+    '- **Vue Tableau Obligatoire :** Dès que `san_swarm` est invoqué (ou sur `/san-board`, qui trace aussi les sous-agents natifs), affiche intégralement le tableau Markdown Swarm Board et le Workflow Summary retournés dans ta réponse finale à l’utilisateur.',
     '- **Alignement Socratique :** Pose tes questions structurantes (`question`) et inspecte les URLs d’inspiration avant de déléguer une roadmap ou une refonte UI.'
   ].join('\n');
 

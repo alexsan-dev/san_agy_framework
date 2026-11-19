@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-const DEFAULT_EXECUTOR = 'opencode-go/deepseek-v4-pro';
+const DEFAULT_EXECUTOR = 'opencode-go/qwen3.8-flash';
 const DEFAULT_TARGET_TOKENS = 120000;
 const READONLY_AGENTS = new Set(['san-researcher', 'san-architect', 'san-qa-auditor']);
 
@@ -67,6 +67,17 @@ function parseModelRef(modelString) {
   return { providerID, id: modelID };
 }
 
+function formatModelName(modelObjOrStr, fallback) {
+  if (typeof modelObjOrStr === 'string' && modelObjOrStr.trim()) return modelObjOrStr.trim();
+  if (modelObjOrStr && typeof modelObjOrStr === 'object') {
+    const p = modelObjOrStr.providerID || modelObjOrStr.providerId;
+    const id = modelObjOrStr.id || modelObjOrStr.modelID || modelObjOrStr.modelId;
+    if (p && id) return `${p}/${id}`;
+    if (id) return String(id);
+  }
+  return fallback;
+}
+
 function estimateContextTokens(event) {
   let chars = 0;
   try {
@@ -129,7 +140,8 @@ function summarizeText(text) {
 }
 
 function formatDuration(ms) {
-  if (ms < 1000) return `${ms}ms`;
+  if (!Number.isFinite(ms) || ms < 0) return '0ms';
+  if (ms < 1000) return `${Math.round(ms)}ms`;
   return `${(ms / 1000).toFixed(1)}s`;
 }
 
@@ -157,6 +169,62 @@ function renderWaveMarkdown(wave, tokenEstimate, targetTokens) {
   return lines.join('\n');
 }
 
+function mapNativeChildStatus(rawStatus) {
+  const statusStr = typeof rawStatus === 'string'
+    ? rawStatus.toLowerCase()
+    : (typeof rawStatus?.type === 'string' ? rawStatus.type.toLowerCase() : '');
+
+  if (statusStr.includes('busy') || statusStr.includes('running') || statusStr.includes('pending') || statusStr.includes('active')) {
+    return { ok: false, label: '⏳ RUNNING' };
+  }
+  if (statusStr.includes('err') || statusStr.includes('fail') || statusStr.includes('abort')) {
+    return { ok: false, label: '❌ ERROR' };
+  }
+  return { ok: true, label: '✅ DONE' };
+}
+
+async function listNativeChildSessions(ctx, parentSessionID, fallbackModel) {
+  if (!parentSessionID || parentSessionID === 'default' || typeof ctx?.session?.list !== 'function') {
+    return [];
+  }
+  try {
+    const raw = await ctx.session.list();
+    const entries = Array.isArray(raw)
+      ? raw
+      : (Array.isArray(raw?.sessions) ? raw.sessions : (Array.isArray(raw?.data) ? raw.data : []));
+
+    const children = [];
+    for (const s of entries) {
+      if (!s || typeof s !== 'object') continue;
+      const pId = s.parentID || s.parentId;
+      if (pId !== parentSessionID) continue;
+
+      const mapped = mapNativeChildStatus(s.status || s.state);
+      const createdAt = Number(s.time?.created || s.createdAt || 0);
+      const updatedAt = Number(s.time?.updated || s.updatedAt || 0);
+      const durationMs = createdAt > 0
+        ? (mapped.label === '⏳ RUNNING' ? Date.now() - createdAt : Math.max(0, (updatedAt || Date.now()) - createdAt))
+        : 0;
+
+      const agent = String(s.agent || s.agentID || s.agentName || 'subagent');
+      const title = summarizeText(s.title || s.slug || s.id || agent);
+      children.push({
+        sessionID: s.id,
+        name: title,
+        agent,
+        model: formatModelName(s.model, fallbackModel),
+        ok: mapped.ok,
+        status: mapped.label,
+        duration: formatDuration(durationMs),
+        summary: s.title ? summarizeText(s.title) : `Session ${s.id || agent}`
+      });
+    }
+    return children;
+  } catch {
+    return [];
+  }
+}
+
 async function runWorkerTask(ctx, directory, parentSessionID, task, executorModel) {
   const started = Date.now();
   const modelObj = parseModelRef(executorModel);
@@ -176,7 +244,7 @@ async function runWorkerTask(ctx, directory, parentSessionID, task, executorMode
       location: { directory },
       ...(permissions ? { permissions } : {})
     });
-    subSessionID = created?.id;
+    subSessionID = created?.id || null;
     if (!subSessionID) throw new Error('session.create did not return an id');
 
     if (systemPrompt && typeof ctx.session.hook === 'function') {
@@ -194,6 +262,7 @@ async function runWorkerTask(ctx, directory, parentSessionID, task, executorMode
     const rawOutput = extractLastAssistantText(entries);
 
     return {
+      sessionID: subSessionID,
       name: task.name,
       agent: task.agent,
       model: executorModel,
@@ -205,6 +274,7 @@ async function runWorkerTask(ctx, directory, parentSessionID, task, executorMode
     };
   } catch (err) {
     return {
+      sessionID: subSessionID,
       name: task.name,
       agent: task.agent,
       model: executorModel,
@@ -217,9 +287,6 @@ async function runWorkerTask(ctx, directory, parentSessionID, task, executorMode
   } finally {
     if (contextSub && typeof contextSub.dispose === 'function') {
       await contextSub.dispose().catch(() => {});
-    }
-    if (subSessionID && typeof ctx.session.remove === 'function') {
-      await ctx.session.remove({ sessionID: subSessionID }).catch(() => {});
     }
   }
 }
@@ -234,7 +301,7 @@ export default {
       const toolReg = await ctx.tool.transform((editor) => {
         editor.add({
           name: 'san_swarm',
-          description: 'SAN AI Harness Swarm orchestrator: dispatches parallel san-* workers with a live Swarm Board table and workflow summary, or inspects board/compaction status.',
+          description: 'SAN AI Harness Swarm orchestrator: dispatches parallel san-* workers with a live Swarm Board table and workflow summary, or inspects board/compaction status (including native OpenCode subagent sessions).',
           input: {
             type: 'object',
             properties: {
@@ -261,31 +328,60 @@ export default {
             const board = getOrCreateBoard(parentSessionID);
             const tokEst = sessionTokenEstimates.get(parentSessionID) || 0;
 
+            const trackedIds = new Set();
+            for (const wave of board) {
+              for (const row of wave.rows || []) {
+                if (row.sessionID) trackedIds.add(row.sessionID);
+              }
+            }
+
             if (input.action === 'status') {
               const roadmap = getActiveRoadmapName(directory);
               const estK = Math.round(tokEst / 1000);
               const targetK = Math.round(models.targetTokens / 1000);
+              const nativeAll = await listNativeChildSessions(ctx, parentSessionID, models.executor);
+              const untrackedNative = nativeAll.filter((c) => !c.sessionID || !trackedIds.has(c.sessionID));
               return {
                 content: [
                   '### 🧭 SAN AI Harness — Status',
                   `- **Executor (\`opencode.executor\`) :** \`${models.executor}\``,
                   `- **Roadmap active :** \`${roadmap}\``,
-                  `- **Vagues exécutées :** ${board.length}`,
+                  `- **Vagues \`san_swarm\` :** ${board.length}`,
+                  `- **Sous-agents natifs (\`subagent\`) détectés :** ${untrackedNative.length}`,
                   `- **Compaction Auto :** ~${estK}k / ${targetK}k tokens`
                 ].join('\n')
               };
             }
 
             if (input.action === 'board') {
-              if (board.length === 0) {
+              const nativeAll = await listNativeChildSessions(ctx, parentSessionID, models.executor);
+              const nativeChildren = nativeAll.filter((c) => !c.sessionID || !trackedIds.has(c.sessionID));
+
+              if (board.length === 0 && nativeChildren.length === 0) {
                 const estK = Math.round(tokEst / 1000);
                 const targetK = Math.round(models.targetTokens / 1000);
                 return {
                   content: `### ⚡ SAN AI Harness — Swarm Board\nAucun worker dispatché dans cette session.\n\n**Contexte estimé :** ~${estK}k / ${targetK}k tokens`
                 };
               }
+
+              const sections = board.map((w) => renderWaveMarkdown(w, tokEst, models.targetTokens));
+              if (nativeChildren.length > 0) {
+                sections.push(
+                  renderWaveMarkdown(
+                    {
+                      index: board.length + 1,
+                      title: 'Sessions Subagent Natives (OpenCode)',
+                      rows: nativeChildren
+                    },
+                    tokEst,
+                    models.targetTokens
+                  )
+                );
+              }
+
               return {
-                content: board.map((w) => renderWaveMarkdown(w, tokEst, models.targetTokens)).join('\n\n---\n\n')
+                content: sections.join('\n\n---\n\n')
               };
             }
 
@@ -322,6 +418,7 @@ export default {
               item.status === 'fulfilled'
                 ? item.value
                 : {
+                    sessionID: null,
                     name: tasks[idx]?.name || `worker-${idx + 1}`,
                     agent: tasks[idx]?.agent || 'unknown',
                     model: models.executor,

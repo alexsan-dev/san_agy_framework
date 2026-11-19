@@ -77,7 +77,7 @@ assert_true "Couche 1 : Les 17 skills sont installés dans .agents/skills/ (dét
   '[ "${SKILLS_COUNT}" -eq 17 ]'
 
 assert_true "Dual-Harness : .agents/models.json créé en version 3.0.0 (orchestrateurs inherit-user-model & compaction 120k)" \
-  'python3 -c "import json; d=json.load(open(\"${TMP_LOCAL}/.agents/models.json\")); assert d[\"version\"]==\"3.0.0\" and d[\"agy\"][\"orchestrator\"]==\"inherit-user-model\" and d[\"agy\"][\"executor\"]==\"gemini-4-hydrogen-xhigh\" and d[\"opencode\"][\"orchestrator\"]==\"inherit-user-model\" and d[\"opencode\"][\"executor\"]==\"opencode-go/deepseek-v4-pro\" and d[\"compaction\"][\"targetTokens\"]==120000"'
+  'python3 -c "import json; d=json.load(open(\"${TMP_LOCAL}/.agents/models.json\")); assert d[\"version\"]==\"3.0.0\" and d[\"agy\"][\"orchestrator\"]==\"inherit-user-model\" and d[\"agy\"][\"executor\"]==\"gemini-4-hydrogen-xhigh\" and d[\"opencode\"][\"orchestrator\"]==\"inherit-user-model\" and d[\"opencode\"][\"executor\"]==\"opencode-go/qwen3.8-flash\" and d[\"compaction\"][\"targetTokens\"]==120000"'
 
 EXECUTABLE_SCRIPTS_COUNT=$(find "${TMP_LOCAL}/.agents/skills" -type f -name "*.sh" -perm -111 | wc -l)
 assert_true "Couche 1 : Les scripts de skills possèdent le bit exécutable (chmod +x, count: ${EXECUTABLE_SCRIPTS_COUNT})" \
@@ -285,10 +285,20 @@ echo "// old" > "${TMP_V1}/.agents/hooks/scripts/stop_guard.mjs"
 echo "# dup" > "${TMP_V1}/.agents/AGENTS.md"
 echo "skill v1 obsolète" > "${TMP_V1}/.agents/skills/san_init/SKILL.md"
 echo '{"rules": ["BRAND", "PRODUCT"]}' > "${TMP_V1}/.agents/rules.json"
+cat << 'EOF' > "${TMP_V1}/.agents/models.json"
+{
+  "version": "2.2.0",
+  "agy": { "orchestrator": "gemini-4-argon-high", "executor": "gemini-4-hydrogen-xhigh" },
+  "opencode": { "orchestrator": "opencode-go/mimo-v2.6-pro", "executor": "opencode-go/deepseek-v4.1-flash" }
+}
+EOF
 
 UPDATE_OUTPUT=$(node "${CLI_INDEX}" update --dir="${TMP_V1}")
 assert_true "update s'exécute avec succès (bannière MIGRATION & MISE À JOUR v3.0.0)" \
   'echo "${UPDATE_OUTPUT}" | grep -q "MIGRATION & MISE À JOUR v3.0.0"'
+
+assert_true "update force orchestrator: inherit-user-model dans .agents/models.json" \
+  'python3 -c "import json; d=json.load(open(\"${TMP_V1}/.agents/models.json\")); assert d[\"agy\"][\"orchestrator\"]==\"inherit-user-model\" and d[\"opencode\"][\"orchestrator\"]==\"inherit-user-model\""'
 
 assert_true "update affiche l'encart What'\''s New on san_ai_harness v3.0.0 dans le terminal" \
   'echo "${UPDATE_OUTPUT}" | grep -q "What'\''s New on san_ai_harness v3.0.0"'

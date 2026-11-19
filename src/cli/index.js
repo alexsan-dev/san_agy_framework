@@ -91,7 +91,7 @@ export function showHelp() {
   console.log(`  ${colors.cyan}--opencode${colors.reset}               Génère/met à jour opencode.json V2.3 + plugin Swarm Board (.agents/opencode)`);
   console.log(`  ${colors.cyan}--dir=<chemin>${colors.reset}           Spécifier manuellement le répertoire cible\n`);
   console.log(`${colors.bold}OPTIONS DE LA COMMANDE models :${colors.reset}`);
-  console.log(`  ${colors.cyan}--opencode=<model>${colors.reset}       Définir opencode.executor (ex: opencode-go/deepseek-v4-pro)`);
+  console.log(`  ${colors.cyan}--opencode=<model>${colors.reset}       Définir opencode.executor (ex: opencode-go/qwen3.8-flash)`);
   console.log(`  ${colors.cyan}--agy=<model>${colors.reset}            Définir agy.executor (ex: gemini-4-hydrogen-xhigh)`);
   console.log(`  ${colors.cyan}--compaction=<tokens>${colors.reset}    Définir compaction.targetTokens (défaut: 120000)`);
   console.log(`  ${colors.cyan}--set=<model>${colors.reset}            Détection automatique ('/' -> OpenCode, sinon Antigravity)`);
@@ -102,7 +102,7 @@ export function showHelp() {
   console.log(`  ${colors.gray}# 2. Déploiement Dual-Harness (Antigravity + OpenCode V2.3 + Swarm Board)${colors.reset}`);
   console.log(`  san-harness init --local --all --opencode\n`);
   console.log(`  ${colors.gray}# 3. Basculer le modèle exécuteur des workers (OpenCode V2.3 & Antigravity)${colors.reset}`);
-  console.log(`  san-harness models --opencode=opencode-go/deepseek-v4-pro`);
+  console.log(`  san-harness models --opencode=opencode-go/qwen3.8-flash`);
   console.log(`  san-harness models --agy=gemini-4-hydrogen-xhigh`);
   console.log(`  san-harness models --compaction=120000\n`);
   console.log(`  ${colors.gray}# 4. Déploiement léger (.agents/skills.json) & Doctor${colors.reset}`);
@@ -192,7 +192,7 @@ async function runInteractivePrompt(availableSkills, initialTargetMode = null) {
 
 function printModelsQuickExamples() {
   console.log(`${colors.bold}Exemples rapides :${colors.reset}`);
-  console.log(`  ${colors.brightCyan}san-harness models --opencode=opencode-go/deepseek-v4-pro${colors.reset}`);
+  console.log(`  ${colors.brightCyan}san-harness models --opencode=opencode-go/qwen3.8-flash${colors.reset}`);
   console.log(`  ${colors.brightCyan}san-harness models --agy=gemini-4-hydrogen-xhigh${colors.reset}`);
   console.log(`  ${colors.brightCyan}san-harness models --compaction=120000${colors.reset}`);
   console.log(`  ${colors.brightCyan}san-harness models --set=opencode-go/glm-5.3-flash${colors.reset}\n`);
@@ -201,7 +201,7 @@ function printModelsQuickExamples() {
 function validateModelFlag(flagName, value) {
   if (value === undefined) return undefined;
   if (typeof value !== 'string' || !value.trim() || value.trim().startsWith('-')) {
-    throw new Error(`L'option --${flagName} requiert un nom de modèle valide (ex: --${flagName}=opencode-go/deepseek-v4-pro).`);
+    throw new Error(`L'option --${flagName} requiert un nom de modèle valide (ex: --${flagName}=opencode-go/qwen3.8-flash).`);
   }
   return value.trim();
 }
